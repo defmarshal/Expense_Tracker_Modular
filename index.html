@@ -6,7 +6,7 @@
     <title>FinTrack - Smart Expense Tracking</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./js/config.js"></script>
+    <!-- <script src="./js/config.js"></script> -->
     
     <!-- Modular CSS Files - IMPORTANT: Order matters! -->
     <link rel="stylesheet" href="css/variables.css">
@@ -603,10 +603,30 @@
         
         // const supabase = window._finTrackSupabase;
 
-        const supabase = window.supabase.createClient(
-            window.FINTRACK_CONFIG.SUPABASE_URL,
-            window.FINTRACK_CONFIG.SUPABASE_ANON_KEY
-        );
+        // const supabase = window.supabase.createClient(
+        //     window.FINTRACK_CONFIG.SUPABASE_URL,
+        //     window.FINTRACK_CONFIG.SUPABASE_ANON_KEY
+        // );
+
+        async function initApp() {
+            const response = await fetch('/api/config');
+            const config = await response.json();
+            
+            // Create Supabase client with fetched config
+            const supabase = window.supabase.createClient(
+                config.supabaseUrl,
+                config.supabaseAnonKey
+            );
+
+            // Your existing app initialization
+            const { createApp } = await import('./js/app.js');
+            const app = createApp(supabase);
+            await app.init();
+            
+            window.finTrack = { app, /* ... */ };
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);        
 
         // Import and initialize the app
         import { createApp } from './js/app.js';
