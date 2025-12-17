@@ -594,53 +594,40 @@
     <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 350px;"></div>
 
     <script type="module">
-
-        // Initialize Supabase client
-        
-        // if (!window._finTrackSupabase) {
-        //     window._finTrackSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // }
-        
-        // const supabase = window._finTrackSupabase;
-
-        // const supabase = window.supabase.createClient(
-        //     window.FINTRACK_CONFIG.SUPABASE_URL,
-        //     window.FINTRACK_CONFIG.SUPABASE_ANON_KEY
-        // );
-
         async function initApp() {
-            const response = await fetch('/api/config');
-            const config = await response.json();
-            
-            // Create Supabase client with fetched config
-            const supabase = window.supabase.createClient(
-                config.supabaseUrl,
-                config.supabaseAnonKey
-            );
-
-            // Your existing app initialization
-            const { createApp } = await import('./js/app.js');
-            const app = createApp(supabase);
-            await app.init();
-            
-            window.finTrack = { app, /* ... */ };
-        }
-
-        document.addEventListener('DOMContentLoaded', initApp);        
-
-        // Import and initialize the app
-        import { createApp } from './js/app.js';
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', async () => {
             try {
+                console.log('Fetching config...');
+                
+                // Fetch config from API
+                const response = await fetch('/api/config');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch config');
+                }
+                
+                const config = await response.json();
+                console.log('Config loaded:', { 
+                    hasUrl: !!config.supabaseUrl, 
+                    hasKey: !!config.supabaseAnonKey 
+                });
+                
+                // Create Supabase client AFTER config is loaded
+                const supabase = window.supabase.createClient(
+                    config.supabaseUrl,
+                    config.supabaseAnonKey
+                );
+                
+                console.log('Supabase client created');
+                
+                // Import and initialize the app
+                const { createApp } = await import('./js/app.js');
+                
                 console.log('Starting FinTrack application...');
                 
                 // Create and initialize the app
                 const app = createApp(supabase);
                 await app.init();
                 
-                // Make available globally for debugging (optional)
+                // Make available globally for debugging
                 window.finTrack = {
                     app,
                     ui: app.ui,
@@ -673,11 +660,18 @@
                 if (alertContainer) {
                     const alert = document.createElement('div');
                     alert.className = 'alert alert-error';
-                    alert.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to load application. Please refresh.`;
+                    alert.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to load application. Please refresh. Error: ${error.message}`;
                     alertContainer.appendChild(alert);
                 }
             }
-        });
+        }
+
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
 
         // Global event listeners that need to be in the HTML file
         document.addEventListener('DOMContentLoaded', function() {
@@ -721,7 +715,7 @@
                     window.finTrack.ui.editCategory(id);
                 }
             };
-        });        
+        });  
     </script>
 </body>
 
