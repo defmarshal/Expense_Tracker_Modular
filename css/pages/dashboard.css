@@ -1,0 +1,341 @@
+/* Dashboard Page Specific Styles */
+
+/* Dashboard Typography */
+.dashboard-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.section-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--dark);
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--gray);
+}
+
+.form-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    color: var(--dark);
+}
+
+/* Stats Cards */
+.stat-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1.2rem;
+    box-shadow: var(--shadow);
+    text-align: center;
+    border: 1px solid rgba(147, 51, 234, 0.05);
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0.4rem 0;
+}
+
+.stat-value.income {
+    color: var(--success);
+}
+
+.stat-value.expense {
+    color: var(--primary);
+}
+
+.stat-value.balance {
+    color: var(--dark);
+}
+
+.stat-label {
+    color: var(--gray);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* List Items */
+.expense-item, .wallet-item, .category-item, .income-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--gray-light);
+    gap: 1rem;
+}
+
+.expense-item:last-child, 
+.wallet-item:last-child, 
+.category-item:last-child, 
+.income-item:last-child {
+    border-bottom: none;
+}
+
+.expense-details, 
+.wallet-details, 
+.category-details, 
+.income-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.expense-amount, 
+.wallet-balance, 
+.income-amount {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--dark);
+}
+
+.expense-amount {
+    color: var(--primary);
+}
+
+.income-amount {
+    color: var(--success);
+}
+
+.expense-category, .income-source {
+    background: var(--light-gray);
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 0.3rem;
+    display: inline-block;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.edit-btn, .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+}
+
+.edit-btn {
+    color: var(--primary);
+}
+
+.edit-btn:hover {
+    background: rgba(147, 51, 234, 0.1);
+}
+
+.delete-btn {
+    color: var(--danger);
+}
+
+.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Category Components */
+.subcategory-item {
+    padding-left: 1.5rem;
+    color: var(--gray);
+    border-left: 2px solid var(--gray-light);
+    margin-left: 0.8rem;
+}
+
+.category-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.add-subcategory-btn {
+    background: var(--success);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Wallet Selector */
+.wallet-selector-container {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--gray-light);
+    box-shadow: var(--shadow);
+    gap: 8px;
+}
+
+.wallet-selector-container select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.wallet-selector-container select:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Insufficient Balance Modal */
+.insufficient-balance-modal .modal-header {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.balance-warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.2rem;
+    padding: 1rem;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.balance-warning i {
+    font-size: 1.4rem;
+    color: var(--danger);
+}
+
+.balance-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1.2rem;
+}
+
+.balance-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-light);
+    font-size: 0.9rem;
+}
+
+.balance-item:last-child {
+    border-bottom: none;
+}
+
+/* Month Filter */
+.month-filter {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+}
+
+.month-filter label {
+    margin-bottom: 0;
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.month-filter select {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Expense Summary */
+.expense-summary {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
+    box-shadow: var(--shadow);
+    text-align: center;
+    border: 1px solid rgba(147, 51, 234, 0.05);
+}
+
+.expense-summary h3 {
+    margin-bottom: 0.8rem;
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.expense-summary-amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Empty States */
+.no-expenses-message {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--gray);
+    font-style: italic;
+    font-size: 0.95rem;
+}
+
+/* Form Cards - ADDED FIX */
+.form-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(147, 51, 234, 0.05);
+}
+
+/* List Containers - ADDED FIX */
+.expense-list, .wallet-list, .category-list, .income-list {
+    background: white;
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(147, 51, 234, 0.05);
+}
+
+/* Active Tab Content Styling - CRITICAL FIX */
+.tab-content.active {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Specific styling for expenses tab */
+#expensesTab.active {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Ensure form and list have proper spacing */
+.form-card {
+    margin-bottom: 0;
+}
+
+/* Make sure lists take available space */
+.expense-list, .income-list, .wallet-list, .category-list {
+    flex: 1;
+}

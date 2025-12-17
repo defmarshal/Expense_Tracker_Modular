@@ -1,0 +1,49 @@
+/* CSS Custom Properties - Theme Variables */
+:root {
+    /* Purple-based casual theme */
+    --primary: #9333EA;
+    --primary-dark: #7E22CE;
+    --primary-light: #C084FC;
+    --secondary: #A78BFA;
+    --success: #10B981;
+    --success-dark: #059669;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+    --light: #F9F5FF;
+    --light-gray: #F3F0FF;
+    --dark: #2D1B4E;
+    --text: #4B3B5C;
+    --gray: #9B8BA8;
+    --gray-light: #E9E0F5;
+    
+    /* Effects */
+    --shadow: 0 2px 8px rgba(147, 51, 234, 0.08);
+    --gradient: linear-gradient(135deg, #9333EA 0%, #A78BFA 100%);
+    --income-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 4rem;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Z-index layers */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 1000;
+    --z-modal: 2000;
+    --z-alert: 3000;
+}

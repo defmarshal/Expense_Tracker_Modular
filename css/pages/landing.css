@@ -1,0 +1,137 @@
+/* Landing Page Specific Styles */
+
+/* Hero Section */
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: var(--gray);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-image {
+    max-width: 800px;
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(147, 51, 234, 0.12);
+    overflow: hidden;
+    margin-top: 1.5rem;
+    border: 1px solid rgba(147, 51, 234, 0.1);
+}
+
+.hero-image > div {
+    background: var(--gradient);
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+}
+
+/* Feature Cards */
+.feature-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: all var(--transition-normal);
+    border: 1px solid rgba(147, 51, 234, 0.05);
+}
+
+.feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(147, 51, 234, 0.12);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    background: var(--gradient);
+    color: white;
+    font-size: 1.5rem;
+}
+
+.feature-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: var(--dark);
+}
+
+.feature-description {
+    color: var(--gray);
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+/* CTA Section */
+.cta {
+    padding: 4rem 2rem;
+    background: var(--gradient);
+    color: white;
+    text-align: center;
+}
+
+.cta h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.cta p {
+    font-size: 1.1rem;
+    max-width: 550px;
+    margin: 0 auto 2rem;
+    opacity: 0.95;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Footer Links */
+.footer-column h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.footer-links {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 0.6rem;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color var(--transition-normal);
+    font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+    color: white;
+}

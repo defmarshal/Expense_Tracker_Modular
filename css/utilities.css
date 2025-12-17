@@ -1,0 +1,288 @@
+/* Utility Classes */
+
+/* Display */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Margins */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 2rem; }
+
+/* Flex Utilities */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+.gap-4 { gap: 1.5rem; }
+.gap-5 { gap: 2rem; }
+
+/* Grid Utilities */
+.grid {
+    display: grid;
+}
+
+/* Responsive Images */
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Cursor */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Responsive Media Queries */
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+    header {
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .logo {
+        font-size: 1.1rem;
+        gap: 6px;
+    }
+    
+    .logo i {
+        font-size: 1.3rem;
+    }
+    
+    .dashboard-title {
+        font-size: 1.4rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .dashboard-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .dashboard-stats {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.8rem;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .dashboard-stats::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .stat-card {
+        flex: 0 0 auto;
+        width: 75%;
+        min-width: 150px;
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.4rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .expense-item, 
+    .wallet-item, 
+    .income-item, 
+    .category-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .expense-item > div:last-child, 
+    .income-item > div:last-child, 
+    .wallet-item > div:last-child,
+    .category-item > div:last-child {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .edit-btn, .delete-btn {
+        padding: 8px;
+    }
+    
+    .nav-links {
+        gap: 0.5rem;
+    }
+    
+    .nav-link span {
+        display: none;
+    }
+    
+    .nav-link {
+        padding: 6px;
+        font-size: 0.8rem;
+    }
+    
+    .month-filter {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+    
+    .month-filter select {
+        min-width: auto;
+    }
+    
+    input, select {
+        font-size: 16px;
+    }
+    
+    .modal {
+        max-width: 95%;
+    }
+    
+    /* Fix for active tab content on mobile */
+    .tab-content.active {
+        gap: 1rem;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 0.8rem;
+    }
+    
+    header {
+        padding: 0.5rem 0.6rem;
+    }
+    
+    .auth-section .btn span {
+        display: none;
+    }
+    
+    .auth-section .btn {
+        padding: 8px 10px;
+        gap: 0;
+    }
+    
+    .auth-section {
+        gap: 6px;
+    }
+    
+    .logo {
+        font-size: 1rem;
+    }
+    
+    .logo i {
+        font-size: 1.2rem;
+    }
+    
+    .dashboard-title {
+        font-size: 1.2rem;
+    }
+    
+    .form-card,
+    .expense-list, .wallet-list, .category-list, .income-list {
+        padding: 1.2rem;
+    }
+    
+    .modal-body, .modal-header {
+        padding: 1.2rem;
+    }
+    
+    .modal-title {
+        font-size: 1.4rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .hero p {
+        font-size: 1rem;
+    }
+    
+    .tab {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.75rem;
+    }
+    
+    .stat-card {
+        width: 100%;
+        min-width: 100px;
+        padding: 0.8rem;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .form-title {
+        font-size: 1.1rem;
+    }
+    
+    label {
+        font-size: 0.85rem;
+    }
+    
+    input, select {
+        padding: 9px 10px;
+        font-size: 15px;
+    }
+}
