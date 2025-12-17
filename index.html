@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack - Smart Expense Tracking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./js/config.js"></script>
+    
+    <!-- Modular CSS Files - IMPORTANT: Order matters! -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/pages/landing.css">
+    <link rel="stylesheet" href="css/pages/dashboard.css">
+    <link rel="stylesheet" href="css/utilities.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-pie"></i>
+            <span>FinTrack</span>
+        </div>
+        
+        <div class="nav-links">
+            <a href="index.html" class="nav-link active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="analytics.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+        </div>
+        
+        <div class="auth-section">
+            <button id="loginBtn" class="btn btn-outline">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Sign In</span>
+            </button>
+            <button id="signupBtn" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i>
+                <span>Join</span>
+            </button>
+            <button id="logoutBtn" class="btn btn-outline hidden">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sign Out</span>
+            </button>
+        </div>
+    </header>
+
+    <div id="landingPage" class="landing-page">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Track Expenses.<br>Master Your Finances.</h1>
+                <p>FinTrack helps you understand where your money goes with beautiful visuals and powerful insights.</p>
+                <div class="hero-buttons">
+                    <button id="heroSignupBtn" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i>
+                        Start Free Trial
+                    </button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-play-circle"></i>
+                        Watch Demo
+                    </button>
+                </div>
+                <div class="hero-image">
+                    <div style="background: var(--gradient); height: 320px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem;">
+                        FinTrack Dashboard Preview
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="section-header">
+                <h2 class="section-title">Everything You Need</h2>
+                <p class="section-subtitle">Manage your finances with ease</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3 class="feature-title">Multiple Wallets</h3>
+                    <p class="feature-description">Track expenses across multiple wallets and bank accounts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h3 class="feature-title">Smart Categories</h3>
+                    <p class="feature-description">Organize expenses with custom categories.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="feature-title">Visual Reports</h3>
+                    <p class="feature-description">Understand spending patterns instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h3 class="feature-title">Income Tracking</h3>
+                    <p class="feature-description">Track all your income sources.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Secure & Private</h3>
+                    <p class="feature-description">Enterprise-grade security for your data.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <h3 class="feature-title">Real-time Sync</h3>
+                    <p class="feature-description">Stay updated across all devices.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta">
+            <h2>Ready to take control?</h2>
+            <p>Join thousands of users who've transformed their finances with FinTrack.</p>
+            <div class="cta-buttons">
+                <button id="ctaSignupBtn" class="btn btn-white">
+                    <i class="fas fa-rocket"></i>
+                    Get Started Free
+                </button>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>FinTrack</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Press</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Product</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Security</a></li>
+                        <li><a href="#">Roadmap</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Community</a></li>
+                        <li><a href="#">Guides</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Terms</a></li>
+                        <li><a href="#">GDPR</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 FinTrack. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="dashboardContainer" class="dashboard-container">
+        <div class="container">
+            <div style="margin-bottom: 1rem;">
+                <a href="analytics.html" class="btn btn-outline">
+                    <i class="fas fa-chart-bar"></i>
+                    Analytics
+                </a>
+            </div>
+            
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Dashboard</h1>
+                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                    <div class="wallet-selector-container">
+                        <label for="globalWalletSelect" style="font-size: 0.8rem; color: var(--gray); margin-bottom: 0;">Wallet:</label>
+                        <select id="globalWalletSelect">
+                            <option value="">Select wallet</option>
+                        </select>
+                    </div>
+                    <span id="userEmail" style="color: var(--gray); font-size: 0.85rem;"></span>
+                </div>
+            </div>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Income</div>
+                    <div class="stat-value income" id="totalIncome">Rp 0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Expenses</div>
+                    <div class="stat-value expense" id="totalExpenses">Rp 0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-value balance" id="currentWalletBalance">Rp 0</div>
+                </div>
+            </div>
+
+            <div class="dashboard-tabs">
+                <div class="tab active" data-tab="expenses">This Month</div>
+                <div class="tab" data-tab="historical">History</div>
+                <div class="tab" data-tab="income">Income</div>
+                <div class="tab" data-tab="wallets">Wallets</div>
+                <div class="tab" data-tab="categories">Categories</div>
+            </div>
+
+            <div id="expensesTab" class="tab-content active">
+                <div class="form-card">
+                    <h2 class="form-title">Add Expense</h2>
+                    <form id="expenseForm">
+                        <input type="hidden" id="expenseId">
+                        <div class="form-group">
+                            <label for="expenseDescription">What did you spend on?</label>
+                            <input type="text" id="expenseDescription" placeholder="e.g., Lunch, Gas" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseAmount">Amount</label>
+                                <div class="currency-input">
+                                    <span class="currency-symbol">Rp</span>
+                                    <input type="text" id="expenseAmount" placeholder="0" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseDate">Date</label>
+                                <input type="date" id="expenseDate" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseCategory">Category</label>
+                                <select id="expenseCategory" required>
+                                    <option value="">Select category</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseSubcategory">Subcategory</label>
+                                <select id="expenseSubcategory">
+                                    <option value="">Optional</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-primary" id="expenseSubmitBtn">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                            <button type="button" class="btn btn-outline hidden" id="expenseCancelBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="expense-list">
+                    <h2 class="form-title">This Month</h2>
+                    <div id="expensesList">
+                        <div class="expense-item">
+                            <div class="expense-details">No expenses yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="historicalTab" class="tab-content">
+                <div class="month-filter">
+                    <label for="monthSelect">Month:</label>
+                    <select id="monthSelect"></select>
+                    <label for="yearSelect">Year:</label>
+                    <select id="yearSelect"></select>
+                </div>
+                
+                <div class="expense-summary">
+                    <h3>Total for <span id="selectedMonthYear">this month</span></h3>
+                    <div class="expense-summary-amount" id="monthlyExpenseTotal">Rp 0</div>
+                </div>
+                
+                <div class="expense-list">
+                    <h2 class="form-title">Expenses</h2>
+                    <div id="historicalExpensesList">
+                        <div class="expense-item">
+                            <div class="expense-details">Select a month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="incomeTab" class="tab-content">
+                <div class="form-card">
+                    <h2 class="form-title">Add Income</h2>
+                    <form id="incomeForm">
+                        <input type="hidden" id="incomeId">
+                        <div class="form-group">
+                            <label for="incomeDescription">Source</label>
+                            <input type="text" id="incomeDescription" placeholder="e.g., Salary, Freelance" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incomeAmount">Amount</label>
+                                <div class="currency-input">
+                                    <span class="currency-symbol">Rp</span>
+                                    <input type="text" id="incomeAmount" placeholder="0" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="incomeDate">Date</label>
+                                <input type="date" id="incomeDate" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="incomeSource">Type</label>
+                            <select id="incomeSource" required>
+                                <option value="">Select type</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Freelance">Freelance</option>
+                                <option value="Investment">Investment</option>
+                                <option value="Gift">Gift</option>
+                                <option value="Bonus">Bonus</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-success" id="incomeSubmitBtn">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                            <button type="button" class="btn btn-outline hidden" id="incomeCancelBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="income-list">
+                    <h2 class="form-title">Income</h2>
+                    <div id="incomesList">
+                        <div class="income-item">
+                            <div class="income-details">No income yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="walletsTab" class="tab-content">
+                <div class="form-card">
+                    <h2 class="form-title">Add Wallet</h2>
+                    <form id="walletForm">
+                        <input type="hidden" id="walletId">
+                        <div class="form-group">
+                            <label for="walletName">Wallet Name</label>
+                            <input type="text" id="walletName" placeholder="e.g., Cash, Bank Account" required>
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-primary" id="walletSubmitBtn">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                            <button type="button" class="btn btn-outline hidden" id="walletCancelBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="wallet-list">
+                    <h2 class="form-title">My Wallets</h2>
+                    <div id="walletsList">
+                        <div class="wallet-item">
+                            <div class="wallet-details">No wallets yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="categoriesTab" class="tab-content">
+                <div class="form-card">
+                    <div class="form-title">Add Category</div>
+                    <form id="categoryForm">
+                        <input type="hidden" id="categoryId">
+                        <div class="form-group">
+                            <label for="categoryType">Type</label>
+                            <select id="categoryType" required>
+                                <option value="">Select type</option>
+                                <option value="main">Main Category</option>
+                                <option value="sub">Subcategory</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryName">Name</label>
+                            <input type="text" id="categoryName" placeholder="e.g., Food, Transport" required>
+                        </div>
+                        <div class="form-group hidden" id="parentCategoryGroup">
+                            <label for="parentCategory">Parent Category</label>
+                            <select id="parentCategory">
+                                <option value="">Select parent</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-primary" id="categorySubmitBtn">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                            <button type="button" class="btn btn-outline hidden" id="categoryCancelBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="category-list">
+                    <h2 class="form-title">Categories</h2>
+                    <div id="categoriesList">
+                        <div class="category-item">
+                            <div class="category-details">No categories yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="subcategoryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <button class="modal-close" id="closeSubcategoryModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Add Subcategory</h2>
+                <p class="modal-subtitle">Quick add</p>
+            </div>
+            <div class="modal-body">
+                <form id="subcategoryForm">
+                    <div class="form-group">
+                        <label for="subcategoryName">Name</label>
+                        <input type="text" id="subcategoryName" placeholder="e.g., Groceries" required>
+                    </div>
+                    <input type="hidden" id="parentCategoryId">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
+                <button class="modal-close" id="closeDeleteModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Delete?</h2>
+                <p class="modal-subtitle">This can't be undone</p>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage" style="margin-bottom: 1.5rem; font-size: 0.95rem;"></p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-outline" id="cancelDeleteBtn" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button class="btn" id="confirmDeleteBtn" style="flex: 1; background: #EF4444; color: white;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay insufficient-balance-modal" id="insufficientBalanceModal">
+        <div class="modal">
+            <div class="modal-header">
+                <button class="modal-close" id="closeInsufficientBalanceModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Not Enough Balance</h2>
+                <p class="modal-subtitle">Need more funds</p>
+            </div>
+            <div class="modal-body">
+                <div class="balance-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h3 style="font-size: 0.95rem; margin-bottom: 0.3rem;">Insufficient funds</h3>
+                        <p style="font-size: 0.85rem; opacity: 0.9;">Add income to proceed</p>
+                    </div>
+                </div>
+                <div class="balance-details">
+                    <div class="balance-item">
+                        <span>Expense:</span>
+                        <strong id="expenseAmountDetail">Rp 0</strong>
+                    </div>
+                    <div class="balance-item">
+                        <span>Balance:</span>
+                        <strong id="walletBalanceDetail">Rp 0</strong>
+                    </div>
+                    <div class="balance-item">
+                        <span>After:</span>
+                        <strong id="remainingBalanceDetail" style="color: var(--danger);">Rp 0</strong>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success" id="addFundsBtn" style="flex: 1;">
+                        <i class="fas fa-plus"></i> Add Income
+                    </button>
+                    <button class="btn btn-outline" id="cancelExpenseBtn" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal">
+            <div class="modal-header">
+                <button class="modal-close" id="closeSignupModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Join FinTrack</h2>
+                <p class="modal-subtitle">Start tracking today</p>
+            </div>
+            <div class="modal-body">
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" placeholder="your@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" placeholder="Create password" required>
+                        <div class="password-strength">
+                            <div class="strength-bar" id="passwordStrength"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+                <div style="text-align: center; margin-top: 1.2rem;">
+                    <p style="font-size: 0.9rem;">Already have an account? <a href="#" id="showLoginFromSignup" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <div class="modal-header">
+                <button class="modal-close" id="closeLoginModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Welcome Back</h2>
+                <p class="modal-subtitle">Sign in to continue</p>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </form>
+                <div style="text-align: center; margin-top: 1.2rem;">
+                    <p style="font-size: 0.9rem;">Don't have an account? <a href="#" id="showSignupFromLogin" style="color: var(--primary); text-decoration: none; font-weight: 600;">Join now</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 350px;"></div>
+
+    <script type="module">
+
+        // Initialize Supabase client
+        
+        // if (!window._finTrackSupabase) {
+        //     window._finTrackSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // }
+        
+        // const supabase = window._finTrackSupabase;
+
+        const supabase = window.supabase.createClient(
+            window.FINTRACK_CONFIG.SUPABASE_URL,
+            window.FINTRACK_CONFIG.SUPABASE_ANON_KEY
+        );
+
+        // Import and initialize the app
+        import { createApp } from './js/app.js';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('Starting FinTrack application...');
+                
+                // Create and initialize the app
+                const app = createApp(supabase);
+                await app.init();
+                
+                // Make available globally for debugging (optional)
+                window.finTrack = {
+                    app,
+                    ui: app.ui,
+                    state: app.state,
+                    auth: app.auth,
+                    db: app.db
+                };
+                
+                // Store pending delete reference
+                window.finTrack.pendingDelete = null;
+
+                // DEBUG: Add console access
+                console.log('FinTrack App initialized:', window.finTrack);
+
+                // DEBUG: Test state access
+                window.finTrack.debug = {
+                    getState: () => window.finTrack.state.getState(),
+                    getExpenses: () => window.finTrack.state.getExpenses(),
+                    getIncomes: () => window.finTrack.state.getIncomes(),
+                    getWallets: () => window.finTrack.state.getWallets(),
+                    getCategories: () => window.finTrack.state.getCategories()
+                };                
+                
+                console.log('Application started successfully');
+            } catch (error) {
+                console.error('Failed to start application:', error);
+                
+                // Show error to user
+                const alertContainer = document.getElementById('alertContainer');
+                if (alertContainer) {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-error';
+                    alert.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to load application. Please refresh.`;
+                    alertContainer.appendChild(alert);
+                }
+            }
+        });
+
+        // Global event listeners that need to be in the HTML file
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close modals when clicking outside
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal-overlay')) {
+                    e.target.classList.remove('active');
+                }
+            });
+            
+            // Close modals with escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                        modal.classList.remove('active');
+                    });
+                }
+            });
+            
+            // Make edit functions globally available
+            window.editExpense = function(id) {
+                if (window.finTrack && window.finTrack.ui) {
+                    window.finTrack.ui.editExpense(id);
+                }
+            };
+            
+            window.editIncome = function(id) {
+                if (window.finTrack && window.finTrack.ui) {
+                    window.finTrack.ui.editIncome(id);
+                }
+            };
+            
+            window.editWallet = function(id) {
+                if (window.finTrack && window.finTrack.ui) {
+                    window.finTrack.ui.editWallet(id);
+                }
+            };
+            
+            window.editCategory = function(id) {
+                if (window.finTrack && window.finTrack.ui) {
+                    window.finTrack.ui.editCategory(id);
+                }
+            };
+        });        
+    </script>
+</body>
+
+</html>

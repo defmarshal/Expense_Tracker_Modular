@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - FinTrack</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        :root {
+            --primary: #9333EA;
+            --primary-dark: #7E22CE;
+            --primary-light: #C084FC;
+            --secondary: #A78BFA;
+            --success: #10B981;
+            --success-dark: #059669;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --light: #F9F5FF;
+            --light-gray: #F3F0FF;
+            --dark: #2D1B4E;
+            --text: #4B3B5C;
+            --gray: #9B8BA8;
+            --gray-light: #E9E0F5;
+            --shadow: 0 2px 8px rgba(147, 51, 234, 0.08);
+            --gradient: linear-gradient(135deg, #9333EA 0%, #A78BFA 100%);
+            --income-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+
+        body {
+            background: linear-gradient(180deg, #F9F5FF 0%, #FFFFFF 100%);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(147, 51, 234, 0.1);
+        }
+
+        .auth-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(147, 51, 234, 0.08);
+        }
+
+        .analytics-container {
+            max-width: 1100px;
+            margin: 80px auto 2rem;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .selectors-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(147, 51, 234, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.4rem 0;
+        }
+
+        .stat-value.income {
+            color: var(--success);
+        }
+
+        .stat-value.expense {
+            color: var(--primary);
+        }
+
+        .stat-value.balance {
+            color: var(--dark);
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            position: relative;
+            border: 1px solid rgba(147, 51, 234, 0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .chart-select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1.5px solid var(--gray-light);
+            background: white;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: calc(100% - 50px);
+            width: 100%;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .insight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(147, 51, 234, 0.05);
+        }
+
+        .insight-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.8rem;
+        }
+
+        .insight-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .insight-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .insight-content {
+            color: var(--gray);
+            line-height: 1.4;
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .insight-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-top: 0.4rem;
+            color: var(--dark);
+        }
+
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            margin-top: 0.4rem;
+        }
+
+        .trend-up {
+            color: var(--success);
+        }
+
+        .trend-down {
+            color: var(--danger);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .alert {
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+
+        .back-btn {
+            margin-bottom: 1rem;
+        }
+
+        .wallet-selector-container, .month-selector-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1.5px solid var(--gray-light);
+            box-shadow: var(--shadow);
+            gap: 8px;
+        }
+
+        .wallet-selector-container label, .month-selector-container label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .comparison-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 1rem;
+            padding: 10px;
+            background: rgba(147, 51, 234, 0.02);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .report-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(147, 51, 234, 0.05);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+            transition: background-color 0.2s;
+        }
+
+        .report-header:hover {
+            background-color: rgba(147, 51, 234, 0.02);
+        }
+
+        .report-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-toggle {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .report-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .report-content {
+            padding: 1rem;
+            transition: max-height 0.3s ease;
+            overflow-x: auto;
+        }
+
+        .report-content.collapsed {
+            display: none;
+        }
+
+        /* Category Breakdown Styles */
+        .category-breakdown {
+            font-size: 0.9rem;
+        }
+
+        .category-group {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(147, 51, 234, 0.1);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            background: var(--light-gray);
+            transition: background 0.3s;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+        }
+
+        .category-header:hover {
+            background: rgba(147, 51, 234, 0.08);
+        }
+
+        .category-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-total {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .category-toggle {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .category-toggle:hover {
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .category-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+
+        .category-content.expanded {
+            max-height: 2000px;
+            padding: 16px;
+        }
+
+        .subcategory-group {
+            margin-bottom: 12px;
+            background: rgba(147, 51, 234, 0.02);
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid rgba(147, 51, 234, 0.05);
+        }
+
+        .subcategory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+        }
+
+        .subcategory-header h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .subcategory-total {
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.85rem;
+        }
+
+        .subcategory-toggle {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+        }
+
+        .subcategory-content {
+            padding: 8px 0 0 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .subcategory-content.expanded {
+            max-height: 1000px;
+        }
+
+        .expense-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .expense-item-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid rgba(147, 51, 234, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .expense-item-detail:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .expense-info {
+            flex: 1;
+        }
+
+        .expense-description {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.85rem;
+            margin-bottom: 2px;
+        }
+
+        .expense-meta {
+            font-size: 0.75rem;
+            color: var(--gray);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .expense-date {
+            font-weight: 500;
+        }
+
+        .expense-wallet {
+            padding: 1px 6px;
+            background: rgba(147, 51, 234, 0.08);
+            border-radius: 10px;
+        }
+
+        .expense-amount-detail {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+            text-align: right;
+            min-width: 80px;
+        }
+
+        .no-expenses {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        .category-percentage {
+            font-size: 0.75rem;
+            color: var(--gray);
+            background: rgba(147, 51, 234, 0.08);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .subcategory-percentage {
+            font-size: 0.7rem;
+            color: var(--gray);
+            background: rgba(147, 51, 234, 0.05);
+            padding: 1px 6px;
+            border-radius: 8px;
+            margin-left: 6px;
+        }
+
+        /* Progress bar for category visualization */
+        .category-progress {
+            height: 4px;
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .category-progress-bar {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .subcategory-progress {
+            height: 3px;
+            background: rgba(167, 139, 250, 0.1);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .subcategory-progress-bar {
+            height: 100%;
+            background: var(--secondary);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            header {
+                padding: 0.6rem 0.8rem;
+            }
+
+            .analytics-container {
+                margin-top: 70px;
+                padding: 0 0.8rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.85rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.3rem;
+            }
+
+            .chart-container {
+                height: 280px;
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .insights-grid {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+
+            .insight-card {
+                padding: 1rem;
+            }
+
+            .selectors-container {
+                flex-direction: column;
+                width: 100%;
+                gap: 0.8rem;
+            }
+
+            .wallet-selector-container, .month-selector-container {
+                width: 100%;
+            }
+
+            .comparison-legend {
+                gap: 8px;
+            }
+
+            /* Category breakdown mobile styles */
+            .category-header {
+                padding: 10px 12px;
+            }
+            
+            .category-header h3 {
+                font-size: 0.95rem;
+            }
+            
+            .expense-item-detail {
+                padding: 8px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+            
+            .expense-amount-detail {
+                text-align: left;
+                width: 100%;
+                padding-top: 6px;
+                border-top: 1px solid rgba(147, 51, 234, 0.1);
+            }
+            
+            .expense-meta {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 0.5rem 0.6rem;
+            }
+
+            .logo {
+                font-size: 1.1rem;
+                gap: 6px;
+            }
+
+            .logo i {
+                font-size: 1.2rem;
+            }
+
+            .auth-section .btn span {
+                display: none;
+            }
+
+            .auth-section .btn {
+                padding: 8px 10px;
+                gap: 0;
+            }
+
+            .page-title {
+                font-size: 1.3rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.8rem;
+                margin-bottom: 0;
+            }
+
+            .analytics-container {
+                margin-top: 65px;
+                padding: 0 0.6rem;
+            }
+
+            .back-btn {
+                margin-bottom: 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+                margin-bottom: 1.2rem;
+            }
+
+            .card {
+                padding: 0.9rem;
+                margin-bottom: 0;
+            }
+
+            .card-header {
+                margin-bottom: 0.6rem;
+            }
+
+            .card-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+
+            .stat-value {
+                font-size: 1.2rem;
+                margin: 0.3rem 0;
+            }
+
+            .stat-label {
+                font-size: 0.7rem;
+            }
+
+            .chart-container {
+                height: 260px;
+                padding: 0.8rem;
+                margin-bottom: 1.2rem;
+            }
+
+            .chart-header {
+                margin-bottom: 0.8rem;
+            }
+
+            .chart-title {
+                font-size: 1rem;
+            }
+
+            .chart-select {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+
+            .insights-grid {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+                margin-bottom: 1.2rem;
+            }
+
+            .insight-card {
+                padding: 0.9rem;
+            }
+
+            .insight-header {
+                margin-bottom: 0.6rem;
+                gap: 8px;
+            }
+
+            .insight-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+
+            .insight-title {
+                font-size: 0.85rem;
+            }
+
+            .insight-content {
+                font-size: 0.75rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .insight-value {
+                font-size: 1.2rem;
+                margin-top: 0.3rem;
+            }
+
+            .trend-indicator {
+                font-size: 0.7rem;
+                margin-top: 0.3rem;
+            }
+
+            .report-container {
+                margin-bottom: 1.2rem;
+            }
+
+            .report-header {
+                padding: 0.8rem;
+            }
+
+            .report-title {
+                font-size: 0.95rem;
+            }
+
+            .report-content {
+                padding: 0.8rem;
+            }
+
+            .selectors-container {
+                flex-direction: column;
+                width: 100%;
+                gap: 0.8rem;
+            }
+
+            .wallet-selector-container, .month-selector-container {
+                width: 100%;
+                padding: 8px 10px;
+            }
+
+            .wallet-selector-container label, .month-selector-container label {
+                font-size: 0.75rem;
+            }
+
+            .comparison-legend {
+                gap: 6px;
+                padding: 8px;
+                margin-top: 0.8rem;
+            }
+
+            .legend-item {
+                font-size: 0.7rem;
+                gap: 4px;
+            }
+
+            .legend-color {
+                width: 10px;
+                height: 10px;
+            }
+
+            .alert {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+            }
+
+            .no-expenses {
+                padding: 1rem 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            /* Fix for Daily Trend card */
+            #dailyTrendCard {
+                height: auto !important;
+                min-height: 260px;
+                padding-bottom: 1rem;
+            }
+
+            #dailyTrendCard .chart-wrapper {
+                height: 200px; 
+                margin-bottom: 10px;
+            }
+            
+            .comparison-legend {
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">
+            <i class="fas fa-chart-pie"></i>
+            <span>FinTrack</span>
+        </a>
+        
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="analytics.html" class="nav-link active">
+                <i class="fas fa-chart-bar"></i>
+                Analytics
+            </a>
+        </div>
+        
+        <div class="auth-section">
+            <button id="loginBtn" class="btn btn-outline">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Sign In</span>
+            </button>
+            <button id="signupBtn" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i>
+                <span>Join</span>
+            </button>
+            <button id="logoutBtn" class="btn btn-outline hidden">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sign Out</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="analytics-container">
+        <a href="index.html" class="btn btn-outline back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Back
+        </a>
+        
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Analytics</h1>
+                <p class="page-subtitle">Your financial insights at a glance</p>
+            </div>
+            <div class="selectors-container">
+                <div class="wallet-selector-container">
+                    <label for="walletSelect">Wallet:</label>
+                    <select id="walletSelect" class="chart-select">
+                        <option value="all">All</option>
+                    </select>
+                </div>
+                <div class="month-selector-container">
+                    <label for="monthSelect">Period:</label>
+                    <select id="monthSelect" class="chart-select"></select>
+                </div>
+            </div>
+        </div>
+
+        <div id="noDataAlert" class="alert alert-warning hidden">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>No data yet. Add expenses to see analytics.</span>
+        </div>
+
+        <div id="analyticsContent">
+            <div class="analytics-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Balance</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value balance" id="totalBalance">Rp 0</div>
+                    <div class="stat-label" id="balanceLabel">Select period</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Income</h3>
+                        <div class="card-icon" style="background: var(--income-gradient);">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value income" id="totalIncome">Rp 0</div>
+                    <div class="stat-label" id="incomeLabel">Select period</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Expenses</h3>
+                        <div class="card-icon" style="background: var(--danger);">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value expense" id="totalExpenses">Rp 0</div>
+                    <div class="stat-label" id="expenseLabel">Select period</div>
+                </div>
+            </div>
+
+            <div class="report-container">
+                <div class="report-header" id="reportHeader">
+                    <div class="report-title">
+                        <i class="fas fa-file-invoice"></i>
+                        Expense Breakdown (Click to expand)
+                    </div>
+                    <button class="report-toggle" id="reportToggle">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="report-content" id="reportContent">
+                    <div class="category-breakdown" id="categoryBreakdown">
+                        <!-- This will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title" id="categoryChartTitle">Categories by Period</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title" id="trendChartTitle">Trend (Last 6 periods)</h3>
+                    <select id="trendRange" class="chart-select">
+                        <option value="3">3 periods</option>
+                        <option value="6" selected>6 periods</option>
+                        <option value="12">12 periods</option>
+                    </select>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container" id="dailyTrendCard"> 
+                <div class="chart-header">
+                    <h3 class="chart-title" id="comparisonChartTitle">Daily Trend</h3>
+                    <select id="comparisonRange" class="chart-select">
+                        <option value="3">3 periods</option>
+                        <option value="6" selected>6 periods</option>
+                        <option value="9">9 periods</option>
+                        <option value="12">12 periods</option>
+                    </select>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+                <div class="comparison-legend" id="comparisonLegend"></div>
+            </div>
+
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon" style="background: var(--success);">
+                            <i class="fas fa-piggy-bank"></i>
+                        </div>
+                        <h3 class="insight-title">Savings Rate</h3>
+                    </div>
+                    <p class="insight-content">% of income saved</p>
+                    <div class="insight-value" id="savingsRate">0%</div>
+                    <div class="trend-indicator" id="savingsTrend">
+                        <i class="fas fa-arrow-up trend-up"></i>
+                        <span>Up</span>
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon" style="background: var(--warning);">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h3 class="insight-title">Top Category</h3>
+                    </div>
+                    <p class="insight-content">Highest spending</p>
+                    <div class="insight-value" id="topCategory">-</div>
+                    <div class="insight-content" id="topCategoryAmount" style="color: var(--dark); font-weight: 500;">Rp 0</div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon" style="background: var(--primary);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="insight-title">Avg/Period</h3>
+                    </div>
+                    <p class="insight-content">Average spending</p>
+                    <div class="insight-value" id="monthlyAverage">Rp 0</div>
+                    <div class="trend-indicator" id="averageTrend">
+                        <i class="fas fa-arrow-down trend-down"></i>
+                        <span>Down</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 320px;"></div>
+
+    <script>
+        // --- 26th-25th Period System Functions ---
+        
+        // Helper: Get start and end dates for a period
+        function getPeriodDates(periodKey) {
+            const [year, month] = periodKey.split('-').map(Number);
+            
+            // Start: 26th of previous month
+            let startYear = year;
+            let startMonth = month - 1;
+            if (startMonth === 0) {
+                startMonth = 12;
+                startYear = year - 1;
+            }
+            
+            // End: 25th of current month
+            const endDate = new Date(year, month - 1, 25, 23, 59, 59);
+            const startDate = new Date(startYear, startMonth - 1, 26);
+            
+            return { startDate, endDate };
+        }
+        
+        // Helper: Check if date is within period
+        function isInPeriod(dateString, periodKey) {
+            const { startDate, endDate } = getPeriodDates(periodKey);
+            const checkDate = new Date(dateString);
+            return checkDate >= startDate && checkDate <= endDate;
+        }
+        
+        // Helper: Get formatted period label
+        function getPeriodLabel(periodKey) {
+            const [year, month] = periodKey.split('-').map(Number);
+            
+            // Get month names
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            
+            // Calculate previous month for start date
+            let prevMonth = month - 1;
+            let prevYear = year;
+            if (prevMonth === 0) {
+                prevMonth = 12;
+                prevYear = year - 1;
+            }
+            
+            return `${monthNames[prevMonth - 1]} 26th - ${monthNames[month - 1]} 25th`;
+        }
+        
+        // Helper: Get days in period (for daily charts)
+        function getDaysInPeriod(periodKey) {
+            const { startDate, endDate } = getPeriodDates(periodKey);
+            const days = [];
+            const current = new Date(startDate);
+            
+            while (current <= endDate) {
+                days.push(new Date(current));
+                current.setDate(current.getDate() + 1);
+            }
+            
+            return days;
+        }
+        
+        // Helper: Generate period key from date
+        function getPeriodKeyFromDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            
+            // If day >= 26, it belongs to NEXT month's period
+            if (day >= 26) {
+                let nextMonth = month + 1;
+                let nextYear = year;
+                if (nextMonth > 12) {
+                    nextMonth = 1;
+                    nextYear = year + 1;
+                }
+                return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+            } else {
+                return `${year}-${String(month).padStart(2, '0')}`;
+            }
+        }
+
+        // Check if supabase is already defined (from index.html)
+        if (!window.supabase) {
+            const SUPABASE_URL = 'https://slgzgaojmgzjhtuaptod.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZ3pnYW9qbWd6amh0dWFwdG9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyNzQyMzMsImV4cCI6MjA3ODg1MDIzM30.aD9cjbekiufRaatuNaAEP2uD2uU7ggpPor6jtSGM-F4';
+            
+            window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        // Always use window.supabase to avoid redeclaration
+        const supabase = window.supabase;
+
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const walletSelect = document.getElementById('walletSelect');
+        const monthSelect = document.getElementById('monthSelect');
+        const trendRange = document.getElementById('trendRange');
+        const comparisonRange = document.getElementById('comparisonRange');
+        const noDataAlert = document.getElementById('noDataAlert');
+        const analyticsContent = document.getElementById('analyticsContent');
+        const alertContainer = document.getElementById('alertContainer');
+        const reportHeader = document.getElementById('reportHeader');
+        const reportToggle = document.getElementById('reportToggle');
+        const reportContent = document.getElementById('reportContent');
+
+        let expenses = [];
+        let incomes = [];
+        let wallets = [];
+        let categoryDefinitions = []; // Renamed from categories to avoid conflict
+        let currentWalletId = 'all';
+        let selectedPeriod = null;
+        let availablePeriods = [];
+        let isReportExpanded = true;
+
+        let categoryChart = null;
+        let trendChart = null;
+        let comparisonChart = null;
+
+        function formatDisplayCurrency(amount) {
+            return `Rp ${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+        }
+
+        // Function to create drill-down category breakdown
+        function createCategoryBreakdown() {
+            if (!selectedPeriod) return;
+            
+            const filteredExpenses = filterDataByWallet(expenses);
+            const periodExpenses = filteredExpenses.filter(expense => 
+                isInPeriod(expense.date, selectedPeriod)
+            );
+            
+            if (periodExpenses.length === 0) {
+                document.getElementById('categoryBreakdown').innerHTML = `
+                    <div class="no-expenses">
+                        <i class="fas fa-receipt" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                        <p>No expenses for this period</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const totalExpenses = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            
+            // Group by category
+            const categories = {};
+            
+            periodExpenses.forEach(expense => {
+                const category = expense.category || 'Uncategorized';
+                const subcategory = expense.subcategory || 'General';
+                
+                if (!categories[category]) {
+                    categories[category] = {
+                        total: 0,
+                        percentage: 0,
+                        subcategories: {}
+                    };
+                }
+                
+                if (!categories[category].subcategories[subcategory]) {
+                    categories[category].subcategories[subcategory] = {
+                        total: 0,
+                        percentage: 0,
+                        expenses: []
+                    };
+                }
+                
+                categories[category].total += expense.amount;
+                categories[category].subcategories[subcategory].total += expense.amount;
+                categories[category].subcategories[subcategory].expenses.push(expense);
+            });
+            
+            // Calculate percentages
+            Object.keys(categories).forEach(category => {
+                categories[category].percentage = Math.round((categories[category].total / totalExpenses) * 100);
+                
+                Object.keys(categories[category].subcategories).forEach(subcategory => {
+                    categories[category].subcategories[subcategory].percentage = 
+                        Math.round((categories[category].subcategories[subcategory].total / categories[category].total) * 100);
+                });
+            });
+            
+            // Sort categories by total (descending)
+            const sortedCategories = Object.keys(categories).sort((a, b) => 
+                categories[b].total - categories[a].total
+            );
+            
+            // Generate HTML
+            let html = '';
+            
+            sortedCategories.forEach(category => {
+                const catData = categories[category];
+                const categoryProgress = (catData.total / totalExpenses) * 100;
+                const safeCategoryId = category.replace(/[^a-zA-Z0-9]/g, '-');
+                
+                html += `
+                    <div class="category-group">
+                        <div class="category-header" onclick="toggleCategory('${safeCategoryId}')">
+                            <h3>
+                                <i class="fas fa-folder" style="color: var(--primary);"></i>
+                                ${category}
+                                <span class="category-percentage">${catData.percentage}%</span>
+                            </h3>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span class="category-total">${formatDisplayCurrency(catData.total)}</span>
+                                <button class="category-toggle" id="toggle-${safeCategoryId}">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="category-progress">
+                            <div class="category-progress-bar" style="width: ${categoryProgress}%"></div>
+                        </div>
+                        <div class="category-content" id="content-${safeCategoryId}">
+                            ${createSubcategoryBreakdown(safeCategoryId, catData.subcategories, catData.total)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('categoryBreakdown').innerHTML = html;
+        }
+
+        // Function to create subcategory breakdown - FIXED VERSION
+        function createSubcategoryBreakdown(safeCategoryId, subcategories, categoryTotal) {
+            const sortedSubcategories = Object.keys(subcategories).sort((a, b) => 
+                subcategories[b].total - subcategories[a].total
+            );
+            
+            if (sortedSubcategories.length === 0) {
+                return `<div class="no-expenses" style="padding: 16px;">No subcategories</div>`;
+            }
+            
+            let html = '';
+            
+            sortedSubcategories.forEach(subcategory => {
+                const subData = subcategories[subcategory];
+                const subcategoryProgress = (subData.total / categoryTotal) * 100; // FIXED: Using categoryTotal parameter
+                const safeSubcategoryId = subcategory.replace(/[^a-zA-Z0-9]/g, '-');
+                
+                html += `
+                    <div class="subcategory-group">
+                        <div class="subcategory-header" onclick="toggleSubcategory('${safeCategoryId}', '${safeSubcategoryId}')">
+                            <h4>
+                                <i class="fas fa-folder-open" style="color: var(--secondary); font-size: 0.8rem;"></i>
+                                ${subcategory}
+                                <span class="subcategory-percentage">${subData.percentage}%</span>
+                            </h4>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="subcategory-total">${formatDisplayCurrency(subData.total)}</span>
+                                <button class="subcategory-toggle" id="toggle-${safeCategoryId}-${safeSubcategoryId}">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="subcategory-progress">
+                            <div class="subcategory-progress-bar" style="width: ${subcategoryProgress}%"></div>
+                        </div>
+                        <div class="subcategory-content" id="content-${safeCategoryId}-${safeSubcategoryId}">
+                            ${createExpenseList(subData.expenses)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            return html;
+        }
+
+        // Function to create expense list
+        function createExpenseList(expenses) {
+            if (expenses.length === 0) {
+                return `<div class="no-expenses" style="padding: 12px; font-size: 0.8rem;">No expenses</div>`;
+            }
+            
+            // Sort by date (newest first)
+            const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let html = '<div class="expense-list">';
+            
+            sortedExpenses.forEach(expense => {
+                const date = new Date(expense.date).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'short'
+                });
+                
+                const wallet = wallets.find(w => w.id === expense.walletId);
+                const walletName = wallet ? wallet.name : 'Unknown';
+                
+                html += `
+                    <div class="expense-item-detail">
+                        <div class="expense-info">
+                            <div class="expense-description">${expense.description}</div>
+                            <div class="expense-meta">
+                                <span class="expense-date">${date}</span>
+                                <span class="expense-wallet">${walletName}</span>
+                            </div>
+                        </div>
+                        <div class="expense-amount-detail">
+                            ${formatDisplayCurrency(expense.amount)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Function to toggle category expansion
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(`content-${categoryId}`);
+            const toggle = document.getElementById(`toggle-${categoryId}`);
+            
+            if (!content || !toggle) return;
+            
+            const isExpanded = content.classList.contains('expanded');
+            
+            if (isExpanded) {
+                content.classList.remove('expanded');
+                toggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            } else {
+                content.classList.add('expanded');
+                toggle.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            }
+        }
+
+        // Function to toggle subcategory expansion
+        function toggleSubcategory(categoryId, subcategoryId) {
+            const content = document.getElementById(`content-${categoryId}-${subcategoryId}`);
+            const toggle = document.getElementById(`toggle-${categoryId}-${subcategoryId}`);
+            
+            if (!content || !toggle) return;
+            
+            const isExpanded = content.classList.contains('expanded');
+            
+            if (isExpanded) {
+                content.classList.remove('expanded');
+                toggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            } else {
+                content.classList.add('expanded');
+                toggle.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            }
+        }
+
+        async function checkAuthState() {
+            try {
+                console.log('Checking auth state...');
+                const { data: { user } } = await supabase.auth.getUser();
+                console.log('Current user:', user);
+                
+                if (user && user.email_confirmed_at) {
+                    console.log('User authenticated and confirmed');
+                    loginBtn.classList.add('hidden');
+                    signupBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    await loadData();
+                } else if (user) {
+                    console.log('User not confirmed');
+                    showAlert('Verify your email first', 'warning');
+                    loginBtn.classList.remove('hidden');
+                    signupBtn.classList.remove('hidden');
+                    logoutBtn.classList.add('hidden');
+                    showNoDataMessage();
+                } else {
+                    console.log('No user logged in');
+                    loginBtn.classList.remove('hidden');
+                    signupBtn.classList.remove('hidden');
+                    logoutBtn.classList.add('hidden');
+                    showNoDataMessage();
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                showNoDataMessage();
+            }
+        }
+
+        async function loadData() {
+            try {
+                console.log('Loading data...');
+                await loadWallets();
+                await loadExpenses();
+                await loadIncomes();
+                await loadCategories();
+                
+                console.log('Expenses:', expenses.length);
+                console.log('Incomes:', incomes.length);
+                
+                if (expenses.length === 0 && incomes.length === 0) {
+                    showNoDataMessage();
+                } else {
+                    hideNoDataMessage();
+                    generateAvailablePeriods();
+                    console.log('About to update analytics, selectedPeriod:', selectedPeriod);
+                    updateAnalytics();
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNoDataMessage();
+            }
+        }
+
+        function generateAvailablePeriods() {
+            const allDates = [
+                ...expenses.map(e => e.date),
+                ...incomes.map(i => i.date)
+            ];
+            
+            // Create period keys based on 26th-25th cycle
+            const periodKeysSet = new Set();
+            
+            allDates.forEach(dateStr => {
+                const periodKey = getPeriodKeyFromDate(dateStr);
+                periodKeysSet.add(periodKey);
+            });
+            
+            availablePeriods = Array.from(periodKeysSet).sort().reverse();
+            console.log('Available periods (26th-25th):', availablePeriods);
+            updatePeriodSelector();
+            
+            if (availablePeriods.length > 0 && !selectedPeriod) {
+                selectedPeriod = availablePeriods[0];
+                console.log('Selected period set to:', selectedPeriod);
+            }
+        }
+
+        function updatePeriodSelector() {
+            monthSelect.innerHTML = '';
+            availablePeriods.forEach(periodKey => {
+                const option = document.createElement('option');
+                option.value = periodKey;
+                option.textContent = getPeriodLabel(periodKey);
+                monthSelect.appendChild(option);
+            });
+            
+            if (selectedPeriod && availablePeriods.includes(selectedPeriod)) {
+                monthSelect.value = selectedPeriod;
+            } else if (availablePeriods.length > 0) {
+                monthSelect.value = availablePeriods[0];
+                selectedPeriod = availablePeriods[0];
+            }
+        }
+
+        async function loadWallets() {
+            try {
+                console.log('Loading wallets...');
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    console.log('No user for wallets');
+                    return;
+                }
+                
+                const { data, error } = await supabase
+                    .from('wallets')
+                    .select('*')
+                    .eq('user_id', user.id);
+                
+                if (error) {
+                    console.error('Wallet load error:', error);
+                    throw error;
+                }
+                wallets = data.map(w => ({ id: w.id, name: w.name }));
+                console.log('Wallets loaded:', wallets.length);
+                updateWalletSelector();
+            } catch (error) {
+                console.error('Error loading wallets:', error);
+            }
+        }
+
+        async function loadExpenses() {
+            try {
+                console.log('Loading expenses...');
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    console.log('No user for expenses');
+                    return;
+                }
+                
+                const { data, error } = await supabase
+                    .from('expenses')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('date', { ascending: false });
+                
+                if (error) {
+                    console.error('Expense load error:', error);
+                    throw error;
+                }
+                expenses = data.map(e => ({
+                    id: e.id,
+                    description: e.description,
+                    amount: e.amount,
+                    date: e.date,
+                    category: e.category,
+                    subcategory: e.subcategory,
+                    walletId: e.wallet_id
+                }));
+                console.log('Expenses loaded:', expenses.length);
+                if (expenses.length > 0) {
+                    console.log('First expense:', expenses[0]);
+                }
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+            }
+        }
+
+        async function loadIncomes() {
+            try {
+                console.log('Loading incomes...');
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    console.log('No user for incomes');
+                    return;
+                }
+                
+                const { data, error } = await supabase
+                    .from('incomes')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('date', { ascending: false });
+                
+                if (error) {
+                    console.error('Income load error:', error);
+                    throw error;
+                }
+                incomes = data.map(i => ({
+                    id: i.id,
+                    description: i.description,
+                    amount: i.amount,
+                    date: i.date,
+                    source: i.source,
+                    walletId: i.wallet_id
+                }));
+                console.log('Incomes loaded:', incomes.length);
+            } catch (error) {
+                console.error('Error loading incomes:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                console.log('Loading categories...');
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    console.log('No user for categories');
+                    return;
+                }
+                
+                const { data, error } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: true });
+                
+                if (error) {
+                    console.error('Category load error:', error);
+                    throw error;
+                }
+                categoryDefinitions = data.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    type: c.type || 'main',
+                    parentId: c.parent_id
+                }));
+                console.log('Categories loaded:', categoryDefinitions.length);
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        function updateWalletSelector() {
+            walletSelect.innerHTML = '<option value="all">All Wallets</option>';
+            wallets.forEach(wallet => {
+                const option = document.createElement('option');
+                option.value = wallet.id;
+                option.textContent = wallet.name;
+                walletSelect.appendChild(option);
+            });
+        }
+
+        function filterDataByWallet(data) {
+            if (currentWalletId === 'all') return data;
+            return data.filter(item => item.walletId === currentWalletId);
+        }
+
+        function getTrendData(endPeriodKey, periodCount) {
+            const periods = availablePeriods.sort();
+            let endIndex = periods.indexOf(endPeriodKey);
+            if (endIndex === -1) endIndex = periods.length - 1;
+            
+            const startIndex = Math.max(0, endIndex - periodCount + 1);
+            const trendPeriods = periods.slice(startIndex, endIndex + 1);
+            
+            const incomeData = trendPeriods.map(periodKey => {
+                const periodIncome = filterDataByWallet(incomes).filter(income => 
+                    isInPeriod(income.date, periodKey)
+                );
+                return periodIncome.reduce((sum, income) => sum + income.amount, 0);
+            });
+            
+            const expenseData = trendPeriods.map(periodKey => {
+                const periodExpenses = filterDataByWallet(expenses).filter(expense => 
+                    isInPeriod(expense.date, periodKey)
+                );
+                return periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            });
+            
+            return { periods: trendPeriods, income: incomeData, expense: expenseData };
+        }
+
+        function getDailyExpenseData(periodKey) {
+            const { startDate, endDate } = getPeriodDates(periodKey);
+            const daysInPeriod = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            const dailyData = Array(daysInPeriod).fill(0);
+            
+            const periodExpenses = filterDataByWallet(expenses).filter(expense => 
+                isInPeriod(expense.date, periodKey)
+            );
+            
+            periodExpenses.forEach(expense => {
+                const expenseDate = new Date(expense.date);
+                const dayIndex = Math.floor((expenseDate - startDate) / (1000 * 60 * 60 * 24));
+                if (dayIndex >= 0 && dayIndex < daysInPeriod) {
+                    dailyData[dayIndex] += expense.amount;
+                }
+            });
+            
+            return dailyData;
+        }
+
+        function getDailyComparisonData(periodCount) {
+            if (!selectedPeriod) return null;
+            
+            const currentPeriodDays = getDaysInPeriod(selectedPeriod);
+            const daysInCurrentPeriod = currentPeriodDays.length;
+            const currentPeriodDaily = getDailyExpenseData(selectedPeriod);
+            
+            const periods = availablePeriods.sort();
+            const currentIndex = periods.indexOf(selectedPeriod);
+            if (currentIndex === -1) return null;
+            
+            const startIndex = Math.max(0, currentIndex - periodCount);
+            const historicalPeriods = periods.slice(startIndex, currentIndex);
+            
+            const dailyAverages = Array(daysInCurrentPeriod).fill(0);
+            const dayCounts = Array(daysInCurrentPeriod).fill(0);
+            
+            historicalPeriods.forEach(periodKey => {
+                const historicalDailyData = getDailyExpenseData(periodKey);
+                const daysInHistoricalPeriod = historicalDailyData.length;
+                
+                for (let day = 0; day < daysInCurrentPeriod; day++) {
+                    if (day < daysInHistoricalPeriod) {
+                        dailyAverages[day] += historicalDailyData[day];
+                        dayCounts[day]++;
+                    } else {
+                        // Use last available day for missing days
+                        dailyAverages[day] += historicalDailyData[daysInHistoricalPeriod - 1] || 0;
+                        dayCounts[day]++;
+                    }
+                }
+            });
+            
+            const historicalAverageDaily = dailyAverages.map((sum, index) => 
+                dayCounts[index] > 0 ? sum / dayCounts[index] : 0
+            );
+            
+            const currentMonthCumulative = [];
+            const historicalAverageCumulative = [];
+            
+            let currentSum = 0;
+            let historicalSum = 0;
+            
+            for (let i = 0; i < daysInCurrentPeriod; i++) {
+                currentSum += currentPeriodDaily[i];
+                historicalSum += historicalAverageDaily[i];
+                currentMonthCumulative.push(currentSum);
+                historicalAverageCumulative.push(historicalSum);
+            }
+            
+            return {
+                days: Array.from({length: daysInCurrentPeriod}, (_, i) => i + 1),
+                currentMonthDaily: currentPeriodDaily,
+                currentMonthCumulative: currentMonthCumulative,
+                historicalAverageDaily: historicalAverageDaily,
+                historicalAverageCumulative: historicalAverageCumulative
+            };
+        }
+
+        function updateAnalytics() {
+            if (!selectedPeriod) return;
+            
+            // Update chart titles with period label
+            const periodLabel = getPeriodLabel(selectedPeriod);
+            document.getElementById('categoryChartTitle').textContent = `Categories (${periodLabel})`;
+            document.getElementById('trendChartTitle').textContent = `Trend (Last ${trendRange.value} periods)`;
+            document.getElementById('comparisonChartTitle').textContent = `Daily Trend (${periodLabel})`;
+            
+            updateSummaryCards();
+            updateCategoryChart();
+            updateTrendChart();
+            updateComparisonChart();
+            createCategoryBreakdown();
+            updateInsights();
+        }
+
+        function updateSummaryCards() {
+            if (!selectedPeriod) return;
+            
+            const filteredExpenses = filterDataByWallet(expenses);
+            const filteredIncomes = filterDataByWallet(incomes);
+            
+            const periodExpenses = filteredExpenses.filter(expense => 
+                isInPeriod(expense.date, selectedPeriod)
+            );
+            
+            const periodIncomes = filteredIncomes.filter(income => 
+                isInPeriod(income.date, selectedPeriod)
+            );
+            
+            const totalExpensesAmount = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const totalIncomeAmount = periodIncomes.reduce((sum, income) => sum + income.amount, 0);
+            const totalBalance = totalIncomeAmount - totalExpensesAmount;
+            
+            document.getElementById('totalBalance').textContent = formatDisplayCurrency(totalBalance);
+            document.getElementById('totalIncome').textContent = formatDisplayCurrency(totalIncomeAmount);
+            document.getElementById('totalExpenses').textContent = formatDisplayCurrency(totalExpensesAmount);
+            
+            // Update labels to show period
+            const periodLabel = getPeriodLabel(selectedPeriod);
+            document.getElementById('balanceLabel').textContent = periodLabel;
+            document.getElementById('incomeLabel').textContent = periodLabel;
+            document.getElementById('expenseLabel').textContent = periodLabel;
+        }
+
+        function updateCategoryChart() {
+            if (!selectedPeriod) return;
+            
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChart) categoryChart.destroy();
+            
+            const filteredExpenses = filterDataByWallet(expenses);
+            const periodExpenses = filteredExpenses.filter(expense => 
+                isInPeriod(expense.date, selectedPeriod)
+            );
+            
+            const categoryTotals = {};
+            periodExpenses.forEach(expense => {
+                const category = expense.category || 'Other';
+                categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount;
+            });
+            
+            const categories = Object.keys(categoryTotals);
+            const amounts = Object.values(categoryTotals);
+            
+            const backgroundColors = categories.map((_, index) => {
+                const hue = (index * 137.5) % 360;
+                return `hsl(${hue}, 65%, 60%)`;
+            });
+            
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: amounts,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { boxWidth: 10, font: { size: 10 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${formatDisplayCurrency(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTrendChart() {
+            if (!selectedPeriod) return;
+            
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+            
+            const period = parseInt(trendRange.value);
+            const trendData = getTrendData(selectedPeriod, period);
+            
+            const labels = trendData.periods.map(periodKey => {
+                const [year, month] = periodKey.split('-');
+                return new Date(year, month - 1).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    year: '2-digit' 
+                });
+            });
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: trendData.income,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Expenses',
+                            data: trendData.expense,
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { boxWidth: 10, font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatDisplayCurrency(context.raw || 0)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: (v) => formatDisplayCurrency(v), font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            if (comparisonChart) comparisonChart.destroy();
+            
+            const period = parseInt(comparisonRange.value);
+            const comparisonData = getDailyComparisonData(period);
+            if (!comparisonData) return;
+            
+            updateComparisonLegend([
+                'Current Daily',
+                'Current Cumulative',
+                'Average Daily',
+                'Average Cumulative'
+            ], [
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(239, 68, 68, 1)',
+                'rgba(147, 51, 234, 0.8)',
+                'rgba(147, 51, 234, 1)'
+            ]);
+            
+            comparisonChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: comparisonData.days,
+                    datasets: [
+                        {
+                            label: 'Current Daily',
+                            data: comparisonData.currentMonthDaily,
+                            borderColor: 'rgba(239, 68, 68, 0.8)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Current Cumulative',
+                            data: comparisonData.currentMonthCumulative,
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Average Daily',
+                            data: comparisonData.historicalAverageDaily,
+                            borderColor: 'rgba(147, 51, 234, 0.8)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 0,
+                            borderDash: [5, 5]
+                        },
+                        {
+                            label: 'Average Cumulative',
+                            data: comparisonData.historicalAverageCumulative,
+                            borderColor: 'rgba(147, 51, 234, 1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 0,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: (v) => formatDisplayCurrency(v), font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        function updateComparisonLegend(labels, colors) {
+            const legendContainer = document.getElementById('comparisonLegend');
+            legendContainer.innerHTML = '';
+            labels.forEach((label, index) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = colors[index];
+                const labelText = document.createElement('span');
+                labelText.textContent = label;
+                legendItem.appendChild(colorBox);
+                legendItem.appendChild(labelText);
+                legendContainer.appendChild(legendItem);
+            });
+        }
+
+        function updateInsights() {
+            if (!selectedPeriod) return;
+            
+            const filteredExpenses = filterDataByWallet(expenses);
+            const filteredIncomes = filterDataByWallet(incomes);
+            
+            const periodExpenses = filteredExpenses.filter(expense => 
+                isInPeriod(expense.date, selectedPeriod)
+            );
+            
+            const periodIncomes = filteredIncomes.filter(income => 
+                isInPeriod(income.date, selectedPeriod)
+            );
+            
+            const totalExpensesAmount = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const totalIncomeAmount = periodIncomes.reduce((sum, income) => sum + income.amount, 0);
+            
+            const savingsRate = totalIncomeAmount > 0 ? 
+                Math.round(((totalIncomeAmount - totalExpensesAmount) / totalIncomeAmount) * 100) : 0;
+            document.getElementById('savingsRate').textContent = `${savingsRate}%`;
+            
+            const categoryTotals = {};
+            periodExpenses.forEach(expense => {
+                const category = expense.category || 'Other';
+                categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount;
+            });
+            
+            let topCategory = '-';
+            let topCategoryAmount = 0;
+            Object.keys(categoryTotals).forEach(category => {
+                if (categoryTotals[category] > topCategoryAmount) {
+                    topCategory = category;
+                    topCategoryAmount = categoryTotals[category];
+                }
+            });
+            
+            document.getElementById('topCategory').textContent = topCategory;
+            document.getElementById('topCategoryAmount').textContent = formatDisplayCurrency(topCategoryAmount);
+            
+            // Calculate average for last 6 periods
+            const periods = availablePeriods.sort();
+            const currentIndex = periods.indexOf(selectedPeriod);
+            const startIndex = Math.max(0, currentIndex - 6);
+            const lastSixPeriods = periods.slice(startIndex, currentIndex + 1);
+            
+            const periodTotals = {};
+            lastSixPeriods.forEach(periodKey => {
+                const periodExpenses = filteredExpenses.filter(expense => 
+                    isInPeriod(expense.date, periodKey)
+                );
+                periodTotals[periodKey] = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            });
+            
+            const periodValues = Object.values(periodTotals);
+            const periodAverage = periodValues.length > 0 ? 
+                periodValues.reduce((sum, amount) => sum + amount, 0) / periodValues.length : 0;
+            
+            document.getElementById('monthlyAverage').textContent = formatDisplayCurrency(Math.round(periodAverage));
+            document.getElementById('monthlyAverage').parentNode.querySelector('.insight-content').textContent = 'Average per period';
+        }
+
+        function showNoDataMessage() {
+            noDataAlert.classList.remove('hidden');
+            analyticsContent.classList.add('hidden');
+        }
+
+        function hideNoDataMessage() {
+            noDataAlert.classList.add('hidden');
+            analyticsContent.classList.remove('hidden');
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : 
+                         type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+            alert.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        function toggleReport() {
+            isReportExpanded = !isReportExpanded;
+            if (isReportExpanded) {
+                reportContent.classList.remove('collapsed');
+                reportToggle.classList.remove('collapsed');
+            } else {
+                reportContent.classList.add('collapsed');
+                reportToggle.classList.add('collapsed');
+            }
+        }
+
+        walletSelect.addEventListener('change', function() {
+            currentWalletId = this.value;
+            updateAnalytics();
+        });
+
+        monthSelect.addEventListener('change', function() {
+            selectedPeriod = this.value;
+            console.log('Period changed to:', selectedPeriod);
+            updateAnalytics();
+        });
+
+        trendRange.addEventListener('change', updateTrendChart);
+        comparisonRange.addEventListener('change', updateComparisonChart);
+        reportHeader.addEventListener('click', toggleReport);
+
+        loginBtn.addEventListener('click', () => window.location.href = 'index.html');
+        signupBtn.addEventListener('click', () => window.location.href = 'index.html');
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await supabase.auth.signOut();
+                showAlert('Logged out', 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, checking auth state...');
+            checkAuthState();
+        });
+        
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Auth state changed:', event);
+            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                checkAuthState();
+            }
+        });
+    </script>
+</body>
+</html>
