@@ -1261,6 +1261,57 @@ body {
   }
 }
 
+
+/* === Mobile Layout Enforcement (Vertical Stacking) === */
+@media (max-width: 768px) {
+
+  /* Balance, Income, Expenses -> vertical */
+  .analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Savings, Top Category, Avg/Period -> vertical */
+  .insights-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Wallet & Range selectors -> vertical */
+  .selectors-container {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .wallet-selector-container,
+  .date-range-selector-container,
+  .custom-date-container {
+    width: 100% !important;
+  }
+
+  /* Never truncate text or numbers */
+  .stat-value,
+  .insight-value,
+  .expense-amount-detail,
+  .category-total,
+  .subcategory-total {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word;
+  }
+
+  /* Icon-only navigation if needed */
+  .nav-link span,
+  .auth-section .btn span {
+    display: none;
+  }
+
+  /* Cards expand naturally */
+  .card,
+  .insight-card {
+    height: auto !important;
+  }
+}
+
 </style>
 </head>
 <body>
