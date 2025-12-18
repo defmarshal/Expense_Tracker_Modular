@@ -689,34 +689,39 @@ class FinTrackApp {
 // Add this new class to your app.js file
 // Place it before the UIController class definition
 
+// FIXED SwipeHandler - Replace in your app.js
+
 class SwipeHandler {
     constructor() {
         this.startX = 0;
         this.currentX = 0;
         this.isDragging = false;
         this.currentItem = null;
-        this.threshold = 80; // Minimum swipe distance to trigger action
+        this.threshold = 80;
     }
     
     init(itemElement, callbacks) {
-        const content = itemElement.querySelector('.expense-details') || 
-                       itemElement.querySelector('.income-details');
+        // Find the content wrapper that will move
+        const content = itemElement.querySelector('.expense-content') || 
+                       itemElement.querySelector('.income-content');
         
-        if (!content) return;
+        if (!content) {
+            console.warn('No content wrapper found for swipe');
+            return;
+        }
         
-        // Add swipe actions container
-        const actionsHtml = `
-            <div class="swipe-actions">
-                <button class="swipe-edit-btn" data-action="edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="swipe-delete-btn" data-action="delete">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
-        
+        // Add swipe actions container if not exists
         if (!itemElement.querySelector('.swipe-actions')) {
+            const actionsHtml = `
+                <div class="swipe-actions">
+                    <button class="swipe-edit-btn" data-action="edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="swipe-delete-btn" data-action="delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
             itemElement.insertAdjacentHTML('beforeend', actionsHtml);
         }
         
@@ -725,8 +730,8 @@ class SwipeHandler {
             this.startX = e.touches[0].clientX;
             this.currentX = this.startX;
             this.isDragging = true;
-            this.currentItem = itemElement;
-            itemElement.style.transition = 'none';
+            this.currentItem = content;
+            content.style.transition = 'none';
         };
         
         const handleTouchMove = (e) => {
@@ -737,8 +742,8 @@ class SwipeHandler {
             
             // Only allow left swipe
             if (deltaX < 0) {
-                const translateX = Math.max(deltaX, -120); // Max swipe distance
-                itemElement.style.transform = `translateX(${translateX}px)`;
+                const translateX = Math.max(deltaX, -120);
+                content.style.transform = `translateX(${translateX}px)`;
             }
         };
         
@@ -748,24 +753,27 @@ class SwipeHandler {
             this.isDragging = false;
             const deltaX = this.currentX - this.startX;
             
-            itemElement.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            content.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             
             if (deltaX < -this.threshold) {
                 // Swipe threshold reached - show actions
-                itemElement.style.transform = 'translateX(-100px)';
+                content.style.transform = 'translateX(-100px)';
                 itemElement.classList.add('swiped');
                 
                 // Close other swiped items
                 document.querySelectorAll('.expense-item.swiped, .income-item.swiped')
                     .forEach(item => {
                         if (item !== itemElement) {
-                            item.style.transform = 'translateX(0)';
+                            const otherContent = item.querySelector('.expense-content, .income-content');
+                            if (otherContent) {
+                                otherContent.style.transform = 'translateX(0)';
+                            }
                             item.classList.remove('swiped');
                         }
                     });
             } else {
                 // Snap back
-                itemElement.style.transform = 'translateX(0)';
+                content.style.transform = 'translateX(0)';
                 itemElement.classList.remove('swiped');
             }
             
@@ -777,8 +785,8 @@ class SwipeHandler {
             this.startX = e.clientX;
             this.currentX = this.startX;
             this.isDragging = true;
-            this.currentItem = itemElement;
-            itemElement.style.transition = 'none';
+            this.currentItem = content;
+            content.style.transition = 'none';
             e.preventDefault();
         };
         
@@ -790,7 +798,7 @@ class SwipeHandler {
             
             if (deltaX < 0) {
                 const translateX = Math.max(deltaX, -120);
-                itemElement.style.transform = `translateX(${translateX}px)`;
+                content.style.transform = `translateX(${translateX}px)`;
             }
         };
         
@@ -800,21 +808,24 @@ class SwipeHandler {
             this.isDragging = false;
             const deltaX = this.currentX - this.startX;
             
-            itemElement.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            content.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             
             if (deltaX < -this.threshold) {
-                itemElement.style.transform = 'translateX(-100px)';
+                content.style.transform = 'translateX(-100px)';
                 itemElement.classList.add('swiped');
                 
                 document.querySelectorAll('.expense-item.swiped, .income-item.swiped')
                     .forEach(item => {
                         if (item !== itemElement) {
-                            item.style.transform = 'translateX(0)';
+                            const otherContent = item.querySelector('.expense-content, .income-content');
+                            if (otherContent) {
+                                otherContent.style.transform = 'translateX(0)';
+                            }
                             item.classList.remove('swiped');
                         }
                     });
             } else {
-                itemElement.style.transform = 'translateX(0)';
+                content.style.transform = 'translateX(0)';
                 itemElement.classList.remove('swiped');
             }
             
@@ -840,7 +851,7 @@ class SwipeHandler {
                 
                 const action = btn.dataset.action;
                 
-                // Add haptic feedback if available
+                // Haptic feedback
                 if ('vibrate' in navigator) {
                     navigator.vibrate(10);
                 }
@@ -853,33 +864,24 @@ class SwipeHandler {
                 
                 // Close swipe
                 setTimeout(() => {
-                    itemElement.style.transform = 'translateX(0)';
+                    content.style.transform = 'translateX(0)';
                     itemElement.classList.remove('swiped');
                 }, 200);
             });
         }
     }
     
-    // Close all swiped items
     closeAll() {
         document.querySelectorAll('.expense-item.swiped, .income-item.swiped')
             .forEach(item => {
-                item.style.transform = 'translateX(0)';
+                const content = item.querySelector('.expense-content, .income-content');
+                if (content) {
+                    content.style.transform = 'translateX(0)';
+                }
                 item.classList.remove('swiped');
             });
     }
 }
-
-// Create global swipe handler instance
-window.swipeHandler = new SwipeHandler();
-
-// Close swipes when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.expense-item') && 
-        !e.target.closest('.income-item')) {
-        window.swipeHandler.closeAll();
-    }
-});
 
 // ==================== UI CONTROLLER CLASS (INLINE) ====================
 
@@ -1210,28 +1212,35 @@ class UIController {
             
             const expenseItem = document.createElement('div');
             expenseItem.className = 'expense-item';
+            
+            // Create the main content wrapper that will slide
             expenseItem.innerHTML = `
-                <div class="expense-details">
-                    <div style="font-weight: 500;">${expense.description}</div>
-                    <div style="font-size: 0.8rem; color: var(--gray);">
-                        ${expenseDate} • ${wallet ? wallet.name : 'Unknown'}
+                <div class="expense-content">
+                    <div class="expense-details">
+                        <div style="font-weight: 500;">${expense.description}</div>
+                        <div style="font-size: 0.8rem; color: var(--gray);">
+                            ${expenseDate} • ${wallet ? wallet.name : 'Unknown'}
+                        </div>
                     </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div>
-                        <div class="expense-amount">${currencyUtils.formatDisplayCurrency(expense.amount)}</div>
-                        <span class="expense-category">${categoryText}</span>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div>
+                            <div class="expense-amount">${this.app.currencyUtils ? 
+                                this.app.currencyUtils.formatDisplayCurrency(expense.amount) : 
+                                'Rp ' + expense.amount.toLocaleString('id-ID')}</div>
+                            <span class="expense-category">${categoryText}</span>
+                        </div>
+                        <div class="action-buttons desktop-only">
+                            <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+            
             container.appendChild(expenseItem);
             
             // Initialize swipe gestures for this item
@@ -1246,7 +1255,7 @@ class UIController {
                 });
             }
         });
-    }    
+    } 
     // ==================== INCOME UI ====================
     
     updateIncomesUI() {
@@ -1292,28 +1301,35 @@ class UIController {
             
             const incomeItem = document.createElement('div');
             incomeItem.className = 'income-item';
+            
+            // Create the main content wrapper that will slide
             incomeItem.innerHTML = `
-                <div class="income-details">
-                    <div style="font-weight: 500;">${income.description}</div>
-                    <div style="font-size: 0.8rem; color: var(--gray);">
-                        ${incomeDate} • ${wallet ? wallet.name : 'Unknown'}
+                <div class="income-content">
+                    <div class="income-details">
+                        <div style="font-weight: 500;">${income.description}</div>
+                        <div style="font-size: 0.8rem; color: var(--gray);">
+                            ${incomeDate} • ${wallet ? wallet.name : 'Unknown'}
+                        </div>
                     </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div>
-                        <div class="income-amount">${currencyUtils.formatDisplayCurrency(income.amount)}</div>
-                        <span class="income-source">${income.source}</span>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div>
+                            <div class="income-amount">${this.app.currencyUtils ? 
+                                this.app.currencyUtils.formatDisplayCurrency(income.amount) : 
+                                'Rp ' + income.amount.toLocaleString('id-ID')}</div>
+                            <span class="income-source">${income.source}</span>
+                        </div>
+                        <div class="action-buttons desktop-only">
+                            <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+            
             container.appendChild(incomeItem);
             
             // Initialize swipe gestures for this item

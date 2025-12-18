@@ -540,37 +540,44 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Swipe Gesture Styles - PROPERLY FIXED */
+/* Swipe Gesture Styles - FINAL FIX */
 
-/* Container Setup - Item itself moves, not inner content */
+/* Container - this is the outer wrapper */
 .expense-item,
 .income-item {
     position: relative;
-    overflow: hidden !important;
+    overflow: hidden;
     touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
-    /* The JS applies transform to this element */
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
 }
 
-/* Swipe Actions Container - Fixed behind the item */
+/* Content wrapper - this is what moves when swiping */
+.expense-content,
+.income-content {
+    position: relative;
+    background: white;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+/* Swipe Actions Container - stays fixed behind content */
 .swipe-actions {
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
     width: 110px;
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 0 5px;
-    /* Fixed position - doesn't move with item */
     background: linear-gradient(90deg, 
         rgba(239, 68, 68, 0.05) 0%, 
         rgba(239, 68, 68, 0.1) 100%);
-    pointer-events: all;
+    z-index: 1;
 }
 
 /* Swipe Action Buttons */
@@ -611,22 +618,20 @@ input:focus, select:focus, textarea:focus {
 
 .swipe-edit-btn:active {
     transform: scale(0.9);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .swipe-delete-btn:active {
     transform: scale(0.9);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Hide default action buttons on mobile when swipe is available */
+/* Mobile - use swipe gestures */
 @media (max-width: 768px) {
-    .expense-item .action-buttons,
-    .income-item .action-buttons {
+    /* Hide desktop action buttons on mobile */
+    .desktop-only {
         display: none !important;
     }
     
-    /* Show swipe indicator on touch devices */
+    /* Show swipe indicator */
     .expense-item::after,
     .income-item::after {
         content: '← Swipe';
@@ -640,7 +645,7 @@ input:focus, select:focus, textarea:focus {
         pointer-events: none;
         font-weight: 600;
         transition: opacity 0.3s;
-        z-index: 10;
+        z-index: 3;
     }
     
     .expense-item.swiped::after,
@@ -649,7 +654,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Desktop - keep default buttons visible, hide swipe actions */
+/* Desktop - show normal buttons, hide swipe */
 @media (min-width: 769px) {
     .swipe-actions {
         display: none !important;
@@ -659,27 +664,16 @@ input:focus, select:focus, textarea:focus {
     .income-item::after {
         display: none;
     }
-}
-
-/* Prevent text selection during swipe */
-.expense-item.swiping *,
-.income-item.swiping * {
-    user-select: none !important;
-    -webkit-user-select: none !important;
+    
+    .desktop-only {
+        display: flex !important;
+    }
 }
 
 /* Smooth hardware acceleration */
-.expense-item,
-.income-item {
+.expense-content,
+.income-content {
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-}
-
-/* Better touch feedback */
-@media (hover: none) and (pointer: coarse) {
-    .swipe-edit-btn:active,
-    .swipe-delete-btn:active {
-        transform: scale(0.92);
-    }
 }
