@@ -540,68 +540,49 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Swipe Gesture Styles - FIXED */
+/* Swipe Gesture Styles - PROPERLY FIXED */
 
-/* Container Setup */
+/* Container Setup - Item itself moves, not inner content */
 .expense-item,
 .income-item {
     position: relative;
-    overflow: hidden !important; /* Must be hidden to clip the actions */
+    overflow: hidden !important;
     touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
+    /* The JS applies transform to this element */
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Ensure proper stacking */
-    isolation: isolate;
 }
 
-/* Make the main content draggable */
-.expense-item > div:first-child,
-.income-item > div:first-child {
-    position: relative;
-    z-index: 2;
-    background: white;
-    cursor: grab;
-    -webkit-user-drag: none;
-}
-
-.expense-item > div:first-child:active,
-.income-item > div:first-child:active {
-    cursor: grabbing;
-}
-
-/* Swipe Actions Container - FIXED POSITIONING */
+/* Swipe Actions Container - Fixed behind the item */
 .swipe-actions {
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
-    width: 120px; /* Fixed width for the action buttons area */
+    width: 110px;
     display: flex !important;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 8px;
-    padding-right: 12px;
-    z-index: 1; /* Behind the main content */
-    pointer-events: all;
-    /* Add gradient background for better visibility */
+    padding: 0 5px;
+    /* Fixed position - doesn't move with item */
     background: linear-gradient(90deg, 
         rgba(239, 68, 68, 0.05) 0%, 
         rgba(239, 68, 68, 0.1) 100%);
+    pointer-events: all;
 }
 
-/* Swipe Action Buttons - FIXED SIZING */
+/* Swipe Action Buttons */
 .swipe-edit-btn,
 .swipe-delete-btn {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
-    max-width: 44px !important;
-    max-height: 44px !important;
-    border: none !important;
-    border-radius: 50% !important;
-    display: flex !important;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -609,18 +590,17 @@ input:focus, select:focus, textarea:focus {
     transition: all 0.2s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     flex-shrink: 0;
-    padding: 0 !important;
-    margin: 0 !important;
+    padding: 0;
 }
 
 .swipe-edit-btn {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
-    color: white !important;
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
 }
 
 .swipe-delete-btn {
-    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
-    color: white !important;
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
 }
 
 .swipe-edit-btn i,
@@ -647,8 +627,8 @@ input:focus, select:focus, textarea:focus {
     }
     
     /* Show swipe indicator on touch devices */
-    .expense-item::before,
-    .income-item::before {
+    .expense-item::after,
+    .income-item::after {
         content: '← Swipe';
         position: absolute;
         right: 12px;
@@ -660,13 +640,11 @@ input:focus, select:focus, textarea:focus {
         pointer-events: none;
         font-weight: 600;
         transition: opacity 0.3s;
-        z-index: 3; /* Above everything */
+        z-index: 10;
     }
     
-    .expense-item.swiped::before,
-    .income-item.swiped::before,
-    .expense-item:active::before,
-    .income-item:active::before {
+    .expense-item.swiped::after,
+    .income-item.swiped::after {
         opacity: 0;
     }
 }
@@ -677,15 +655,9 @@ input:focus, select:focus, textarea:focus {
         display: none !important;
     }
     
-    .expense-item::before,
-    .income-item::before {
+    .expense-item::after,
+    .income-item::after {
         display: none;
-    }
-    
-    /* Show default cursor on desktop */
-    .expense-item > div:first-child,
-    .income-item > div:first-child {
-        cursor: default;
     }
 }
 
@@ -698,8 +670,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Smooth hardware acceleration */
 .expense-item,
-.income-item,
-.swipe-actions {
+.income-item {
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
@@ -709,6 +680,6 @@ input:focus, select:focus, textarea:focus {
 @media (hover: none) and (pointer: coarse) {
     .swipe-edit-btn:active,
     .swipe-delete-btn:active {
-        transform: scale(0.92) !important;
+        transform: scale(0.92);
     }
 }
