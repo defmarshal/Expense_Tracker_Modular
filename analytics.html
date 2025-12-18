@@ -196,6 +196,8 @@
             min-height: 120px;
             display: flex;
             flex-direction: column;
+            align-items: center; /* Center align for icon above text */
+            text-align: center;
         }
 
         .card:hover {
@@ -204,32 +206,46 @@
 
         .card-header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
             margin-bottom: 0.8rem;
             gap: 8px;
+            width: 100%;
         }
 
         .card-icon {
-            width: 36px;
-            height: 36px;
+            width: 42px;
+            height: 42px;
             border-radius: 10px;
             background: var(--gradient);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
+            margin-bottom: 4px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
         }
 
         .stat-value {
-            font-size: 1.5rem;
+            font-size: 1.3rem; /* Reduced from 1.5rem to match insights */
             font-weight: 700;
             margin: 0.4rem 0;
             line-height: 1.2;
             word-break: break-word;
             overflow-wrap: break-word;
+            text-align: center;
+            width: 100%;
         }
 
         .stat-value.income {
@@ -251,6 +267,9 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            width: 100%;
+            text-align: center;
+            margin-top: 0.2rem;
         }
 
         .chart-container {
@@ -305,6 +324,8 @@
             min-height: 140px;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
         .insight-card:hover {
@@ -313,21 +334,24 @@
 
         .insight-header {
             display: flex;
-            align-items: flex-start;
-            gap: 10px;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
             margin-bottom: 0.8rem;
+            width: 100%;
         }
 
         .insight-icon {
-            width: 36px;
-            height: 36px;
+            width: 42px;
+            height: 42px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 0.95rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
+            margin-bottom: 4px;
         }
 
         .insight-title {
@@ -337,6 +361,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            width: 100%;
         }
 
         .insight-content {
@@ -347,25 +372,30 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            width: 100%;
         }
 
         .insight-value {
-            font-size: 1.3rem;
+            font-size: 1.3rem; /* Now same size as balance/income/expenses */
             font-weight: 700;
             margin-top: 0.4rem;
             color: var(--dark);
             line-height: 1.2;
             word-break: break-word;
             overflow-wrap: break-word;
+            text-align: center;
+            width: 100%;
         }
 
         .trend-indicator {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 4px;
             font-size: 0.75rem;
             margin-top: 0.4rem;
             white-space: nowrap;
+            width: 100%;
         }
 
         .trend-up {
@@ -879,21 +909,30 @@
                 min-height: 110px;
             }
 
-            .card-header {
+            .card-header,
+            .insight-header {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
                 gap: 4px;
                 margin-bottom: 0.5rem;
             }
 
-            .card-icon {
-                width: 28px;
-                height: 28px;
-                font-size: 0.8rem;
+            .card-icon,
+            .insight-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+                margin-bottom: 2px;
             }
 
-            .stat-value {
-                font-size: 1.1rem;
+            .card-title,
+            .insight-title {
+                font-size: 0.75rem;
+            }
+
+            .stat-value,
+            .insight-value {
+                font-size: 1rem; /* Reduced for mobile */
                 margin: 0.2rem 0;
             }
 
@@ -901,42 +940,20 @@
                 font-size: 0.65rem;
             }
 
-            .chart-container {
-                height: 280px;
-                padding: 1rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .insight-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-                margin-bottom: 0.5rem;
-            }
-
-            .insight-icon {
-                width: 28px;
-                height: 28px;
-                font-size: 0.8rem;
-            }
-
-            .insight-title {
-                font-size: 0.75rem;
-            }
-
             .insight-content {
                 font-size: 0.7rem;
                 margin-bottom: 0.2rem;
             }
 
-            .insight-value {
-                font-size: 1rem;
-                margin-top: 0.2rem;
-            }
-
             .trend-indicator {
                 font-size: 0.65rem;
                 margin-top: 0.2rem;
+            }
+
+            .chart-container {
+                height: 280px;
+                padding: 1rem;
+                margin-bottom: 1.5rem;
             }
 
             .selectors-container {
@@ -1091,23 +1108,42 @@
                 min-height: 100px !important;
             }
 
-            .card-header {
+            .card-header,
+            .insight-header {
                 margin-bottom: 0.4rem;
             }
 
-            .card-icon {
-                width: 24px !important;
-                height: 24px !important;
-                font-size: 0.75rem !important;
+            .card-icon,
+            .insight-icon {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 0.8rem !important;
+                margin-bottom: 2px;
             }
 
-            .stat-value {
-                font-size: 0.9rem !important;
+            .card-title,
+            .insight-title {
+                font-size: 0.7rem !important;
+            }
+
+            .stat-value,
+            .insight-value {
+                font-size: 0.85rem !important; /* Reduced for small mobile */
                 margin: 0.15rem 0 !important;
             }
 
             .stat-label {
                 font-size: 0.6rem !important;
+            }
+
+            .insight-content {
+                font-size: 0.65rem !important;
+                margin-bottom: 0.15rem !important;
+            }
+
+            .trend-indicator {
+                font-size: 0.6rem !important;
+                margin-top: 0.15rem !important;
             }
 
             .chart-container {
@@ -1127,36 +1163,6 @@
             .chart-select {
                 padding: 6px 8px;
                 font-size: 0.8rem;
-            }
-
-            .insight-header {
-                margin-bottom: 0.4rem;
-                gap: 4px;
-            }
-
-            .insight-icon {
-                width: 24px !important;
-                height: 24px !important;
-                font-size: 0.75rem !important;
-            }
-
-            .insight-title {
-                font-size: 0.7rem !important;
-            }
-
-            .insight-content {
-                font-size: 0.65rem !important;
-                margin-bottom: 0.15rem !important;
-            }
-
-            .insight-value {
-                font-size: 0.85rem !important;
-                margin-top: 0.15rem !important;
-            }
-
-            .trend-indicator {
-                font-size: 0.6rem !important;
-                margin-top: 0.15rem !important;
             }
 
             .report-container {
@@ -1288,18 +1294,27 @@
                 min-height: 90px !important;
             }
 
-            .card-header {
+            .card-header,
+            .insight-header {
                 margin-bottom: 0.3rem;
             }
 
-            .card-icon {
-                width: 22px !important;
-                height: 22px !important;
+            .card-icon,
+            .insight-icon {
+                width: 24px !important;
+                height: 24px !important;
                 font-size: 0.7rem !important;
+                margin-bottom: 1px;
             }
 
-            .stat-value {
-                font-size: 0.85rem !important;
+            .card-title,
+            .insight-title {
+                font-size: 0.65rem !important;
+            }
+
+            .stat-value,
+            .insight-value {
+                font-size: 0.75rem !important; /* Further reduced for iPhone */
                 margin: 0.1rem 0 !important;
             }
 
@@ -1307,28 +1322,9 @@
                 font-size: 0.55rem !important;
             }
 
-            .insight-header {
-                margin-bottom: 0.3rem;
-            }
-
-            .insight-icon {
-                width: 22px !important;
-                height: 22px !important;
-                font-size: 0.7rem !important;
-            }
-
-            .insight-title {
-                font-size: 0.65rem !important;
-            }
-
             .insight-content {
                 font-size: 0.6rem !important;
                 margin-bottom: 0.1rem !important;
-            }
-
-            .insight-value {
-                font-size: 0.8rem !important;
-                margin-top: 0.1rem !important;
             }
 
             .trend-indicator {
@@ -1349,12 +1345,9 @@
                 min-height: 85px !important;
             }
 
-            .stat-value {
-                font-size: 0.8rem !important;
-            }
-
+            .stat-value,
             .insight-value {
-                font-size: 0.75rem !important;
+                font-size: 0.7rem !important;
             }
         }
 
