@@ -1642,6 +1642,39 @@
             // Initialize analytics app
             try {
                 await initializeAnalyticsApp(window.supabaseClient);
+                
+                // Load default wallet from Supabase
+                const { data: session } = await window.supabaseClient.auth.getSession();
+                if (session?.session?.user) {
+                    const userId = session.session.user.id;
+                    
+                    // Fetch wallets for current user
+                    const { data: wallets, error } = await window.supabaseClient
+                        .from('wallets')
+                        .select('*')
+                        .eq('userId', userId)
+                        .order('created_at', { ascending: true });
+                    
+                    if (!error && wallets && wallets.length > 0) {
+                        // Find default wallet or use first wallet
+                        const defaultWallet = wallets.find(w => w.isDefault) || wallets[0];
+                        
+                        // Set default wallet in dropdown
+                        const walletSelect = document.getElementById('walletSelect');
+                        if (walletSelect && defaultWallet) {
+                            // Wait a bit for wallets to be loaded into dropdown
+                            setTimeout(() => {
+                                const option = walletSelect.querySelector(`option[value="${defaultWallet.id}"]`);
+                                if (option) {
+                                    walletSelect.value = defaultWallet.id;
+                                    // Trigger change event to update analytics
+                                    walletSelect.dispatchEvent(new Event('change'));
+                                    console.log('Set default wallet in analytics:', defaultWallet.name);
+                                }
+                            }, 500);
+                        }
+                    }
+                }
             } catch (error) {
                 console.error('Failed to initialize analytics app:', error);
                 showAlert('Failed to load analytics. Please refresh.', 'error');
