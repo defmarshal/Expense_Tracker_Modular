@@ -212,10 +212,10 @@ class AnalyticsUI {
                         <h3>
                             <i class="fas fa-folder" style="color: var(--primary);"></i>
                             ${category}
-                            <span class="category-percentage">${catData.percentage}%</span>
                         </h3>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <span class="category-total">${currencyUtils.formatDisplayCurrency(catData.total)}</span>
+                            <span class="category-percentage">${catData.percentage}%</span>
                             <button class="category-toggle" id="toggle-${safeCategoryId}">
                                 <i class="fas fa-chevron-down"></i>
                             </button>
@@ -250,31 +250,31 @@ class AnalyticsUI {
             const subcategoryProgress = (subData.total / categoryTotal) * 100;
             const safeSubcategoryId = subcategory.replace(/[^a-zA-Z0-9]/g, '-');
             
-            html += `
-                <div class="subcategory-group">
-                    <div class="subcategory-header" 
-                         data-category-id="${categoryId}" 
-                         data-subcategory-id="${safeSubcategoryId}">
-                        <h4>
-                            <i class="fas fa-folder-open" style="color: var(--secondary); font-size: 0.8rem;"></i>
-                            ${subcategory}
-                            <span class="subcategory-percentage">${subData.percentage}%</span>
-                        </h4>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="subcategory-total">${currencyUtils.formatDisplayCurrency(subData.total)}</span>
-                            <button class="subcategory-toggle" id="toggle-${categoryId}-${safeSubcategoryId}">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="subcategory-progress">
-                        <div class="subcategory-progress-bar" style="width: ${subcategoryProgress}%"></div>
-                    </div>
-                    <div class="subcategory-content" id="content-${categoryId}-${safeSubcategoryId}">
-                        ${this.renderExpenseList(subData.expenses)}
+        html += `
+            <div class="subcategory-group">
+                <div class="subcategory-header" 
+                     data-category-id="${categoryId}" 
+                     data-subcategory-id="${safeSubcategoryId}">
+                    <h4>
+                        <i class="fas fa-folder-open" style="color: var(--secondary); font-size: 0.8rem;"></i>
+                        ${subcategory}
+                    </h4>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="subcategory-total">${currencyUtils.formatDisplayCurrency(subData.total)}</span>
+                        <span class="subcategory-percentage">${subData.percentage}%</span>
+                        <button class="subcategory-toggle" id="toggle-${categoryId}-${safeSubcategoryId}">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
                     </div>
                 </div>
-            `;
+                <div class="subcategory-progress">
+                    <div class="subcategory-progress-bar" style="width: ${subcategoryProgress}%"></div>
+                </div>
+                <div class="subcategory-content" id="content-${categoryId}-${safeSubcategoryId}">
+                    ${this.renderExpenseList(subData.expenses)}
+                </div>
+            </div>
+        `;
         });
         
         return html;
