@@ -36,6 +36,21 @@
     border: 1px solid rgba(147, 51, 234, 0.05);
 }
 
+@media (max-width: 480px) {
+    .stat-card {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .stat-value {
+        font-size: 1.4rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
 .stat-value {
     font-size: 1.6rem;
     font-weight: 700;
@@ -338,4 +353,26 @@
 /* Make sure lists take available space */
 .expense-list, .income-list, .wallet-list, .category-list {
     flex: 1;
+}
+
+/* Better mobile tab scrolling */
+@media (max-width: 768px) {
+    .dashboard-tabs {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0 0.5rem;
+    }
+    
+    .dashboard-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .tab {
+        scroll-snap-align: start;
+        flex-shrink: 0;
+    }
 }

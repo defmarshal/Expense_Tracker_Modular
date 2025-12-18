@@ -87,6 +87,21 @@ input, select {
     transition: all var(--transition-normal);
     min-width: 0;
     background-color: white;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Mobile form optimization */
+@media (max-width: 768px) {
+    input, select, textarea {
+        font-size: 16px; /* Prevent iOS zoom */
+        padding: 12px 14px; /* Bigger touch targets */
+    }
+    
+    /* Prevent zoom on input focus */
+    input:focus, select:focus {
+        font-size: 16px;
+    }
 }
 
 /* iOS Safari date picker fix */
@@ -233,6 +248,20 @@ input:focus, select:focus {
     overflow: hidden;
     transform: translateY(30px) scale(0.95);
     transition: transform var(--transition-normal);
+}
+
+@media (max-width: 480px) {
+    .modal {
+        max-width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modal-body {
+        max-height: calc(90vh - 120px);
+        overflow-y: auto;
+    }
 }
 
 .modal-overlay.active .modal {
@@ -413,5 +442,16 @@ input:focus, select:focus {
     to {
         transform: translateX(0);
         opacity: 1;
+    }
+}
+
+/* Haptic feedback support */
+@media (hover: none) and (pointer: coarse) {
+    .btn:active,
+    .tab:active,
+    .edit-btn:active,
+    .delete-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s;
     }
 }

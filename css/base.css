@@ -12,6 +12,19 @@ body {
     line-height: 1.5;
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Hardware acceleration for animations */
+.card, .btn, .modal, .tab {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 /* Typography */
