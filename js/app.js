@@ -43,9 +43,6 @@ class FinTrackApp {
             this.db = getDatabase(this.supabase);
             this.auth = await initializeAuth(this.supabase);
             
-            // Initialize swipe handler
-            initializeSwipeHandler();
-            
             // Initialize UI Controller (defined inline below)
             this.ui = new UIController(this);
             
@@ -689,31 +686,23 @@ class FinTrackApp {
 }
 
 
+// Add this new class to your app.js file
+// Place it before the UIController class definition
+
 class SwipeHandler {
     constructor() {
         this.startX = 0;
         this.currentX = 0;
         this.isDragging = false;
         this.currentItem = null;
-        this.threshold = 80;
+        this.threshold = 80; // Minimum swipe distance to trigger action
     }
     
     init(itemElement, callbacks) {
         const content = itemElement.querySelector('.expense-details') || 
                        itemElement.querySelector('.income-details');
         
-        if (!content) {
-            console.log('SwipeHandler: No content element found');
-            return;
-        }
-        
-        // Don't add swipe actions if already exists
-        if (itemElement.querySelector('.swipe-actions')) {
-            const swipeActions = itemElement.querySelector('.swipe-actions');
-            this.setupActionButtons(swipeActions, itemElement, callbacks);
-            this.setupSwipeEvents(content, itemElement);
-            return;
-        }
+        if (!content) return;
         
         // Add swipe actions container
         const actionsHtml = `
@@ -727,17 +716,10 @@ class SwipeHandler {
             </div>
         `;
         
-        itemElement.insertAdjacentHTML('beforeend', actionsHtml);
+        if (!itemElement.querySelector('.swipe-actions')) {
+            itemElement.insertAdjacentHTML('beforeend', actionsHtml);
+        }
         
-        // Setup event listeners
-        this.setupSwipeEvents(content, itemElement);
-        
-        // Setup action buttons
-        const swipeActions = itemElement.querySelector('.swipe-actions');
-        this.setupActionButtons(swipeActions, itemElement, callbacks);
-    }
-    
-    setupSwipeEvents(content, itemElement) {
         // Touch event handlers
         const handleTouchStart = (e) => {
             this.startX = e.touches[0].clientX;
@@ -753,9 +735,11 @@ class SwipeHandler {
             this.currentX = e.touches[0].clientX;
             const deltaX = this.currentX - this.startX;
             
-            // Allow both directions but limit movement
-            const translateX = Math.max(Math.min(deltaX, 0), -120); // Only negative values (left swipe)
-            itemElement.querySelector('> div:first-child').style.transform = `translateX(${translateX}px)`;
+            // Only allow left swipe
+            if (deltaX < 0) {
+                const translateX = Math.max(deltaX, -120); // Max swipe distance
+                itemElement.style.transform = `translateX(${translateX}px)`;
+            }
         };
         
         const handleTouchEnd = (e) => {
@@ -767,6 +751,7 @@ class SwipeHandler {
             itemElement.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             
             if (deltaX < -this.threshold) {
+                // Swipe threshold reached - show actions
                 itemElement.style.transform = 'translateX(-100px)';
                 itemElement.classList.add('swiped');
                 
@@ -779,6 +764,7 @@ class SwipeHandler {
                         }
                     });
             } else {
+                // Snap back
                 itemElement.style.transform = 'translateX(0)';
                 itemElement.classList.remove('swiped');
             }
@@ -804,7 +790,7 @@ class SwipeHandler {
             
             if (deltaX < 0) {
                 const translateX = Math.max(deltaX, -120);
-                itemElement.querySelector('> div:first-child').style.transform = `translateX(${translateX}px)`;
+                itemElement.style.transform = `translateX(${translateX}px)`;
             }
         };
         
@@ -835,12 +821,6 @@ class SwipeHandler {
             this.currentItem = null;
         };
         
-        // Remove old listeners if any
-        content.removeEventListener('touchstart', handleTouchStart);
-        content.removeEventListener('touchmove', handleTouchMove);
-        content.removeEventListener('touchend', handleTouchEnd);
-        content.removeEventListener('mousedown', handleMouseDown);
-        
         // Add event listeners
         content.addEventListener('touchstart', handleTouchStart, { passive: true });
         content.addEventListener('touchmove', handleTouchMove, { passive: true });
@@ -848,76 +828,39 @@ class SwipeHandler {
         
         // Desktop support
         content.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
         
-        // Store handlers for cleanup
-        itemElement._swipeHandlers = {
-            handleMouseMove,
-            handleMouseUp
-        };
-        
-        // Add document listeners only once
-        if (!document._swipeListenersAdded) {
-            document.addEventListener('mousemove', (e) => {
-                document.querySelectorAll('.expense-item, .income-item').forEach(item => {
-                    if (item._swipeHandlers) {
-                        item._swipeHandlers.handleMouseMove(e);
-                    }
-                });
+        // Handle action button clicks
+        const swipeActions = itemElement.querySelector('.swipe-actions');
+        if (swipeActions) {
+            swipeActions.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                
+                const action = btn.dataset.action;
+                
+                // Add haptic feedback if available
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(10);
+                }
+                
+                if (action === 'edit' && callbacks.onEdit) {
+                    callbacks.onEdit();
+                } else if (action === 'delete' && callbacks.onDelete) {
+                    callbacks.onDelete();
+                }
+                
+                // Close swipe
+                setTimeout(() => {
+                    itemElement.style.transform = 'translateX(0)';
+                    itemElement.classList.remove('swiped');
+                }, 200);
             });
-            
-            document.addEventListener('mouseup', (e) => {
-                document.querySelectorAll('.expense-item, .income-item').forEach(item => {
-                    if (item._swipeHandlers) {
-                        item._swipeHandlers.handleMouseUp(e);
-                    }
-                });
-            });
-            
-            document._swipeListenersAdded = true;
         }
     }
     
-    setupActionButtons(swipeActions, itemElement, callbacks) {
-        if (!swipeActions) return;
-        
-        // Remove old listener
-        const oldListener = swipeActions._clickListener;
-        if (oldListener) {
-            swipeActions.removeEventListener('click', oldListener);
-        }
-        
-        // Create new listener
-        const clickListener = (e) => {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            
-            const action = btn.dataset.action;
-            
-            console.log('Swipe action clicked:', action);
-            
-            // Add haptic feedback if available
-            if ('vibrate' in navigator) {
-                navigator.vibrate(10);
-            }
-            
-            if (action === 'edit' && callbacks.onEdit) {
-                callbacks.onEdit();
-            } else if (action === 'delete' && callbacks.onDelete) {
-                callbacks.onDelete();
-            }
-            
-            // Close swipe
-            setTimeout(() => {
-                itemElement.style.transform = 'translateX(0)';
-                itemElement.classList.remove('swiped');
-            }, 200);
-        };
-        
-        // Store and add listener
-        swipeActions._clickListener = clickListener;
-        swipeActions.addEventListener('click', clickListener);
-    }
-    
+    // Close all swiped items
     closeAll() {
         document.querySelectorAll('.expense-item.swiped, .income-item.swiped')
             .forEach(item => {
@@ -927,22 +870,16 @@ class SwipeHandler {
     }
 }
 
-// Initialize global swipe handler when app initializes
-// This will be called from FinTrackApp.init()
-function initializeSwipeHandler() {
-    if (!window.swipeHandler) {
-        window.swipeHandler = new SwipeHandler();
-        console.log('SwipeHandler initialized');
-        
-        // Close swipes when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.expense-item') && 
-                !e.target.closest('.income-item')) {
-                window.swipeHandler.closeAll();
-            }
-        });
+// Create global swipe handler instance
+window.swipeHandler = new SwipeHandler();
+
+// Close swipes when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.expense-item') && 
+        !e.target.closest('.income-item')) {
+        window.swipeHandler.closeAll();
     }
-}
+});
 
 // ==================== UI CONTROLLER CLASS (INLINE) ====================
 
