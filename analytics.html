@@ -1223,7 +1223,45 @@
                 gap: 4px;
             }
         }        
-    </style>
+    
+/* === Mobile Optimization Patch === */
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+  .card:hover,
+  .insight-card:hover,
+  .expense-item-detail:hover {
+    transform: none !important;
+    box-shadow: var(--shadow) !important;
+  }
+}
+
+/* Safe area support for iOS */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Ensure selectors & inputs are mobile-safe */
+@media (max-width: 768px) {
+  select,
+  input[type="date"] {
+    width: 100% !important;
+    font-size: 16px !important; /* iOS zoom fix */
+  }
+}
+
+/* Stabilize chart heights on small screens */
+@media (max-width: 480px) {
+  .chart-container {
+    min-height: 260px;
+    height: auto;
+  }
+  .chart-wrapper {
+    height: 200px;
+  }
+}
+
+</style>
 </head>
 <body>
     <header>
