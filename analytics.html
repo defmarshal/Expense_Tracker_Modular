@@ -1312,6 +1312,188 @@ body {
   }
 }
 
+/* === Mobile Optimization Patch === */
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+  .card:hover,
+  .insight-card:hover,
+  .expense-item-detail:hover {
+    transform: none !important;
+    box-shadow: var(--shadow) !important;
+  }
+}
+
+/* Safe area support for iOS */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* === Mobile Layout Enforcement (Horizontal Stacking) === */
+@media (max-width: 768px) {
+
+  /* Balance, Income, Expenses -> horizontal with wrapping */
+  .analytics-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Savings, Top Category, Avg/Period -> horizontal with wrapping */
+  .insights-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Wallet & Range selectors -> horizontal with wrapping */
+  .selectors-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .wallet-selector-container,
+  .date-range-selector-container {
+    flex: 1 1 auto !important;
+    min-width: 140px !important;
+  }
+  
+  .custom-date-container {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  /* Compact cards for horizontal layout */
+  .card,
+  .insight-card {
+    padding: 0.6rem !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  .card-header {
+    margin-bottom: 0.4rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .card-icon,
+  .insight-icon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .card-title,
+  .insight-title {
+    font-size: 0.7rem !important;
+    margin: 0 !important;
+  }
+
+  .stat-value,
+  .insight-value {
+    font-size: 1rem !important;
+    margin: 0.2rem 0 !important;
+  }
+
+  .stat-label,
+  .insight-content {
+    font-size: 0.65rem !important;
+  }
+
+  /* All selects full width within container */
+  select,
+  .chart-select {
+    width: 100% !important;
+    font-size: 14px !important; /* iOS zoom fix */
+    box-sizing: border-box !important;
+    padding: 6px 8px !important;
+  }
+
+  input[type="date"] {
+    width: 100% !important;
+    font-size: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Never truncate text or numbers */
+  .stat-value,
+  .insight-value,
+  .expense-amount-detail,
+  .category-total,
+  .subcategory-total,
+  .card-title,
+  .insight-title {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+
+  /* Icon-only navigation */
+  .nav-link span,
+  .auth-section .btn span {
+    display: none !important;
+  }
+
+  /* Page header adjustments */
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .page-title {
+    font-size: 1.3rem !important;
+  }
+
+  .page-subtitle {
+    font-size: 0.8rem !important;
+  }
+
+  /* Insight header horizontal */
+  .insight-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .trend-indicator {
+    font-size: 0.65rem !important;
+    margin-top: 0.2rem !important;
+  }
+}
+
+/* Extra small screens - allow wrapping to 2 columns if needed */
+@media (max-width: 380px) {
+  .analytics-grid,
+  .insights-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .card:last-child,
+  .insight-card:last-child {
+    grid-column: span 2 !important;
+  }
+}
+
+/* Stabilize chart heights on small screens */
+@media (max-width: 480px) {
+  .chart-container {
+    min-height: 260px;
+    height: auto;
+  }
+  .chart-wrapper {
+    height: 200px;
+  }
+}
+
 </style>
 </head>
 <body>
