@@ -1608,195 +1608,155 @@ body {
   }
 }
 
-/* === Fix for Category Breakdown Layout === */
+/* === Fix for Category Breakdown Percentage Layout === */
 
+.category-total, .subcategory-total {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+    justify-content: flex-end !important;
+    margin-left: auto !important; /* Push to the right */
+}
+
+/* Make sure the amount comes first */
+.category-total span:first-child,
+.subcategory-total span:first-child {
+    order: 1 !important;
+    font-weight: 600 !important;
+    color: var(--primary) !important;
+}
+
+/* Percentage should come after the amount */
+.category-percentage, 
+.subcategory-percentage {
+    order: 2 !important;
+    margin-left: 0 !important;
+    text-align: center !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
+}
+
+/* Toggle button should come last */
+.category-toggle,
+.subcategory-toggle {
+    order: 3 !important;
+    margin-left: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+/* Ensure category header layout is fixed */
 .category-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
 }
 
 .category-header h3 {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0;
-    padding-right: 8px;
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
+    padding-right: 12px !important;
 }
 
-.category-total {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
-
-.category-percentage {
-    font-size: 0.75rem;
-    color: var(--gray);
-    background: rgba(147, 51, 234, 0.08);
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 0;
-    min-width: 45px;
-    text-align: center;
-}
-
+/* Same for subcategory */
 .subcategory-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
 }
 
 .subcategory-header h4 {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0;
-    padding-right: 8px;
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
+    padding-right: 12px !important;
 }
 
-.subcategory-total {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+/* Specific styling for percentages */
+.category-percentage {
+    font-size: 0.75rem !important;
+    color: var(--gray) !important;
+    background: rgba(147, 51, 234, 0.1) !important;
+    padding: 2px 8px !important;
+    border-radius: 10px !important;
+    min-width: 50px !important;
 }
 
 .subcategory-percentage {
-    font-size: 0.7rem;
-    color: var(--gray);
-    background: rgba(147, 51, 234, 0.05);
-    padding: 1px 6px;
-    border-radius: 8px;
-    margin-left: 0;
-    min-width: 40px;
-    text-align: center;
-}
-
-/* For expense items in breakdown */
-.expense-item-detail {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-}
-
-.expense-info {
-    flex: 1;
-    min-width: 0; /* Allows text truncation */
-}
-
-.expense-description {
-    font-weight: 500;
-    color: var(--dark);
-    font-size: 0.85rem;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.expense-amount-detail {
-    font-weight: 600;
-    color: var(--primary);
-    font-size: 0.9rem;
-    white-space: nowrap;
-    min-width: 80px;
-    text-align: right;
+    font-size: 0.7rem !important;
+    color: var(--gray) !important;
+    background: rgba(147, 51, 234, 0.05) !important;
+    padding: 1px 6px !important;
+    border-radius: 8px !important;
+    min-width: 40px !important;
 }
 
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .category-header {
-        flex-wrap: nowrap;
+        flex-wrap: nowrap !important;
     }
     
     .category-header h3 {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 60%;
+        max-width: 40% !important;
+        padding-right: 8px !important;
     }
     
     .category-total {
-        flex-shrink: 0;
+        gap: 4px !important;
     }
     
     .category-percentage {
-        min-width: 40px;
-        font-size: 0.7rem;
-        padding: 1px 6px;
+        min-width: 40px !important;
+        font-size: 0.7rem !important;
+        padding: 1px 6px !important;
     }
     
     .subcategory-header h4 {
-        max-width: 50%;
+        max-width: 40% !important;
+        padding-right: 8px !important;
+    }
+    
+    .subcategory-total {
+        gap: 4px !important;
     }
     
     .subcategory-percentage {
-        min-width: 35px;
-        font-size: 0.65rem;
-        padding: 1px 4px;
-    }
-    
-    .expense-item-detail {
-        flex-direction: row;
-        align-items: center;
-        padding: 8px;
-    }
-    
-    .expense-info {
-        min-width: 0;
-    }
-    
-    .expense-description {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-    }
-    
-    .expense-amount-detail {
-        text-align: right;
-        padding: 0;
-        border-top: none;
-        width: auto;
-        min-width: 70px;
+        min-width: 35px !important;
+        font-size: 0.65rem !important;
+        padding: 1px 4px !important;
     }
 }
 
 @media (max-width: 480px) {
     .category-header h3 {
-        max-width: 50%;
-        font-size: 0.9rem;
+        max-width: 35% !important;
+        font-size: 0.9rem !important;
     }
     
     .category-total {
-        font-size: 0.8rem;
+        font-size: 0.8rem !important;
     }
     
     .category-percentage {
-        min-width: 35px;
-        font-size: 0.65rem;
+        min-width: 35px !important;
+        font-size: 0.65rem !important;
     }
     
     .subcategory-header h4 {
-        max-width: 45%;
-        font-size: 0.85rem;
+        max-width: 35% !important;
+        font-size: 0.85rem !important;
     }
     
-    .expense-description {
-        max-width: 120px;
-        font-size: 0.8rem;
-    }
-    
-    .expense-amount-detail {
-        min-width: 60px;
-        font-size: 0.8rem;
+    .subcategory-percentage {
+        min-width: 30px !important;
+        font-size: 0.6rem !important;
     }
 }
 
