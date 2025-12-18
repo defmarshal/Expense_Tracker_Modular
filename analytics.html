@@ -8,8 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-<style>
- <style>
         * {
             margin: 0;
             padding: 0;
@@ -928,8 +926,15 @@
                 font-size: 16px !important;
             }
 
+            /* RESTORED: Balance, Income, Expenses -> vertical stacking */
             .analytics-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
+                gap: 0.8rem;
+            }
+
+            /* RESTORED: Savings, Top Category, Avg/Period -> vertical stacking */
+            .insights-grid {
+                grid-template-columns: 1fr !important;
                 gap: 0.8rem;
             }
 
@@ -945,11 +950,6 @@
                 height: 280px;
                 padding: 1rem;
                 margin-bottom: 1.5rem;
-            }
-
-            .insights-grid {
-                grid-template-columns: 1fr;
-                gap: 0.8rem;
             }
 
             .insight-card {
@@ -1070,7 +1070,6 @@
             .nav-link span {
                 display: none;
             }
-
 
             .auth-section .btn {
                 padding: 8px 10px;
