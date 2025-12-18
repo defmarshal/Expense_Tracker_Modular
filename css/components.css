@@ -89,6 +89,26 @@ input, select {
     background-color: white;
 }
 
+/* iOS Safari date picker fix */
+input[type="date"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Prevent iOS zoom on focus */
+@media screen and (max-width: 768px) {
+    input[type="date"],
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select {
+        font-size: 16px !important;
+    }
+}
+
 select {
     /* CRITICAL: Remove browser default arrow */
     -webkit-appearance: none;

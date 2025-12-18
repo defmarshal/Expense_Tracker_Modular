@@ -675,7 +675,15 @@
             border-radius: 10px;
             border: 1.5px solid var(--gray-light);
             box-shadow: var(--shadow);
-        }        
+        }
+
+        .custom-date-container input[type="date"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            max-width: 140px;
+            box-sizing: border-box;
+        }    
 
         .expense-amount-detail {
             font-weight: 600;
@@ -780,17 +788,24 @@
             }
             
             input[type="date"] {
-                max-width: 100%;
-                width: 100%;
+                max-width: 100% !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+                -webkit-appearance: none !important;
             }
 
             .custom-date-container {
                 flex-direction: column;
                 width: 100%;
+                padding: 8px 10px;
             }
 
             .custom-date-container input[type="date"] {
                 width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                font-size: 16px !important;
             }
 
             .analytics-grid {
