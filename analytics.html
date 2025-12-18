@@ -1538,6 +1538,211 @@ body {
   }
 }
 
+/* Stabilize chart heights on small screens */
+@media (max-width: 480px) {
+  .chart-container {
+    min-height: 260px;
+    height: auto;
+  }
+  .chart-wrapper {
+    height: 200px;
+  }
+}
+
+/* === Fix for Category Breakdown Layout === */
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.category-header h3 {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    padding-right: 8px;
+}
+
+.category-total {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.category-percentage {
+    font-size: 0.75rem;
+    color: var(--gray);
+    background: rgba(147, 51, 234, 0.08);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 0;
+    min-width: 45px;
+    text-align: center;
+}
+
+.subcategory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.subcategory-header h4 {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    padding-right: 8px;
+}
+
+.subcategory-total {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.subcategory-percentage {
+    font-size: 0.7rem;
+    color: var(--gray);
+    background: rgba(147, 51, 234, 0.05);
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 0;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* For expense items in breakdown */
+.expense-item-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.expense-info {
+    flex: 1;
+    min-width: 0; /* Allows text truncation */
+}
+
+.expense-description {
+    font-weight: 500;
+    color: var(--dark);
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.expense-amount-detail {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: right;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .category-header {
+        flex-wrap: nowrap;
+    }
+    
+    .category-header h3 {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60%;
+    }
+    
+    .category-total {
+        flex-shrink: 0;
+    }
+    
+    .category-percentage {
+        min-width: 40px;
+        font-size: 0.7rem;
+        padding: 1px 6px;
+    }
+    
+    .subcategory-header h4 {
+        max-width: 50%;
+    }
+    
+    .subcategory-percentage {
+        min-width: 35px;
+        font-size: 0.65rem;
+        padding: 1px 4px;
+    }
+    
+    .expense-item-detail {
+        flex-direction: row;
+        align-items: center;
+        padding: 8px;
+    }
+    
+    .expense-info {
+        min-width: 0;
+    }
+    
+    .expense-description {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+    
+    .expense-amount-detail {
+        text-align: right;
+        padding: 0;
+        border-top: none;
+        width: auto;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-header h3 {
+        max-width: 50%;
+        font-size: 0.9rem;
+    }
+    
+    .category-total {
+        font-size: 0.8rem;
+    }
+    
+    .category-percentage {
+        min-width: 35px;
+        font-size: 0.65rem;
+    }
+    
+    .subcategory-header h4 {
+        max-width: 45%;
+        font-size: 0.85rem;
+    }
+    
+    .expense-description {
+        max-width: 120px;
+        font-size: 0.8rem;
+    }
+    
+    .expense-amount-detail {
+        min-width: 60px;
+        font-size: 0.8rem;
+    }
+}
+
+</style>
+
 </style>
 </head>
 <body>
