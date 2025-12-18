@@ -540,56 +540,65 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-//* REPLACE your existing swipe gesture styles with this */
+/* Swipe Gesture Styles - FIXED */
 
-/* Swipe Gesture Styles */
+/* Container Setup */
 .expense-item,
 .income-item {
     position: relative;
-    overflow: visible !important; /* Changed from hidden */
+    overflow: hidden !important; /* Must be hidden to clip the actions */
     touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Ensure proper stacking */
+    isolation: isolate;
 }
 
-.expense-item .expense-details,
-.income-item .income-details {
+/* Make the main content draggable */
+.expense-item > div:first-child,
+.income-item > div:first-child {
+    position: relative;
+    z-index: 2;
+    background: white;
     cursor: grab;
     -webkit-user-drag: none;
 }
 
-.expense-item .expense-details:active,
-.income-item .income-details:active {
+.expense-item > div:first-child:active,
+.income-item > div:first-child:active {
     cursor: grabbing;
 }
 
-/* Swipe Actions Container */
+/* Swipe Actions Container - FIXED POSITIONING */
 .swipe-actions {
     position: absolute;
-    right: -110px; /* Position off-screen initially */
+    right: 0;
     top: 0;
-    height: 100%;
+    bottom: 0;
+    width: 120px; /* Fixed width for the action buttons area */
     display: flex !important;
     align-items: center;
-    gap: 10px;
-    padding: 0 10px;
-    z-index: 10;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-right: 12px;
+    z-index: 1; /* Behind the main content */
     pointer-events: all;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Add gradient background for better visibility */
+    background: linear-gradient(90deg, 
+        rgba(239, 68, 68, 0.05) 0%, 
+        rgba(239, 68, 68, 0.1) 100%);
 }
 
-.expense-item.swiped .swipe-actions,
-.income-item.swiped .swipe-actions {
-    right: 0; /* Slide in when swiped */
-}
-
-/* Swipe Action Buttons */
+/* Swipe Action Buttons - FIXED SIZING */
 .swipe-edit-btn,
 .swipe-delete-btn {
     width: 44px !important;
     height: 44px !important;
     min-width: 44px !important;
     min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
     border: none !important;
     border-radius: 50% !important;
     display: flex !important;
@@ -598,21 +607,20 @@ input:focus, select:focus, textarea:focus {
     cursor: pointer;
     font-size: 1rem;
     transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     flex-shrink: 0;
     padding: 0 !important;
+    margin: 0 !important;
 }
 
 .swipe-edit-btn {
     background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
     color: white !important;
-    order: 1;
 }
 
 .swipe-delete-btn {
     background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
     color: white !important;
-    order: 2;
 }
 
 .swipe-edit-btn i,
@@ -638,15 +646,9 @@ input:focus, select:focus, textarea:focus {
         display: none !important;
     }
     
-    /* Ensure item has overflow hidden for smooth swipe */
-    .expense-item,
-    .income-item {
-        overflow: hidden;
-    }
-    
     /* Show swipe indicator on touch devices */
-    .expense-item::after,
-    .income-item::after {
+    .expense-item::before,
+    .income-item::before {
         content: '← Swipe';
         position: absolute;
         right: 12px;
@@ -654,35 +656,35 @@ input:focus, select:focus, textarea:focus {
         transform: translateY(-50%);
         font-size: 0.7rem;
         color: var(--gray);
-        opacity: 0.4;
+        opacity: 0.3;
         pointer-events: none;
         font-weight: 600;
         transition: opacity 0.3s;
-        z-index: 1;
+        z-index: 3; /* Above everything */
     }
     
-    .expense-item.swiped::after,
-    .income-item.swiped::after,
-    .expense-item:active::after,
-    .income-item:active::after {
+    .expense-item.swiped::before,
+    .income-item.swiped::before,
+    .expense-item:active::before,
+    .income-item:active::before {
         opacity: 0;
     }
 }
 
-/* Desktop - keep default buttons visible */
+/* Desktop - keep default buttons visible, hide swipe actions */
 @media (min-width: 769px) {
     .swipe-actions {
         display: none !important;
     }
     
-    .expense-item::after,
-    .income-item::after {
+    .expense-item::before,
+    .income-item::before {
         display: none;
     }
     
-    /* Show hover cursor on desktop */
-    .expense-item .expense-details,
-    .income-item .income-details {
+    /* Show default cursor on desktop */
+    .expense-item > div:first-child,
+    .income-item > div:first-child {
         cursor: default;
     }
 }
