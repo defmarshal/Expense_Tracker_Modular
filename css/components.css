@@ -540,29 +540,135 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Swipe Gesture Styles - FINAL FIX */
+/* ============================================
+   EXPENSE & INCOME ITEMS WITH SWIPE GESTURES
+   ============================================ */
 
-/* Container - this is the outer wrapper */
+/* Container - outer wrapper */
 .expense-item,
 .income-item {
     position: relative;
     overflow: hidden;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
-    background: white;
 }
 
-/* Content wrapper - this is what moves when swiping */
+/* Content wrapper - this moves when swiping */
 .expense-content,
 .income-content {
     position: relative;
     background: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
+    border-radius: 12px;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
-/* Swipe Actions Container - stays fixed behind content */
+/* Details section (left side) */
+.expense-details,
+.income-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.expense-details > div:first-child,
+.income-details > div:first-child {
+    font-weight: 500;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.expense-details > div:last-child,
+.income-details > div:last-child {
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+/* Amount section wrapper */
+.expense-content > div:nth-child(2),
+.income-content > div:nth-child(2) {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.expense-amount,
+.income-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.expense-amount {
+    color: var(--primary);
+}
+
+.income-amount {
+    color: var(--success);
+}
+
+.expense-category,
+.income-source {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 2px;
+}
+
+/* Action buttons container */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.edit-btn,
+.delete-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.edit-btn {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+}
+
+.edit-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.delete-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Swipe Actions Container - behind the content */
 .swipe-actions {
     position: absolute;
     right: 0;
@@ -573,7 +679,7 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 0 5px;
+    padding: 0 10px;
     background: linear-gradient(90deg, 
         rgba(239, 68, 68, 0.05) 0%, 
         rgba(239, 68, 68, 0.1) 100%);
@@ -627,7 +733,8 @@ input:focus, select:focus, textarea:focus {
 /* Mobile - use swipe gestures */
 @media (max-width: 768px) {
     /* Hide desktop action buttons on mobile */
-    .desktop-only {
+    .expense-content .desktop-only,
+    .income-content .desktop-only {
         display: none !important;
     }
     
@@ -668,12 +775,4 @@ input:focus, select:focus, textarea:focus {
     .desktop-only {
         display: flex !important;
     }
-}
-
-/* Smooth hardware acceleration */
-.expense-content,
-.income-content {
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
 }
