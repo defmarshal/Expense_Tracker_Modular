@@ -220,7 +220,7 @@
 
     .tab {
         padding: 0.6rem 0.8rem;
-        font-size: 0.75rem;
+        font-size: 0.6rem;
         min-width: fit-content;
         flex-shrink: 0;
     }
@@ -306,7 +306,7 @@
     
     .tab {
         padding: 0.6rem 0.8rem;
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         min-width: fit-content;
         flex-shrink: 0;
     }
