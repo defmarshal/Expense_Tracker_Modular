@@ -370,6 +370,9 @@ input:focus, select:focus {
     color: var(--gray);
     font-size: 0.85rem;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .tab.active {
