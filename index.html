@@ -25,7 +25,7 @@
             <span>FinTrack</span>
         </div>
         
-        <div class="nav-links">
+        <div class="nav-links hidden" id="navLinks">
             <a href="index.html" class="nav-link active">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
@@ -594,6 +594,7 @@
     <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 350px;"></div>
 
     <script type="module">
+
         async function initApp() {
             try {
                 console.log('Fetching config...');

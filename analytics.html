@@ -648,6 +648,35 @@
             border-radius: 10px;
         }
 
+        .date-range-selector-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1.5px solid var(--gray-light);
+            box-shadow: var(--shadow);
+            gap: 8px;
+        }
+
+        .date-range-selector-container label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .custom-date-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1.5px solid var(--gray-light);
+            box-shadow: var(--shadow);
+        }        
+
         .expense-amount-detail {
             font-weight: 600;
             color: var(--primary);
@@ -1018,6 +1047,116 @@
                 margin-top: 0;
             }
         }
+
+        /* Skeleton loading styles */
+        .skeleton-container {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .skeleton-card {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            border-radius: 12px;
+            height: 100px;
+            animation: shimmer 2s infinite;
+        }
+
+        .skeleton-chart {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            border-radius: 12px;
+            height: 300px;
+            margin-bottom: 1.5rem;
+            animation: shimmer 2s infinite;
+        }
+
+        .skeleton-insights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .skeleton-insight {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            border-radius: 12px;
+            height: 120px;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #dailyTrendCard {
+            min-height: 350px;
+            position: relative;
+        }
+
+        #dailyTrendCard .chart-wrapper {
+            height: 250px;
+            width: 100%;
+        }
+
+        .comparison-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 1rem;
+            padding: 10px;
+            background: rgba(147, 51, 234, 0.02);
+            border-radius: 8px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            #dailyTrendCard {
+                min-height: 300px;
+            }
+            
+            #dailyTrendCard .chart-wrapper {
+                height: 200px;
+            }
+            
+            .comparison-legend {
+                gap: 8px;
+                font-size: 0.7rem;
+            }
+            
+            .legend-item {
+                gap: 4px;
+            }
+        }        
     </style>
 </head>
 <body>
@@ -1039,15 +1178,7 @@
         </div>
         
         <div class="auth-section">
-            <button id="loginBtn" class="btn btn-outline">
-                <i class="fas fa-sign-in-alt"></i>
-                <span>Sign In</span>
-            </button>
-            <button id="signupBtn" class="btn btn-primary">
-                <i class="fas fa-user-plus"></i>
-                <span>Join</span>
-            </button>
-            <button id="logoutBtn" class="btn btn-outline hidden">
+            <button id="logoutBtn" class="btn btn-outline">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Sign Out</span>
             </button>
@@ -1055,11 +1186,6 @@
     </header>
 
     <div class="analytics-container">
-        <a href="index.html" class="btn btn-outline back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Back
-        </a>
-        
         <div class="page-header">
             <div>
                 <h1 class="page-title">Analytics</h1>
@@ -1072,9 +1198,27 @@
                         <option value="all">All</option>
                     </select>
                 </div>
-                <div class="month-selector-container">
-                    <label for="monthSelect">Period:</label>
-                    <select id="monthSelect" class="chart-select"></select>
+                <div class="date-range-selector-container">
+                    <label for="dateRangeSelect">Range:</label>
+                    <select id="dateRangeSelect" class="chart-select">
+                        <option value="current-period">Current Period</option>
+                        <option value="last-7">Last 7 Days</option>
+                        <option value="last-30">Last 30 Days</option>
+                        <option value="this-month">This Month</option>
+                        <option value="last-month">Last Month</option>
+                        <option value="last-3-months">Last 3 Months</option>
+                        <option value="last-6-months">Last 6 Months</option>
+                        <option value="year-to-date">Year to Date</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="custom-date-container hidden" id="customDateContainer">
+                    <input type="date" id="startDate" class="chart-select" style="width: 140px;">
+                    <span style="color: var(--gray);">to</span>
+                    <input type="date" id="endDate" class="chart-select" style="width: 140px;">
+                    <button id="applyCustomDate" class="btn btn-primary" style="padding: 8px 12px;">
+                        <i class="fas fa-check"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1120,62 +1264,6 @@
                 </div>
             </div>
 
-            <div class="report-container">
-                <div class="report-header" id="reportHeader">
-                    <div class="report-title">
-                        <i class="fas fa-file-invoice"></i>
-                        Expense Breakdown (Click to expand)
-                    </div>
-                    <button class="report-toggle" id="reportToggle">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
-                <div class="report-content" id="reportContent">
-                    <div class="category-breakdown" id="categoryBreakdown">
-                        <!-- This will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <div class="chart-header">
-                    <h3 class="chart-title" id="categoryChartTitle">Categories by Period</h3>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <div class="chart-header">
-                    <h3 class="chart-title" id="trendChartTitle">Trend (Last 6 periods)</h3>
-                    <select id="trendRange" class="chart-select">
-                        <option value="3">3 periods</option>
-                        <option value="6" selected>6 periods</option>
-                        <option value="12">12 periods</option>
-                    </select>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-container" id="dailyTrendCard"> 
-                <div class="chart-header">
-                    <h3 class="chart-title" id="comparisonChartTitle">Daily Trend</h3>
-                    <select id="comparisonRange" class="chart-select">
-                        <option value="3">3 periods</option>
-                        <option value="6" selected>6 periods</option>
-                        <option value="9">9 periods</option>
-                        <option value="12">12 periods</option>
-                    </select>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="comparisonChart"></canvas>
-                </div>
-                <div class="comparison-legend" id="comparisonLegend"></div>
-            </div>
-
             <div class="insights-grid">
                 <div class="insight-card">
                     <div class="insight-header">
@@ -1218,117 +1306,82 @@
                         <span>Down</span>
                     </div>
                 </div>
+            </div>            
+
+            <div class="report-container">
+                <div class="report-header" id="reportHeader">
+                    <div class="report-title">
+                        <i class="fas fa-file-invoice"></i>
+                        Expense Breakdown (Click to expand)
+                    </div>
+                    <button class="report-toggle" id="reportToggle">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="report-content" id="reportContent">
+                    <div class="category-breakdown" id="categoryBreakdown">
+                        <!-- This will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title" id="categoryChartTitle">Categories by Period</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title" id="trendChartTitle">Monthly Trend</h3>
+                </div>                <div class="chart-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container" id="dailyTrendCard"> 
+                <div class="chart-header">
+                    <h3 class="chart-title" id="comparisonChartTitle">Daily Trend</h3>
+                    <select id="comparisonRange" class="chart-select">
+                        <option value="3">3 periods</option>
+                        <option value="6" selected>6 periods</option>
+                        <option value="9">9 periods</option>
+                        <option value="12">12 periods</option>
+                    </select>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+                <div class="comparison-legend" id="comparisonLegend"></div>
+            </div>
+
         </div>
     </div>
 
     <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 320px;"></div>
 
-    <script>
-        // --- 26th-25th Period System Functions ---
-        
-        // Helper: Get start and end dates for a period
-        function getPeriodDates(periodKey) {
-            const [year, month] = periodKey.split('-').map(Number);
-            
-            // Start: 26th of previous month
-            let startYear = year;
-            let startMonth = month - 1;
-            if (startMonth === 0) {
-                startMonth = 12;
-                startYear = year - 1;
-            }
-            
-            // End: 25th of current month
-            const endDate = new Date(year, month - 1, 25, 23, 59, 59);
-            const startDate = new Date(startYear, startMonth - 1, 26);
-            
-            return { startDate, endDate };
-        }
-        
-        // Helper: Check if date is within period
-        function isInPeriod(dateString, periodKey) {
-            const { startDate, endDate } = getPeriodDates(periodKey);
-            const checkDate = new Date(dateString);
-            return checkDate >= startDate && checkDate <= endDate;
-        }
-        
-        // Helper: Get formatted period label
-        function getPeriodLabel(periodKey) {
-            const [year, month] = periodKey.split('-').map(Number);
-            
-            // Get month names
-            const monthNames = ["January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"];
-            
-            // Calculate previous month for start date
-            let prevMonth = month - 1;
-            let prevYear = year;
-            if (prevMonth === 0) {
-                prevMonth = 12;
-                prevYear = year - 1;
-            }
-            
-            return `${monthNames[prevMonth - 1]} 26th - ${monthNames[month - 1]} 25th`;
-        }
-        
-        // Helper: Get days in period (for daily charts)
-        function getDaysInPeriod(periodKey) {
-            const { startDate, endDate } = getPeriodDates(periodKey);
-            const days = [];
-            const current = new Date(startDate);
-            
-            while (current <= endDate) {
-                days.push(new Date(current));
-                current.setDate(current.getDate() + 1);
-            }
-            
-            return days;
-        }
-        
-        // Helper: Generate period key from date
-        function getPeriodKeyFromDate(dateString) {
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-            
-            // If day >= 26, it belongs to NEXT month's period
-            if (day >= 26) {
-                let nextMonth = month + 1;
-                let nextYear = year;
-                if (nextMonth > 12) {
-                    nextMonth = 1;
-                    nextYear = year + 1;
-                }
-                return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
-            } else {
-                return `${year}-${String(month).padStart(2, '0')}`;
-            }
-        }
+    <script type="module">
+        import { initializeAnalyticsApp } from './js/analytics-app.js';
 
-        // Supabase Initialization
+        // Initialize Supabase
         async function initSupabase() {
             try {
-                console.log('Fetching config...');
-                
                 const response = await fetch('/api/config');
                 if (!response.ok) {
                     throw new Error('Failed to fetch config');
                 }
                 
                 const config = await response.json();
-                console.log('Config loaded:', { 
-                    hasUrl: !!config.supabaseUrl, 
-                    hasKey: !!config.supabaseAnonKey 
-                });
-                
                 window.supabaseClient = window.supabase.createClient(
                     config.supabaseUrl,
                     config.supabaseAnonKey
+                    // SUPABASE_URL, 
+                    // SUPABASE_ANON_KEY
                 );
                 
-                console.log('Supabase client created');
                 return true;
             } catch (error) {
                 console.error('Failed to initialize Supabase:', error);
@@ -1336,1001 +1389,37 @@
                 return false;
             }
         }
-
-        const loginBtn = document.getElementById('loginBtn');
-        const signupBtn = document.getElementById('signupBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const walletSelect = document.getElementById('walletSelect');
-        const monthSelect = document.getElementById('monthSelect');
-        const trendRange = document.getElementById('trendRange');
-        const comparisonRange = document.getElementById('comparisonRange');
-        const noDataAlert = document.getElementById('noDataAlert');
-        const analyticsContent = document.getElementById('analyticsContent');
-        const alertContainer = document.getElementById('alertContainer');
-        const reportHeader = document.getElementById('reportHeader');
-        const reportToggle = document.getElementById('reportToggle');
-        const reportContent = document.getElementById('reportContent');
-
-        let expenses = [];
-        let incomes = [];
-        let wallets = [];
-        let categoryDefinitions = []; // Renamed from categories to avoid conflict
-        let currentWalletId = 'all';
-        let selectedPeriod = null;
-        let availablePeriods = [];
-        let isReportExpanded = true;
-
-        let categoryChart = null;
-        let trendChart = null;
-        let comparisonChart = null;
-
-        function formatDisplayCurrency(amount) {
-            return `Rp ${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+        
+        // Simple alert function for initialization errors
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            if (!container) return;
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            container.appendChild(alert);
+            
+            setTimeout(() => alert.remove(), 4000);
         }
-
-        // Function to create drill-down category breakdown
-        function createCategoryBreakdown() {
-            if (!selectedPeriod) return;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('DOM loaded, initializing analytics...');
             
-            const filteredExpenses = filterDataByWallet(expenses);
-            const periodExpenses = filteredExpenses.filter(expense => 
-                isInPeriod(expense.date, selectedPeriod)
-            );
-            
-            if (periodExpenses.length === 0) {
-                document.getElementById('categoryBreakdown').innerHTML = `
-                    <div class="no-expenses">
-                        <i class="fas fa-receipt" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
-                        <p>No expenses for this period</p>
-                    </div>
-                `;
+            // Load Supabase
+            const initialized = await initSupabase();
+            if (!initialized) {
+                document.getElementById('noDataAlert').classList.remove('hidden');
                 return;
             }
             
-            const totalExpenses = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-            
-            // Group by category
-            const categories = {};
-            
-            periodExpenses.forEach(expense => {
-                const category = expense.category || 'Uncategorized';
-                const subcategory = expense.subcategory || 'General';
-                
-                if (!categories[category]) {
-                    categories[category] = {
-                        total: 0,
-                        percentage: 0,
-                        subcategories: {}
-                    };
-                }
-                
-                if (!categories[category].subcategories[subcategory]) {
-                    categories[category].subcategories[subcategory] = {
-                        total: 0,
-                        percentage: 0,
-                        expenses: []
-                    };
-                }
-                
-                categories[category].total += expense.amount;
-                categories[category].subcategories[subcategory].total += expense.amount;
-                categories[category].subcategories[subcategory].expenses.push(expense);
-            });
-            
-            // Calculate percentages
-            Object.keys(categories).forEach(category => {
-                categories[category].percentage = Math.round((categories[category].total / totalExpenses) * 100);
-                
-                Object.keys(categories[category].subcategories).forEach(subcategory => {
-                    categories[category].subcategories[subcategory].percentage = 
-                        Math.round((categories[category].subcategories[subcategory].total / categories[category].total) * 100);
-                });
-            });
-            
-            // Sort categories by total (descending)
-            const sortedCategories = Object.keys(categories).sort((a, b) => 
-                categories[b].total - categories[a].total
-            );
-            
-            // Generate HTML
-            let html = '';
-            
-            sortedCategories.forEach(category => {
-                const catData = categories[category];
-                const categoryProgress = (catData.total / totalExpenses) * 100;
-                const safeCategoryId = category.replace(/[^a-zA-Z0-9]/g, '-');
-                
-                html += `
-                    <div class="category-group">
-                        <div class="category-header" onclick="toggleCategory('${safeCategoryId}')">
-                            <h3>
-                                <i class="fas fa-folder" style="color: var(--primary);"></i>
-                                ${category}
-                                <span class="category-percentage">${catData.percentage}%</span>
-                            </h3>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="category-total">${formatDisplayCurrency(catData.total)}</span>
-                                <button class="category-toggle" id="toggle-${safeCategoryId}">
-                                    <i class="fas fa-chevron-down"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="category-progress">
-                            <div class="category-progress-bar" style="width: ${categoryProgress}%"></div>
-                        </div>
-                        <div class="category-content" id="content-${safeCategoryId}">
-                            ${createSubcategoryBreakdown(safeCategoryId, catData.subcategories, catData.total)}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('categoryBreakdown').innerHTML = html;
-        }
-
-        // Function to create subcategory breakdown - FIXED VERSION
-        function createSubcategoryBreakdown(safeCategoryId, subcategories, categoryTotal) {
-            const sortedSubcategories = Object.keys(subcategories).sort((a, b) => 
-                subcategories[b].total - subcategories[a].total
-            );
-            
-            if (sortedSubcategories.length === 0) {
-                return `<div class="no-expenses" style="padding: 16px;">No subcategories</div>`;
-            }
-            
-            let html = '';
-            
-            sortedSubcategories.forEach(subcategory => {
-                const subData = subcategories[subcategory];
-                const subcategoryProgress = (subData.total / categoryTotal) * 100; // FIXED: Using categoryTotal parameter
-                const safeSubcategoryId = subcategory.replace(/[^a-zA-Z0-9]/g, '-');
-                
-                html += `
-                    <div class="subcategory-group">
-                        <div class="subcategory-header" onclick="toggleSubcategory('${safeCategoryId}', '${safeSubcategoryId}')">
-                            <h4>
-                                <i class="fas fa-folder-open" style="color: var(--secondary); font-size: 0.8rem;"></i>
-                                ${subcategory}
-                                <span class="subcategory-percentage">${subData.percentage}%</span>
-                            </h4>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="subcategory-total">${formatDisplayCurrency(subData.total)}</span>
-                                <button class="subcategory-toggle" id="toggle-${safeCategoryId}-${safeSubcategoryId}">
-                                    <i class="fas fa-chevron-down"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="subcategory-progress">
-                            <div class="subcategory-progress-bar" style="width: ${subcategoryProgress}%"></div>
-                        </div>
-                        <div class="subcategory-content" id="content-${safeCategoryId}-${safeSubcategoryId}">
-                            ${createExpenseList(subData.expenses)}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            return html;
-        }
-
-        // Function to create expense list
-        function createExpenseList(expenses) {
-            if (expenses.length === 0) {
-                return `<div class="no-expenses" style="padding: 12px; font-size: 0.8rem;">No expenses</div>`;
-            }
-            
-            // Sort by date (newest first)
-            const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            let html = '<div class="expense-list">';
-            
-            sortedExpenses.forEach(expense => {
-                const date = new Date(expense.date).toLocaleDateString('en-US', {
-                    day: 'numeric',
-                    month: 'short'
-                });
-                
-                const wallet = wallets.find(w => w.id === expense.walletId);
-                const walletName = wallet ? wallet.name : 'Unknown';
-                
-                html += `
-                    <div class="expense-item-detail">
-                        <div class="expense-info">
-                            <div class="expense-description">${expense.description}</div>
-                            <div class="expense-meta">
-                                <span class="expense-date">${date}</span>
-                                <span class="expense-wallet">${walletName}</span>
-                            </div>
-                        </div>
-                        <div class="expense-amount-detail">
-                            ${formatDisplayCurrency(expense.amount)}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            return html;
-        }
-
-        // Function to toggle category expansion
-        function toggleCategory(categoryId) {
-            const content = document.getElementById(`content-${categoryId}`);
-            const toggle = document.getElementById(`toggle-${categoryId}`);
-            
-            if (!content || !toggle) return;
-            
-            const isExpanded = content.classList.contains('expanded');
-            
-            if (isExpanded) {
-                content.classList.remove('expanded');
-                toggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
-            } else {
-                content.classList.add('expanded');
-                toggle.innerHTML = '<i class="fas fa-chevron-up"></i>';
-            }
-        }
-
-        // Function to toggle subcategory expansion
-        function toggleSubcategory(categoryId, subcategoryId) {
-            const content = document.getElementById(`content-${categoryId}-${subcategoryId}`);
-            const toggle = document.getElementById(`toggle-${categoryId}-${subcategoryId}`);
-            
-            if (!content || !toggle) return;
-            
-            const isExpanded = content.classList.contains('expanded');
-            
-            if (isExpanded) {
-                content.classList.remove('expanded');
-                toggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
-            } else {
-                content.classList.add('expanded');
-                toggle.innerHTML = '<i class="fas fa-chevron-up"></i>';
-            }
-        }
-
-        async function checkAuthState() {
+            // Initialize analytics app
             try {
-                console.log('Checking auth state...');
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
-                console.log('Current user:', user);
-                
-                if (user && user.email_confirmed_at) {
-                    console.log('User authenticated and confirmed');
-                    loginBtn.classList.add('hidden');
-                    signupBtn.classList.add('hidden');
-                    logoutBtn.classList.remove('hidden');
-                    await loadData();
-                } else if (user) {
-                    console.log('User not confirmed');
-                    showAlert('Verify your email first', 'warning');
-                    loginBtn.classList.remove('hidden');
-                    signupBtn.classList.remove('hidden');
-                    logoutBtn.classList.add('hidden');
-                    showNoDataMessage();
-                } else {
-                    console.log('No user logged in');
-                    loginBtn.classList.remove('hidden');
-                    signupBtn.classList.remove('hidden');
-                    logoutBtn.classList.add('hidden');
-                    showNoDataMessage();
-                }
+                await initializeAnalyticsApp(window.supabaseClient);
             } catch (error) {
-                console.error('Auth check error:', error);
-                showNoDataMessage();
-            }
-        }
-
-        async function loadData() {
-            try {
-                console.log('Loading data...');
-                await loadWallets();
-                await loadExpenses();
-                await loadIncomes();
-                await loadCategories();
-                
-                console.log('Expenses:', expenses.length);
-                console.log('Incomes:', incomes.length);
-                
-                if (expenses.length === 0 && incomes.length === 0) {
-                    showNoDataMessage();
-                } else {
-                    hideNoDataMessage();
-                    generateAvailablePeriods();
-                    console.log('About to update analytics, selectedPeriod:', selectedPeriod);
-                    updateAnalytics();
-                }
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showNoDataMessage();
-            }
-        }
-
-        function generateAvailablePeriods() {
-            const allDates = [
-                ...expenses.map(e => e.date),
-                ...incomes.map(i => i.date)
-            ];
-            
-            // Create period keys based on 26th-25th cycle
-            const periodKeysSet = new Set();
-            
-            allDates.forEach(dateStr => {
-                const periodKey = getPeriodKeyFromDate(dateStr);
-                periodKeysSet.add(periodKey);
-            });
-            
-            availablePeriods = Array.from(periodKeysSet).sort().reverse();
-            console.log('Available periods (26th-25th):', availablePeriods);
-            updatePeriodSelector();
-            
-            if (availablePeriods.length > 0 && !selectedPeriod) {
-                selectedPeriod = availablePeriods[0];
-                console.log('Selected period set to:', selectedPeriod);
-            }
-        }
-
-        function updatePeriodSelector() {
-            monthSelect.innerHTML = '';
-            availablePeriods.forEach(periodKey => {
-                const option = document.createElement('option');
-                option.value = periodKey;
-                option.textContent = getPeriodLabel(periodKey);
-                monthSelect.appendChild(option);
-            });
-            
-            if (selectedPeriod && availablePeriods.includes(selectedPeriod)) {
-                monthSelect.value = selectedPeriod;
-            } else if (availablePeriods.length > 0) {
-                monthSelect.value = availablePeriods[0];
-                selectedPeriod = availablePeriods[0];
-            }
-        }
-
-        async function loadWallets() {
-            try {
-                console.log('Loading wallets...');
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
-                if (!user) {
-                    console.log('No user for wallets');
-                    return;
-                }
-                
-                const { data, error } = await window.supabaseClient
-                    .from('wallets')
-                    .select('*')
-                    .eq('user_id', user.id);
-                
-                if (error) {
-                    console.error('Wallet load error:', error);
-                    throw error;
-                }
-                wallets = data.map(w => ({ id: w.id, name: w.name }));
-                console.log('Wallets loaded:', wallets.length);
-                updateWalletSelector();
-            } catch (error) {
-                console.error('Error loading wallets:', error);
-            }
-        }
-
-        async function loadExpenses() {
-            try {
-                console.log('Loading expenses...');
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
-                if (!user) {
-                    console.log('No user for expenses');
-                    return;
-                }
-                
-                const { data, error } = await window.supabaseClient
-                    .from('expenses')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('date', { ascending: false });
-                
-                if (error) {
-                    console.error('Expense load error:', error);
-                    throw error;
-                }
-                expenses = data.map(e => ({
-                    id: e.id,
-                    description: e.description,
-                    amount: e.amount,
-                    date: e.date,
-                    category: e.category,
-                    subcategory: e.subcategory,
-                    walletId: e.wallet_id
-                }));
-                console.log('Expenses loaded:', expenses.length);
-                if (expenses.length > 0) {
-                    console.log('First expense:', expenses[0]);
-                }
-            } catch (error) {
-                console.error('Error loading expenses:', error);
-            }
-        }
-
-        async function loadIncomes() {
-            try {
-                console.log('Loading incomes...');
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
-                if (!user) {
-                    console.log('No user for incomes');
-                    return;
-                }
-                
-                const { data, error } = await window.supabaseClient
-                    .from('incomes')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('date', { ascending: false });
-                
-                if (error) {
-                    console.error('Income load error:', error);
-                    throw error;
-                }
-                incomes = data.map(i => ({
-                    id: i.id,
-                    description: i.description,
-                    amount: i.amount,
-                    date: i.date,
-                    source: i.source,
-                    walletId: i.wallet_id
-                }));
-                console.log('Incomes loaded:', incomes.length);
-            } catch (error) {
-                console.error('Error loading incomes:', error);
-            }
-        }
-
-        async function loadCategories() {
-            try {
-                console.log('Loading categories...');
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
-                if (!user) {
-                    console.log('No user for categories');
-                    return;
-                }
-                
-                const { data, error } = await window.supabaseClient
-                    .from('categories')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: true });
-                
-                if (error) {
-                    console.error('Category load error:', error);
-                    throw error;
-                }
-                categoryDefinitions = data.map(c => ({
-                    id: c.id,
-                    name: c.name,
-                    type: c.type || 'main',
-                    parentId: c.parent_id
-                }));
-                console.log('Categories loaded:', categoryDefinitions.length);
-            } catch (error) {
-                console.error('Error loading categories:', error);
-            }
-        }
-
-        function updateWalletSelector() {
-            walletSelect.innerHTML = '<option value="all">All Wallets</option>';
-            wallets.forEach(wallet => {
-                const option = document.createElement('option');
-                option.value = wallet.id;
-                option.textContent = wallet.name;
-                walletSelect.appendChild(option);
-            });
-        }
-
-        function filterDataByWallet(data) {
-            if (currentWalletId === 'all') return data;
-            return data.filter(item => item.walletId === currentWalletId);
-        }
-
-        function getTrendData(endPeriodKey, periodCount) {
-            const periods = availablePeriods.sort();
-            let endIndex = periods.indexOf(endPeriodKey);
-            if (endIndex === -1) endIndex = periods.length - 1;
-            
-            const startIndex = Math.max(0, endIndex - periodCount + 1);
-            const trendPeriods = periods.slice(startIndex, endIndex + 1);
-            
-            const incomeData = trendPeriods.map(periodKey => {
-                const periodIncome = filterDataByWallet(incomes).filter(income => 
-                    isInPeriod(income.date, periodKey)
-                );
-                return periodIncome.reduce((sum, income) => sum + income.amount, 0);
-            });
-            
-            const expenseData = trendPeriods.map(periodKey => {
-                const periodExpenses = filterDataByWallet(expenses).filter(expense => 
-                    isInPeriod(expense.date, periodKey)
-                );
-                return periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-            });
-            
-            return { periods: trendPeriods, income: incomeData, expense: expenseData };
-        }
-
-        function getDailyExpenseData(periodKey) {
-            const { startDate, endDate } = getPeriodDates(periodKey);
-            const daysInPeriod = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-            const dailyData = Array(daysInPeriod).fill(0);
-            
-            const periodExpenses = filterDataByWallet(expenses).filter(expense => 
-                isInPeriod(expense.date, periodKey)
-            );
-            
-            periodExpenses.forEach(expense => {
-                const expenseDate = new Date(expense.date);
-                const dayIndex = Math.floor((expenseDate - startDate) / (1000 * 60 * 60 * 24));
-                if (dayIndex >= 0 && dayIndex < daysInPeriod) {
-                    dailyData[dayIndex] += expense.amount;
-                }
-            });
-            
-            return dailyData;
-        }
-
-        function getDailyComparisonData(periodCount) {
-            if (!selectedPeriod) return null;
-            
-            const currentPeriodDays = getDaysInPeriod(selectedPeriod);
-            const daysInCurrentPeriod = currentPeriodDays.length;
-            const currentPeriodDaily = getDailyExpenseData(selectedPeriod);
-            
-            const periods = availablePeriods.sort();
-            const currentIndex = periods.indexOf(selectedPeriod);
-            if (currentIndex === -1) return null;
-            
-            const startIndex = Math.max(0, currentIndex - periodCount);
-            const historicalPeriods = periods.slice(startIndex, currentIndex);
-            
-            const dailyAverages = Array(daysInCurrentPeriod).fill(0);
-            const dayCounts = Array(daysInCurrentPeriod).fill(0);
-            
-            historicalPeriods.forEach(periodKey => {
-                const historicalDailyData = getDailyExpenseData(periodKey);
-                const daysInHistoricalPeriod = historicalDailyData.length;
-                
-                for (let day = 0; day < daysInCurrentPeriod; day++) {
-                    if (day < daysInHistoricalPeriod) {
-                        dailyAverages[day] += historicalDailyData[day];
-                        dayCounts[day]++;
-                    } else {
-                        // Use last available day for missing days
-                        dailyAverages[day] += historicalDailyData[daysInHistoricalPeriod - 1] || 0;
-                        dayCounts[day]++;
-                    }
-                }
-            });
-            
-            const historicalAverageDaily = dailyAverages.map((sum, index) => 
-                dayCounts[index] > 0 ? sum / dayCounts[index] : 0
-            );
-            
-            const currentMonthCumulative = [];
-            const historicalAverageCumulative = [];
-            
-            let currentSum = 0;
-            let historicalSum = 0;
-            
-            for (let i = 0; i < daysInCurrentPeriod; i++) {
-                currentSum += currentPeriodDaily[i];
-                historicalSum += historicalAverageDaily[i];
-                currentMonthCumulative.push(currentSum);
-                historicalAverageCumulative.push(historicalSum);
-            }
-            
-            return {
-                days: Array.from({length: daysInCurrentPeriod}, (_, i) => i + 1),
-                currentMonthDaily: currentPeriodDaily,
-                currentMonthCumulative: currentMonthCumulative,
-                historicalAverageDaily: historicalAverageDaily,
-                historicalAverageCumulative: historicalAverageCumulative
-            };
-        }
-
-        function updateAnalytics() {
-            if (!selectedPeriod) return;
-            
-            // Update chart titles with period label
-            const periodLabel = getPeriodLabel(selectedPeriod);
-            document.getElementById('categoryChartTitle').textContent = `Categories (${periodLabel})`;
-            document.getElementById('trendChartTitle').textContent = `Trend (Last ${trendRange.value} periods)`;
-            document.getElementById('comparisonChartTitle').textContent = `Daily Trend (${periodLabel})`;
-            
-            updateSummaryCards();
-            updateCategoryChart();
-            updateTrendChart();
-            updateComparisonChart();
-            createCategoryBreakdown();
-            updateInsights();
-        }
-
-        function updateSummaryCards() {
-            if (!selectedPeriod) return;
-            
-            const filteredExpenses = filterDataByWallet(expenses);
-            const filteredIncomes = filterDataByWallet(incomes);
-            
-            const periodExpenses = filteredExpenses.filter(expense => 
-                isInPeriod(expense.date, selectedPeriod)
-            );
-            
-            const periodIncomes = filteredIncomes.filter(income => 
-                isInPeriod(income.date, selectedPeriod)
-            );
-            
-            const totalExpensesAmount = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-            const totalIncomeAmount = periodIncomes.reduce((sum, income) => sum + income.amount, 0);
-            const totalBalance = totalIncomeAmount - totalExpensesAmount;
-            
-            document.getElementById('totalBalance').textContent = formatDisplayCurrency(totalBalance);
-            document.getElementById('totalIncome').textContent = formatDisplayCurrency(totalIncomeAmount);
-            document.getElementById('totalExpenses').textContent = formatDisplayCurrency(totalExpensesAmount);
-            
-            // Update labels to show period
-            const periodLabel = getPeriodLabel(selectedPeriod);
-            document.getElementById('balanceLabel').textContent = periodLabel;
-            document.getElementById('incomeLabel').textContent = periodLabel;
-            document.getElementById('expenseLabel').textContent = periodLabel;
-        }
-
-        function updateCategoryChart() {
-            if (!selectedPeriod) return;
-            
-            const ctx = document.getElementById('categoryChart').getContext('2d');
-            if (categoryChart) categoryChart.destroy();
-            
-            const filteredExpenses = filterDataByWallet(expenses);
-            const periodExpenses = filteredExpenses.filter(expense => 
-                isInPeriod(expense.date, selectedPeriod)
-            );
-            
-            const categoryTotals = {};
-            periodExpenses.forEach(expense => {
-                const category = expense.category || 'Other';
-                categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount;
-            });
-            
-            const categories = Object.keys(categoryTotals);
-            const amounts = Object.values(categoryTotals);
-            
-            const backgroundColors = categories.map((_, index) => {
-                const hue = (index * 137.5) % 360;
-                return `hsl(${hue}, 65%, 60%)`;
-            });
-            
-            categoryChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: categories,
-                    datasets: [{
-                        data: amounts,
-                        backgroundColor: backgroundColors,
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: { boxWidth: 10, font: { size: 10 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${formatDisplayCurrency(value)} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateTrendChart() {
-            if (!selectedPeriod) return;
-            
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            if (trendChart) trendChart.destroy();
-            
-            const period = parseInt(trendRange.value);
-            const trendData = getTrendData(selectedPeriod, period);
-            
-            const labels = trendData.periods.map(periodKey => {
-                const [year, month] = periodKey.split('-');
-                return new Date(year, month - 1).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    year: '2-digit' 
-                });
-            });
-            
-            trendChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Income',
-                            data: trendData.income,
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.3,
-                            fill: true,
-                            pointRadius: 3
-                        },
-                        {
-                            label: 'Expenses',
-                            data: trendData.expense,
-                            borderColor: '#EF4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            tension: 0.3,
-                            fill: true,
-                            pointRadius: 3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { boxWidth: 10, font: { size: 10 } } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${formatDisplayCurrency(context.raw || 0)}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: (v) => formatDisplayCurrency(v), font: { size: 9 } }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateComparisonChart() {
-            const ctx = document.getElementById('comparisonChart').getContext('2d');
-            if (comparisonChart) comparisonChart.destroy();
-            
-            const period = parseInt(comparisonRange.value);
-            const comparisonData = getDailyComparisonData(period);
-            if (!comparisonData) return;
-            
-            updateComparisonLegend([
-                'Current Daily',
-                'Current Cumulative',
-                'Average Daily',
-                'Average Cumulative'
-            ], [
-                'rgba(239, 68, 68, 0.8)',
-                'rgba(239, 68, 68, 1)',
-                'rgba(147, 51, 234, 0.8)',
-                'rgba(147, 51, 234, 1)'
-            ]);
-            
-            comparisonChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: comparisonData.days,
-                    datasets: [
-                        {
-                            label: 'Current Daily',
-                            data: comparisonData.currentMonthDaily,
-                            borderColor: 'rgba(239, 68, 68, 0.8)',
-                            backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: false,
-                            pointRadius: 0
-                        },
-                        {
-                            label: 'Current Cumulative',
-                            data: comparisonData.currentMonthCumulative,
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 3,
-                            tension: 0.3,
-                            fill: false,
-                            pointRadius: 0
-                        },
-                        {
-                            label: 'Average Daily',
-                            data: comparisonData.historicalAverageDaily,
-                            borderColor: 'rgba(147, 51, 234, 0.8)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: false,
-                            pointRadius: 0,
-                            borderDash: [5, 5]
-                        },
-                        {
-                            label: 'Average Cumulative',
-                            data: comparisonData.historicalAverageCumulative,
-                            borderColor: 'rgba(147, 51, 234, 1)',
-                            borderWidth: 3,
-                            tension: 0.3,
-                            fill: false,
-                            pointRadius: 0,
-                            borderDash: [5, 5]
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { callback: (v) => formatDisplayCurrency(v), font: { size: 9 } } }
-                    }
-                }
-            });
-        }
-
-        function updateComparisonLegend(labels, colors) {
-            const legendContainer = document.getElementById('comparisonLegend');
-            legendContainer.innerHTML = '';
-            labels.forEach((label, index) => {
-                const legendItem = document.createElement('div');
-                legendItem.className = 'legend-item';
-                const colorBox = document.createElement('div');
-                colorBox.className = 'legend-color';
-                colorBox.style.backgroundColor = colors[index];
-                const labelText = document.createElement('span');
-                labelText.textContent = label;
-                legendItem.appendChild(colorBox);
-                legendItem.appendChild(labelText);
-                legendContainer.appendChild(legendItem);
-            });
-        }
-
-        function updateInsights() {
-            if (!selectedPeriod) return;
-            
-            const filteredExpenses = filterDataByWallet(expenses);
-            const filteredIncomes = filterDataByWallet(incomes);
-            
-            const periodExpenses = filteredExpenses.filter(expense => 
-                isInPeriod(expense.date, selectedPeriod)
-            );
-            
-            const periodIncomes = filteredIncomes.filter(income => 
-                isInPeriod(income.date, selectedPeriod)
-            );
-            
-            const totalExpensesAmount = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-            const totalIncomeAmount = periodIncomes.reduce((sum, income) => sum + income.amount, 0);
-            
-            const savingsRate = totalIncomeAmount > 0 ? 
-                Math.round(((totalIncomeAmount - totalExpensesAmount) / totalIncomeAmount) * 100) : 0;
-            document.getElementById('savingsRate').textContent = `${savingsRate}%`;
-            
-            const categoryTotals = {};
-            periodExpenses.forEach(expense => {
-                const category = expense.category || 'Other';
-                categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount;
-            });
-            
-            let topCategory = '-';
-            let topCategoryAmount = 0;
-            Object.keys(categoryTotals).forEach(category => {
-                if (categoryTotals[category] > topCategoryAmount) {
-                    topCategory = category;
-                    topCategoryAmount = categoryTotals[category];
-                }
-            });
-            
-            document.getElementById('topCategory').textContent = topCategory;
-            document.getElementById('topCategoryAmount').textContent = formatDisplayCurrency(topCategoryAmount);
-            
-            // Calculate average for last 6 periods
-            const periods = availablePeriods.sort();
-            const currentIndex = periods.indexOf(selectedPeriod);
-            const startIndex = Math.max(0, currentIndex - 6);
-            const lastSixPeriods = periods.slice(startIndex, currentIndex + 1);
-            
-            const periodTotals = {};
-            lastSixPeriods.forEach(periodKey => {
-                const periodExpenses = filteredExpenses.filter(expense => 
-                    isInPeriod(expense.date, periodKey)
-                );
-                periodTotals[periodKey] = periodExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-            });
-            
-            const periodValues = Object.values(periodTotals);
-            const periodAverage = periodValues.length > 0 ? 
-                periodValues.reduce((sum, amount) => sum + amount, 0) / periodValues.length : 0;
-            
-            document.getElementById('monthlyAverage').textContent = formatDisplayCurrency(Math.round(periodAverage));
-            document.getElementById('monthlyAverage').parentNode.querySelector('.insight-content').textContent = 'Average per period';
-        }
-
-        function showNoDataMessage() {
-            noDataAlert.classList.remove('hidden');
-            analyticsContent.classList.add('hidden');
-        }
-
-        function hideNoDataMessage() {
-            noDataAlert.classList.add('hidden');
-            analyticsContent.classList.remove('hidden');
-        }
-
-        function showAlert(message, type) {
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            const icon = type === 'success' ? 'fa-check-circle' : 
-                         type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
-            alert.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
-            alertContainer.appendChild(alert);
-            setTimeout(() => alert.remove(), 4000);
-        }
-
-        function toggleReport() {
-            isReportExpanded = !isReportExpanded;
-            if (isReportExpanded) {
-                reportContent.classList.remove('collapsed');
-                reportToggle.classList.remove('collapsed');
-            } else {
-                reportContent.classList.add('collapsed');
-                reportToggle.classList.add('collapsed');
-            }
-        }
-
-        walletSelect.addEventListener('change', function() {
-            currentWalletId = this.value;
-            updateAnalytics();
-        });
-
-        monthSelect.addEventListener('change', function() {
-            selectedPeriod = this.value;
-            console.log('Period changed to:', selectedPeriod);
-            updateAnalytics();
-        });
-
-        trendRange.addEventListener('change', updateTrendChart);
-        comparisonRange.addEventListener('change', updateComparisonChart);
-        reportHeader.addEventListener('click', toggleReport);
-
-        loginBtn.addEventListener('click', () => window.location.href = 'index.html');
-        signupBtn.addEventListener('click', () => window.location.href = 'index.html');
-
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await window.supabaseClient.auth.signOut();
-                showAlert('Logged out', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('DOM loaded, initializing...');
-            const initialized = await initSupabase();
-            if (initialized) {
-                checkAuthState();
-            } else {
-                showNoDataMessage();
-            }
-        });
-
-        window.supabaseClient?.auth.onAuthStateChange((event, session) => {
-            console.log('Auth state changed:', event);
-            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                checkAuthState();
+                console.error('Failed to initialize analytics app:', error);
+                showAlert('Failed to load analytics. Please refresh.', 'error');
             }
         });
     </script>

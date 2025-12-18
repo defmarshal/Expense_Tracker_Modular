@@ -81,6 +81,9 @@ class AuthService {
             this.state.setUser(session.user);
             this.database.setUser(session.user);
             
+            // Show navigation links
+            document.getElementById('navLinks')?.classList.remove('hidden');
+            
             // Load user data
             await this.loadUserData();
             
@@ -95,6 +98,10 @@ class AuthService {
     handleSignedOut() {
         console.log('User signed out');
         this.state.reset();
+        
+        // Hide navigation links
+        document.getElementById('navLinks')?.classList.add('hidden');
+        
         this.emitAuthEvent('signedOut', {});
     }
 
