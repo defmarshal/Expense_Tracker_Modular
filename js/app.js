@@ -753,11 +753,9 @@ class SwipeHandler {
             this.currentX = e.touches[0].clientX;
             const deltaX = this.currentX - this.startX;
             
-            // Only allow left swipe
-            if (deltaX < 0) {
-                const translateX = Math.max(deltaX, -120);
-                itemElement.style.transform = `translateX(${translateX}px)`;
-            }
+            // Allow both directions but limit movement
+            const translateX = Math.max(Math.min(deltaX, 0), -120); // Only negative values (left swipe)
+            itemElement.querySelector('> div:first-child').style.transform = `translateX(${translateX}px)`;
         };
         
         const handleTouchEnd = (e) => {
@@ -806,7 +804,7 @@ class SwipeHandler {
             
             if (deltaX < 0) {
                 const translateX = Math.max(deltaX, -120);
-                itemElement.style.transform = `translateX(${translateX}px)`;
+                itemElement.querySelector('> div:first-child').style.transform = `translateX(${translateX}px)`;
             }
         };
         
