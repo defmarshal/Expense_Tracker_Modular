@@ -206,11 +206,11 @@
 
         .card-header {
             display: flex;
-            flex-direction: column; /* Change from flex-start to column */
-            align-items: center; /* Add this */
+            flex-direction: column;
+            align-items: center;
             margin-bottom: 0.8rem;
-            gap: 8px;
-            width: 100%; /* Add this */
+            gap: 4px;
+            width: 100%;
         }
 
         .card-icon {
@@ -1436,10 +1436,10 @@
             <div class="analytics-grid">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Balance</h3> <!-- Change from h3 to use card-title class -->
                         <div class="card-icon">
                             <i class="fas fa-wallet"></i>
-                        </div>
+                        </div>                        
+                        <h3 class="card-title">Balance</h3> <!-- Change from h3 to use card-title class -->
                     </div>
                     <div class="stat-value balance" id="totalBalance">Rp 0</div>
                     <div class="stat-label" id="balanceLabel">Select period</div>
@@ -1447,10 +1447,10 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Income</h3> <!-- Change from h3 to use card-title class -->
                         <div class="card-icon" style="background: var(--income-gradient);">
                             <i class="fas fa-arrow-up"></i>
-                        </div>
+                        </div>                        
+                        <h3 class="card-title">Income</h3> <!-- Change from h3 to use card-title class -->
                     </div>
                     <div class="stat-value income" id="totalIncome">Rp 0</div>
                     <div class="stat-label" id="incomeLabel">Select period</div>
@@ -1458,10 +1458,10 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Expenses</h3> <!-- Change from h3 to use card-title class -->
                         <div class="card-icon" style="background: var(--danger);">
                             <i class="fas fa-arrow-down"></i>
-                        </div>
+                        </div>                        
+                        <h3 class="card-title">Expenses</h3> <!-- Change from h3 to use card-title class -->
                     </div>
                     <div class="stat-value expense" id="totalExpenses">Rp 0</div>
                     <div class="stat-label" id="expenseLabel">Select period</div>
