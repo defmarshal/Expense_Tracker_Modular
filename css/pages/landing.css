@@ -8,6 +8,7 @@
     background: var(--gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
     line-height: 1.1;
 }
 
@@ -18,6 +19,7 @@
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
+    line-height: 1.6;
 }
 
 .hero-image {
@@ -38,6 +40,7 @@
     justify-content: center;
     color: white;
     font-size: 1.3rem;
+    font-weight: 600;
 }
 
 /* Feature Cards */
@@ -54,6 +57,13 @@
 .feature-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 8px 20px rgba(147, 51, 234, 0.12);
+}
+
+/* Disable hover on touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .feature-card:hover {
+        transform: none;
+    }
 }
 
 .feature-icon {
@@ -78,7 +88,7 @@
 
 .feature-description {
     color: var(--gray);
-    line-height: 1.5;
+    line-height: 1.6;
     font-size: 0.95rem;
 }
 
@@ -94,6 +104,7 @@
     font-size: 2.2rem;
     font-weight: 700;
     margin-bottom: 1rem;
+    color: white;
 }
 
 .cta p {
@@ -101,6 +112,7 @@
     max-width: 550px;
     margin: 0 auto 2rem;
     opacity: 0.95;
+    line-height: 1.6;
 }
 
 .cta-buttons {
@@ -115,10 +127,12 @@
     font-size: 1rem;
     margin-bottom: 1rem;
     font-weight: 600;
+    color: white;
 }
 
 .footer-links {
     list-style: none;
+    padding: 0;
 }
 
 .footer-links li {
@@ -130,8 +144,183 @@
     text-decoration: none;
     transition: color var(--transition-normal);
     font-size: 0.9rem;
+    display: inline-block;
+    padding: 0.2rem 0;
 }
 
 .footer-links a:hover {
     color: white;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .hero p {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .hero-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .hero-image {
+        margin-top: 1rem;
+        border-radius: 12px;
+    }
+    
+    .hero-image > div {
+        height: 220px;
+        font-size: 1rem;
+        padding: 1rem;
+    }
+    
+    .feature-card {
+        padding: 1.5rem;
+    }
+    
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3rem;
+    }
+    
+    .feature-title {
+        font-size: 1.1rem;
+    }
+    
+    .feature-description {
+        font-size: 0.9rem;
+    }
+    
+    .cta {
+        padding: 3rem 1.5rem;
+    }
+    
+    .cta h2 {
+        font-size: 1.8rem;
+    }
+    
+    .cta p {
+        font-size: 1rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .hero p {
+        font-size: 0.95rem;
+        margin-bottom: 1.2rem;
+    }
+    
+    .hero-image > div {
+        height: 180px;
+        font-size: 0.9rem;
+    }
+    
+    .feature-card {
+        padding: 1.2rem;
+    }
+    
+    .feature-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .feature-title {
+        font-size: 1rem;
+        margin-bottom: 0.6rem;
+    }
+    
+    .feature-description {
+        font-size: 0.85rem;
+    }
+    
+    .cta {
+        padding: 2.5rem 1rem;
+    }
+    
+    .cta h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .cta p {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .footer-column h3 {
+        font-size: 0.95rem;
+    }
+    
+    .footer-links a {
+        font-size: 0.85rem;
+    }
+}
+
+/* Landscape mode for mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+    .hero {
+        padding: 2rem 1rem;
+    }
+    
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .hero p {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: row;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-image {
+        max-width: 600px;
+    }
+    
+    .hero-image > div {
+        height: 200px;
+    }
+    
+    .cta {
+        padding: 2rem 1.5rem;
+    }
+    
+    .cta h2 {
+        font-size: 1.6rem;
+    }
 }

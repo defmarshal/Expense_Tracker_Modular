@@ -1,7 +1,8 @@
 /* Header Layout */
 header {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     position: fixed;
     top: 0;
     left: 0;
@@ -12,6 +13,10 @@ header {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+    /* Safe area for iOS notch */
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
 }
 
 /* Navigation */
@@ -29,14 +34,28 @@ header {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
+    padding: 8px 12px;
     border-radius: 12px;
     font-size: 0.9rem;
+    /* Better touch target */
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
 }
 
 .nav-link:hover, .nav-link.active {
     color: var(--primary);
     background-color: rgba(147, 51, 234, 0.1);
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .nav-link:hover {
+        background-color: transparent;
+    }
+    
+    .nav-link:active {
+        background-color: rgba(147, 51, 234, 0.15);
+    }
 }
 
 /* Logo */
@@ -47,6 +66,7 @@ header {
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--dark);
+    user-select: none;
 }
 
 .logo i {
@@ -58,6 +78,7 @@ header {
 .auth-section {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 /* Main Container */
@@ -65,6 +86,9 @@ header {
     max-width: 1000px;
     margin: 0 auto;
     padding: 0 1rem;
+    /* Safe area for iOS */
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
 }
 
 /* Grid Layouts */
@@ -96,8 +120,8 @@ header {
 .dashboard-container {
     display: none;
     min-height: 100vh;
-    padding-top: 70px;
-    padding-bottom: 2rem;
+    padding-top: calc(70px + env(safe-area-inset-top));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
     background: linear-gradient(180deg, #F9F5FF 0%, #FFFFFF 100%);
 }
 
@@ -113,6 +137,7 @@ header {
 /* Landing Page Layout */
 .landing-page {
     display: none;
+    padding-top: env(safe-area-inset-top);
 }
 
 .hero {
@@ -123,6 +148,7 @@ header {
     align-items: center;
     text-align: center;
     padding: 2rem;
+    padding-top: max(2rem, calc(70px + env(safe-area-inset-top)));
     background: linear-gradient(135deg, #F9F5FF 0%, #FFFFFF 100%);
     position: relative;
     overflow: hidden;
@@ -169,6 +195,7 @@ header {
 /* Footer Layout */
 footer {
     padding: 3rem 2rem 1.5rem;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
     background: var(--dark);
     color: white;
 }
@@ -181,4 +208,144 @@ footer {
     text-align: center;
     color: rgba(255, 255, 255, 0.6);
     font-size: 0.85rem;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    header {
+        padding: 0.6rem 0.8rem;
+        padding-top: max(0.6rem, env(safe-area-inset-top));
+    }
+    
+    .logo {
+        font-size: 1.1rem;
+        gap: 6px;
+    }
+    
+    .logo i {
+        font-size: 1.3rem;
+    }
+    
+    .nav-links {
+        gap: 0.5rem;
+    }
+    
+    .nav-link span {
+        display: none;
+    }
+    
+    .nav-link {
+        padding: 8px;
+        min-width: 40px;
+    }
+    
+    .container {
+        padding: 0 0.8rem;
+        padding-left: max(0.8rem, env(safe-area-inset-left));
+        padding-right: max(0.8rem, env(safe-area-inset-right));
+    }
+    
+    .dashboard-stats {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.8rem;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+    
+    .dashboard-stats::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+    
+    .hero {
+        padding: 1.5rem 1rem;
+        padding-top: max(1.5rem, calc(70px + env(safe-area-inset-top)));
+    }
+    
+    .features {
+        padding: 3rem 1rem;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+    
+    .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 0.5rem 0.6rem;
+        padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
+    
+    .logo {
+        font-size: 1rem;
+    }
+    
+    .logo i {
+        font-size: 1.2rem;
+    }
+    
+    .logo span {
+        font-size: 1rem;
+    }
+    
+    .auth-section .btn span {
+        display: none;
+    }
+    
+    .auth-section .btn {
+        padding: 9px 11px;
+        gap: 0;
+        min-width: 42px;
+    }
+    
+    .auth-section {
+        gap: 6px;
+    }
+    
+    .container {
+        padding: 0 0.75rem;
+        padding-left: max(0.75rem, env(safe-area-inset-left));
+        padding-right: max(0.75rem, env(safe-area-inset-right));
+    }
+    
+    .hero {
+        min-height: calc(100vh - 60px);
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* Landscape mode on mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+    .hero {
+        min-height: auto;
+        padding: 3rem 1rem;
+    }
+    
+    .dashboard-container {
+        padding-top: 60px;
+    }
+    
+    header {
+        padding: 0.5rem 1rem;
+    }
 }
