@@ -1307,16 +1307,35 @@
             }
         }
 
-        // Check if supabase is already defined (from index.html)
-        if (!window.supabase) {
-            const SUPABASE_URL = 'https://slgzgaojmgzjhtuaptod.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZ3pnYW9qbWd6amh0dWFwdG9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyNzQyMzMsImV4cCI6MjA3ODg1MDIzM30.aD9cjbekiufRaatuNaAEP2uD2uU7ggpPor6jtSGM-F4';
-            
-            window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Supabase Initialization
+        async function initSupabase() {
+            try {
+                console.log('Fetching config...');
+                
+                const response = await fetch('/api/config');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch config');
+                }
+                
+                const config = await response.json();
+                console.log('Config loaded:', { 
+                    hasUrl: !!config.supabaseUrl, 
+                    hasKey: !!config.supabaseAnonKey 
+                });
+                
+                window.supabaseClient = window.supabase.createClient(
+                    config.supabaseUrl,
+                    config.supabaseAnonKey
+                );
+                
+                console.log('Supabase client created');
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize Supabase:', error);
+                showAlert('Failed to load application. Please refresh.', 'error');
+                return false;
+            }
         }
-
-        // Always use window.supabase to avoid redeclaration
-        const supabase = window.supabase;
 
         const loginBtn = document.getElementById('loginBtn');
         const signupBtn = document.getElementById('signupBtn');
@@ -1573,7 +1592,7 @@
         async function checkAuthState() {
             try {
                 console.log('Checking auth state...');
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { user } } = await window.supabaseClient.auth.getUser();
                 console.log('Current user:', user);
                 
                 if (user && user.email_confirmed_at) {
@@ -1671,13 +1690,13 @@
         async function loadWallets() {
             try {
                 console.log('Loading wallets...');
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { user } } = await window.supabaseClient.auth.getUser();
                 if (!user) {
                     console.log('No user for wallets');
                     return;
                 }
                 
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('wallets')
                     .select('*')
                     .eq('user_id', user.id);
@@ -1697,13 +1716,13 @@
         async function loadExpenses() {
             try {
                 console.log('Loading expenses...');
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { user } } = await window.supabaseClient.auth.getUser();
                 if (!user) {
                     console.log('No user for expenses');
                     return;
                 }
                 
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('expenses')
                     .select('*')
                     .eq('user_id', user.id)
@@ -1734,13 +1753,13 @@
         async function loadIncomes() {
             try {
                 console.log('Loading incomes...');
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { user } } = await window.supabaseClient.auth.getUser();
                 if (!user) {
                     console.log('No user for incomes');
                     return;
                 }
                 
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('incomes')
                     .select('*')
                     .eq('user_id', user.id)
@@ -1767,13 +1786,13 @@
         async function loadCategories() {
             try {
                 console.log('Loading categories...');
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { user } } = await window.supabaseClient.auth.getUser();
                 if (!user) {
                     console.log('No user for categories');
                     return;
                 }
                 
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('categories')
                     .select('*')
                     .eq('user_id', user.id)
@@ -2290,7 +2309,7 @@
 
         logoutBtn.addEventListener('click', async () => {
             try {
-                await supabase.auth.signOut();
+                await window.supabaseClient.auth.signOut();
                 showAlert('Logged out', 'success');
                 setTimeout(() => window.location.reload(), 1000);
             } catch (error) {
@@ -2298,12 +2317,17 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, checking auth state...');
-            checkAuthState();
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('DOM loaded, initializing...');
+            const initialized = await initSupabase();
+            if (initialized) {
+                checkAuthState();
+            } else {
+                showNoDataMessage();
+            }
         });
-        
-        supabase.auth.onAuthStateChange((event, session) => {
+
+        window.supabaseClient?.auth.onAuthStateChange((event, session) => {
             console.log('Auth state changed:', event);
             if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
                 checkAuthState();
