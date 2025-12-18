@@ -768,7 +768,29 @@
             }
 
             .nav-links {
+                display: flex;
+            }
+
+            .nav-link span {
                 display: none;
+            }
+
+            .nav-link {
+                padding: 8px 10px;
+            }
+            
+            input[type="date"] {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .custom-date-container {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .custom-date-container input[type="date"] {
+                width: 100% !important;
             }
 
             .analytics-grid {
@@ -840,6 +862,8 @@
                 flex-wrap: wrap;
                 gap: 6px;
             }
+
+
         }
 
         @media (max-width: 480px) {
@@ -859,6 +883,20 @@
             .auth-section .btn span {
                 display: none;
             }
+            
+            .nav-links {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .nav-link {
+                padding: 8px 10px;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
 
             .auth-section .btn {
                 padding: 8px 10px;
@@ -1046,6 +1084,19 @@
             .comparison-legend {
                 margin-top: 0;
             }
+
+            .nav-links {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .nav-link {
+                padding: 8px 10px;
+            }
+
+            .nav-link span {
+                display: none;
+            }            
         }
 
         /* Skeleton loading styles */
@@ -1365,6 +1416,7 @@
 
     <script type="module">
         import { initializeAnalyticsApp } from './js/analytics-app.js';
+
 
         // Initialize Supabase
         async function initSupabase() {

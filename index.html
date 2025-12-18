@@ -25,7 +25,7 @@
             <span>FinTrack</span>
         </div>
         
-        <div class="nav-links hidden" id="navLinks">
+        <div class="nav-links" id="navLinks">
             <a href="index.html" class="nav-link active">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
@@ -179,14 +179,7 @@
     </div>
 
     <div id="dashboardContainer" class="dashboard-container">
-        <div class="container">
-            <div style="margin-bottom: 1rem;">
-                <a href="analytics.html" class="btn btn-outline">
-                    <i class="fas fa-chart-bar"></i>
-                    Analytics
-                </a>
-            </div>
-            
+        <div class="container">    
             <div class="dashboard-header">
                 <h1 class="dashboard-title">Dashboard</h1>
                 <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
@@ -595,6 +588,9 @@
 
     <script type="module">
 
+        const SUPABASE_URL = 'https://slgzgaojmgzjhtuaptod.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZ3pnYW9qbWd6amh0dWFwdG9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyNzQyMzMsImV4cCI6MjA3ODg1MDIzM30.aD9cjbekiufRaatuNaAEP2uD2uU7ggpPor6jtSGM-F4';
+
         async function initApp() {
             try {
                 console.log('Fetching config...');
@@ -615,6 +611,8 @@
                 const supabase = window.supabase.createClient(
                     config.supabaseUrl,
                     config.supabaseAnonKey
+                    // SUPABASE_URL, 
+                    // SUPABASE_ANON_KEY                    
                 );
                 
                 console.log('Supabase client created');

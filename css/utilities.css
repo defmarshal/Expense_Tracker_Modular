@@ -188,6 +188,15 @@
         font-size: 16px;
     }
     
+    input[type="date"] {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .form-row .form-group {
+        width: 100%;
+    }
+    
     .modal {
         max-width: 95%;
     }
@@ -285,4 +294,14 @@
         padding: 9px 10px;
         font-size: 15px;
     }
+    
+    input[type="date"],
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select {
+        width: 100%;
+        max-width: 100%;
+    }
+}
 }
