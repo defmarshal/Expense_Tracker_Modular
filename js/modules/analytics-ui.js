@@ -232,6 +232,7 @@ class AnalyticsUI {
         });
         
         container.innerHTML = html;
+        setTimeout(() => this.adjustCategoryFontSizes(), 50);
     }
 
     renderSubcategoryBreakdown(categoryId, subcategories, categoryTotal) {
@@ -459,6 +460,65 @@ class AnalyticsUI {
         
         return `${monthNames[prevMonth - 1]} 26th - ${monthNames[month - 1]} 25th`;
     }
+
+    // Add this method to the AnalyticsUI class
+    adjustCategoryFontSizes() {
+        // Adjust category headers
+        document.querySelectorAll('.category-header').forEach(header => {
+            const title = header.querySelector('h3');
+            const totalsDiv = header.querySelector('div');
+            
+            if (title && totalsDiv) {
+                this.autoAdjustFontSize(title, totalsDiv);
+            }
+        });
+        
+        // Adjust subcategory headers
+        document.querySelectorAll('.subcategory-header').forEach(header => {
+            const title = header.querySelector('h4');
+            const totalsDiv = header.querySelector('div');
+            
+            if (title && totalsDiv) {
+                this.autoAdjustFontSize(title, totalsDiv, true);
+            }
+        });
+    }
+
+    autoAdjustFontSize(titleElement, totalsDiv, isSubcategory = false) {
+        // Reset to default
+        titleElement.style.fontSize = '';
+        titleElement.classList.remove('auto-font');
+        
+        // Get container and content dimensions
+        const header = titleElement.closest('.category-header, .subcategory-header');
+        if (!header) return;
+        
+        const headerWidth = header.offsetWidth;
+        const totalsWidth = totalsDiv.offsetWidth;
+        const titleWidth = titleElement.scrollWidth;
+        
+        // Calculate available width for title
+        const padding = 24; // Account for padding and gaps
+        const availableWidth = headerWidth - totalsWidth - padding;
+        
+        // If title is too wide, reduce font size
+        if (titleWidth > availableWidth) {
+            const ratio = availableWidth / titleWidth;
+            const baseSize = isSubcategory ? 14 : 16; // Base font size in pixels
+            const minSize = isSubcategory ? 11 : 12; // Minimum font size
+            
+            let newSize = Math.max(minSize, Math.floor(baseSize * ratio * 0.9));
+            
+            // Apply the adjusted font size
+            titleElement.style.fontSize = `${newSize}px`;
+            titleElement.classList.add('auto-font');
+            
+            // If still too big after adjustment, enable ellipsis
+            if (titleElement.scrollWidth > availableWidth) {
+                titleElement.style.textOverflow = 'ellipsis';
+            }
+        }
+    }    
 }
 
 // Singleton instance
