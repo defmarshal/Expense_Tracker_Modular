@@ -196,8 +196,8 @@
             min-height: 120px;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Center align for icon above text */
-            text-align: center;
+            align-items: center; /* Add this */
+            text-align: center; /* Add this */
         }
 
         .card:hover {
@@ -206,11 +206,11 @@
 
         .card-header {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-direction: column; /* Change from flex-start to column */
+            align-items: center; /* Add this */
             margin-bottom: 0.8rem;
             gap: 8px;
-            width: 100%;
+            width: 100%; /* Add this */
         }
 
         .card-icon {
@@ -238,14 +238,14 @@
         }
 
         .stat-value {
-            font-size: 1.3rem; /* Reduced from 1.5rem to match insights */
+            font-size: 1.3rem;
             font-weight: 700;
             margin: 0.4rem 0;
             line-height: 1.2;
             word-break: break-word;
             overflow-wrap: break-word;
-            text-align: center;
-            width: 100%;
+            text-align: center; /* Add this */
+            width: 100%; /* Add this */
         }
 
         .stat-value.income {
@@ -267,9 +267,9 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            width: 100%;
-            text-align: center;
-            margin-top: 0.2rem;
+            width: 100%; /* Add this */
+            text-align: center; /* Add this */
+            margin-top: 0.2rem; /* Add this */
         }
 
         .chart-container {
@@ -1436,7 +1436,7 @@
             <div class="analytics-grid">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Balance</h3>
+                        <h3 class="card-title">Balance</h3> <!-- Change from h3 to use card-title class -->
                         <div class="card-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
@@ -1447,7 +1447,7 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Income</h3>
+                        <h3 class="card-title">Income</h3> <!-- Change from h3 to use card-title class -->
                         <div class="card-icon" style="background: var(--income-gradient);">
                             <i class="fas fa-arrow-up"></i>
                         </div>
@@ -1458,7 +1458,7 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Expenses</h3>
+                        <h3 class="card-title">Expenses</h3> <!-- Change from h3 to use card-title class -->
                         <div class="card-icon" style="background: var(--danger);">
                             <i class="fas fa-arrow-down"></i>
                         </div>
