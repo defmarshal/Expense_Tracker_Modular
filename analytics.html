@@ -498,6 +498,8 @@
             background: var(--light-gray);
             transition: background 0.3s;
             border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+            position: relative;
+            flex-wrap: nowrap;
         }
 
         .category-header:hover {
@@ -562,6 +564,8 @@
             padding: 8px 0;
             cursor: pointer;
             border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+            position: relative;
+            flex-wrap: nowrap;
         }
 
         .subcategory-header h4 {
@@ -707,7 +711,9 @@
             background: rgba(147, 51, 234, 0.08);
             padding: 2px 8px;
             border-radius: 10px;
-            margin-left: 8px;
+            margin-left: 0;
+            min-width: 45px;
+            text-align: center;
         }
 
         .subcategory-percentage {
@@ -716,7 +722,41 @@
             background: rgba(147, 51, 234, 0.05);
             padding: 1px 6px;
             border-radius: 8px;
-            margin-left: 6px;
+            margin-left: 0;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .category-header h3 {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+            padding-right: 8px;
+        }
+
+        .subcategory-header h4 {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+            padding-right: 8px;
+        }
+
+        .category-total {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .subcategory-total {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
         }
 
         /* Progress bar for category visualization */

@@ -685,204 +685,6 @@ class FinTrackApp {
     }
 }
 
-
-// Add this new class to your app.js file
-// Place it before the UIController class definition
-
-// FIXED SwipeHandler - Replace in your app.js
-
-class SwipeHandler {
-    constructor() {
-        this.startX = 0;
-        this.currentX = 0;
-        this.isDragging = false;
-        this.currentItem = null;
-        this.threshold = 80;
-    }
-    
-    init(itemElement, callbacks) {
-        // Find the content wrapper that will move
-        const content = itemElement.querySelector('.expense-content') || 
-                       itemElement.querySelector('.income-content');
-        
-        if (!content) {
-            console.warn('No content wrapper found for swipe');
-            return;
-        }
-        
-        // Add swipe actions container if not exists
-        if (!itemElement.querySelector('.swipe-actions')) {
-            const actionsHtml = `
-                <div class="swipe-actions">
-                    <button class="swipe-edit-btn" data-action="edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="swipe-delete-btn" data-action="delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            itemElement.insertAdjacentHTML('beforeend', actionsHtml);
-        }
-        
-        // Touch event handlers
-        const handleTouchStart = (e) => {
-            this.startX = e.touches[0].clientX;
-            this.currentX = this.startX;
-            this.isDragging = true;
-            this.currentItem = content;
-            content.style.transition = 'none';
-        };
-        
-        const handleTouchMove = (e) => {
-            if (!this.isDragging) return;
-            
-            this.currentX = e.touches[0].clientX;
-            const deltaX = this.currentX - this.startX;
-            
-            // Only allow left swipe
-            if (deltaX < 0) {
-                const translateX = Math.max(deltaX, -120);
-                content.style.transform = `translateX(${translateX}px)`;
-            }
-        };
-        
-        const handleTouchEnd = (e) => {
-            if (!this.isDragging) return;
-            
-            this.isDragging = false;
-            const deltaX = this.currentX - this.startX;
-            
-            content.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            if (deltaX < -this.threshold) {
-                // Swipe threshold reached - show actions
-                content.style.transform = 'translateX(-100px)';
-                itemElement.classList.add('swiped');
-                
-                // Close other swiped items
-                document.querySelectorAll('.expense-item.swiped, .income-item.swiped')
-                    .forEach(item => {
-                        if (item !== itemElement) {
-                            const otherContent = item.querySelector('.expense-content, .income-content');
-                            if (otherContent) {
-                                otherContent.style.transform = 'translateX(0)';
-                            }
-                            item.classList.remove('swiped');
-                        }
-                    });
-            } else {
-                // Snap back
-                content.style.transform = 'translateX(0)';
-                itemElement.classList.remove('swiped');
-            }
-            
-            this.currentItem = null;
-        };
-        
-        // Mouse events for desktop testing
-        const handleMouseDown = (e) => {
-            this.startX = e.clientX;
-            this.currentX = this.startX;
-            this.isDragging = true;
-            this.currentItem = content;
-            content.style.transition = 'none';
-            e.preventDefault();
-        };
-        
-        const handleMouseMove = (e) => {
-            if (!this.isDragging) return;
-            
-            this.currentX = e.clientX;
-            const deltaX = this.currentX - this.startX;
-            
-            if (deltaX < 0) {
-                const translateX = Math.max(deltaX, -120);
-                content.style.transform = `translateX(${translateX}px)`;
-            }
-        };
-        
-        const handleMouseUp = (e) => {
-            if (!this.isDragging) return;
-            
-            this.isDragging = false;
-            const deltaX = this.currentX - this.startX;
-            
-            content.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            if (deltaX < -this.threshold) {
-                content.style.transform = 'translateX(-100px)';
-                itemElement.classList.add('swiped');
-                
-                document.querySelectorAll('.expense-item.swiped, .income-item.swiped')
-                    .forEach(item => {
-                        if (item !== itemElement) {
-                            const otherContent = item.querySelector('.expense-content, .income-content');
-                            if (otherContent) {
-                                otherContent.style.transform = 'translateX(0)';
-                            }
-                            item.classList.remove('swiped');
-                        }
-                    });
-            } else {
-                content.style.transform = 'translateX(0)';
-                itemElement.classList.remove('swiped');
-            }
-            
-            this.currentItem = null;
-        };
-        
-        // Add event listeners
-        content.addEventListener('touchstart', handleTouchStart, { passive: true });
-        content.addEventListener('touchmove', handleTouchMove, { passive: true });
-        content.addEventListener('touchend', handleTouchEnd, { passive: true });
-        
-        // Desktop support
-        content.addEventListener('mousedown', handleMouseDown);
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-        
-        // Handle action button clicks
-        const swipeActions = itemElement.querySelector('.swipe-actions');
-        if (swipeActions) {
-            swipeActions.addEventListener('click', (e) => {
-                const btn = e.target.closest('button');
-                if (!btn) return;
-                
-                const action = btn.dataset.action;
-                
-                // Haptic feedback
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(10);
-                }
-                
-                if (action === 'edit' && callbacks.onEdit) {
-                    callbacks.onEdit();
-                } else if (action === 'delete' && callbacks.onDelete) {
-                    callbacks.onDelete();
-                }
-                
-                // Close swipe
-                setTimeout(() => {
-                    content.style.transform = 'translateX(0)';
-                    itemElement.classList.remove('swiped');
-                }, 200);
-            });
-        }
-    }
-    
-    closeAll() {
-        document.querySelectorAll('.expense-item.swiped, .income-item.swiped')
-            .forEach(item => {
-                const content = item.querySelector('.expense-content, .income-content');
-                if (content) {
-                    content.style.transform = 'translateX(0)';
-                }
-                item.classList.remove('swiped');
-            });
-    }
-}
-
 // ==================== UI CONTROLLER CLASS (INLINE) ====================
 
 class UIController {
@@ -1212,50 +1014,32 @@ class UIController {
             
             const expenseItem = document.createElement('div');
             expenseItem.className = 'expense-item';
-            
-            // Create the main content wrapper that will slide
             expenseItem.innerHTML = `
-                <div class="expense-content">
-                    <div class="expense-details">
-                        <div style="font-weight: 500;">${expense.description}</div>
-                        <div style="font-size: 0.8rem; color: var(--gray);">
-                            ${expenseDate} • ${wallet ? wallet.name : 'Unknown'}
-                        </div>
+                <div class="expense-details">
+                    <div style="font-weight: 500;">${expense.description}</div>
+                    <div style="font-size: 0.8rem; color: var(--gray);">
+                        ${expenseDate} • ${wallet ? wallet.name : 'Unknown'}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div>
-                            <div class="expense-amount">${this.app.currencyUtils ? 
-                                this.app.currencyUtils.formatDisplayCurrency(expense.amount) : 
-                                'Rp ' + expense.amount.toLocaleString('id-ID')}</div>
-                            <span class="expense-category">${categoryText}</span>
-                        </div>
-                        <div class="action-buttons desktop-only">
-                            <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div>
+                        <div class="expense-amount">${currencyUtils.formatDisplayCurrency(expense.amount)}</div>
+                        <span class="expense-category">${categoryText}</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             `;
-            
             container.appendChild(expenseItem);
-            
-            // Initialize swipe gestures for this item
-            if (window.swipeHandler) {
-                window.swipeHandler.init(expenseItem, {
-                    onEdit: () => {
-                        this.editExpense(expense.id);
-                    },
-                    onDelete: () => {
-                        this.confirmDelete('expense', expense.id, expense.description);
-                    }
-                });
-            }
         });
-    } 
+    }
+    
     // ==================== INCOME UI ====================
     
     updateIncomesUI() {
@@ -1301,48 +1085,29 @@ class UIController {
             
             const incomeItem = document.createElement('div');
             incomeItem.className = 'income-item';
-            
-            // Create the main content wrapper that will slide
             incomeItem.innerHTML = `
-                <div class="income-content">
-                    <div class="income-details">
-                        <div style="font-weight: 500;">${income.description}</div>
-                        <div style="font-size: 0.8rem; color: var(--gray);">
-                            ${incomeDate} • ${wallet ? wallet.name : 'Unknown'}
-                        </div>
+                <div class="income-details">
+                    <div style="font-weight: 500;">${income.description}</div>
+                    <div style="font-size: 0.8rem; color: var(--gray);">
+                        ${incomeDate} • ${wallet ? wallet.name : 'Unknown'}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div>
-                            <div class="income-amount">${this.app.currencyUtils ? 
-                                this.app.currencyUtils.formatDisplayCurrency(income.amount) : 
-                                'Rp ' + income.amount.toLocaleString('id-ID')}</div>
-                            <span class="income-source">${income.source}</span>
-                        </div>
-                        <div class="action-buttons desktop-only">
-                            <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div>
+                        <div class="income-amount">${currencyUtils.formatDisplayCurrency(income.amount)}</div>
+                        <span class="income-source">${income.source}</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             `;
-            
             container.appendChild(incomeItem);
-            
-            // Initialize swipe gestures for this item
-            if (window.swipeHandler) {
-                window.swipeHandler.init(incomeItem, {
-                    onEdit: () => {
-                        this.editIncome(income.id);
-                    },
-                    onDelete: () => {
-                        this.confirmDelete('income', income.id, income.description);
-                    }
-                });
-            }
         });
     }
     
