@@ -93,12 +93,28 @@ class AnalyticsApp {
         // Wallet selector change (debounced)
         const walletSelect = document.getElementById('walletSelect');
         if (walletSelect) {
-            walletSelect.addEventListener('change', (e) => {
-                this.appState.currentView.walletId = e.target.value;
-                if (this.debouncedUpdateAnalytics) {
-                    this.debouncedUpdateAnalytics();
+        walletSelect.addEventListener('change', async (e) => {
+            const walletId = e.target.value;
+            this.appState.currentView.walletId = walletId;
+
+            // Persist default wallet
+            try {
+                const user = this.auth.getUser?.();
+                if (user) {
+                    await this.db.supabase
+                        .from('profiles')
+                        .update({ default_wallet_id: walletId })
+                        .eq('id', user.id);
                 }
-            });
+            } catch (err) {
+                console.error('Failed to update default wallet:', err);
+            }
+
+            if (this.debouncedUpdateAnalytics) {
+                this.debouncedUpdateAnalytics();
+            }
+        });
+
         }
 
         // Period selector change (debounced)
@@ -223,28 +239,64 @@ class AnalyticsApp {
         }
     }
 
+    async getDefaultWalletId() {
+        try {
+            const user = this.auth.getUser?.();
+            if (!user) return 'all';
+
+            const { data, error } = await this.db.supabase
+                .from('profiles') // or user_settings
+                .select('default_wallet_id')
+                .eq('id', user.id)
+                .single();
+
+            if (error) {
+                console.error('Failed to fetch default wallet:', error);
+                return 'all';
+            }
+
+            return data?.default_wallet_id ?? 'all';
+        } catch (err) {
+            console.error('Error loading default wallet:', err);
+            return 'all';
+        }
+    }    
+
     async loadData() {
         this.setLoading(true);
-        
+
         try {
-            // Load wallets for selector
+            // 1. Load wallets
             const wallets = this.state.getWallets();
             this.ui.populateWalletSelector(wallets);
-            
-            // Generate available periods
+
+            // 2. Load default wallet from Supabase
+            const defaultWalletId = await this.getDefaultWalletId();
+
+            // 3. Apply default wallet safely
+            const walletSelect = document.getElementById('walletSelect');
+            const exists = wallets.some(w => w.id === defaultWalletId);
+
+            this.appState.currentView.walletId = exists ? defaultWalletId : 'all';
+            if (walletSelect) {
+                walletSelect.value = this.appState.currentView.walletId;
+            }
+
+            // 4. Generate periods
             const availablePeriods = this.analytics.generateAvailablePeriods();
             this.ui.populatePeriodSelector(availablePeriods);
-            
+
             if (availablePeriods.length > 0) {
                 this.appState.currentView.periodKey = availablePeriods[0];
                 this.appState.hasData = true;
                 this.ui.hideNoDataMessage();
-                
-                // Initial analytics update
+
+                // 5. Run analytics AFTER wallet is set
                 await this.updateAnalytics();
             } else {
                 this.ui.showNoDataMessage();
             }
+
         } catch (error) {
             console.error('Error loading data:', error);
             this.ui.showNoDataMessage();
@@ -252,6 +304,7 @@ class AnalyticsApp {
             this.setLoading(false);
         }
     }
+
 
     handleDataChange() {
         if (this.appState.hasData && this.debouncedUpdateAnalytics) {
