@@ -187,7 +187,7 @@ class AnalyticsService {
             });
         });
         
-        const label = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        const label = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
         
         return {
             categories,
@@ -198,7 +198,7 @@ class AnalyticsService {
 
     // Format date range label
     formatDateRangeLabel(startDate, endDate) {
-        return `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        return `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
     }    
 
     isDateInPeriod(dateString, periodKey) {
@@ -209,8 +209,8 @@ class AnalyticsService {
 
     getPeriodLabel(periodKey) {
         const [year, month] = periodKey.split('-').map(Number);
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         
         let prevMonth = month - 1;
         let prevYear = year;
@@ -219,7 +219,7 @@ class AnalyticsService {
             prevYear = year - 1;
         }
         
-        return `${monthNames[prevMonth - 1]} 26th - ${monthNames[month - 1]} 25th`;
+        return `${monthNames[prevMonth - 1]} 26 - ${monthNames[month - 1]} 25`;
     }
 
     // Generate period key from date
