@@ -957,13 +957,15 @@
             }
 
             .selectors-container {
-                flex-direction: column;
+                flex-direction: row;
                 width: 100%;
-                gap: 0.8rem;
+                gap: 0.5rem;
+                flex-wrap: wrap;
             }
 
-            .wallet-selector-container, .month-selector-container {
-                width: 100%;
+            .wallet-selector-container, .month-selector-container, .date-range-selector-container {
+                flex: 1;
+                min-width: 0;
             }
 
             .comparison-legend {
@@ -1182,18 +1184,25 @@
             }
 
             .selectors-container {
-                flex-direction: column;
+                flex-direction: row;
                 width: 100%;
-                gap: 0.8rem;
+                gap: 0.4rem;
+                flex-wrap: wrap;
             }
 
-            .wallet-selector-container, .month-selector-container {
-                width: 100%;
-                padding: 8px 10px;
+            .wallet-selector-container, .month-selector-container, .date-range-selector-container {
+                flex: 1;
+                min-width: 0;
+                padding: 6px 8px;
             }
 
-            .wallet-selector-container label, .month-selector-container label {
+            .wallet-selector-container label, .month-selector-container label, .date-range-selector-container label {
+                font-size: 0.7rem;
+            }
+
+            .chart-select {
                 font-size: 0.75rem;
+                padding: 4px 6px;
             }
 
             .comparison-legend {
