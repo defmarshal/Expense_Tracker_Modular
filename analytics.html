@@ -1329,6 +1329,23 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* === Mobile Optimization Patch === */
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+  .card:hover,
+  .insight-card:hover,
+  .expense-item-detail:hover {
+    transform: none !important;
+    box-shadow: var(--shadow) !important;
+  }
+}
+
+/* Safe area support for iOS */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* === Mobile Layout Enforcement (Horizontal Stacking) === */
 @media (max-width: 768px) {
 
@@ -1369,71 +1386,75 @@ body {
   /* Compact cards for horizontal layout */
   .card,
   .insight-card {
-    padding: 0.6rem !important;
+    padding: 0.5rem !important;
     height: auto !important;
     min-height: auto !important;
   }
 
   .card-header {
-    margin-bottom: 0.4rem !important;
+    margin-bottom: 0.3rem !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    gap: 4px !important;
+    gap: 3px !important;
   }
 
   .card-icon,
   .insight-icon {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 0.85rem !important;
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.75rem !important;
   }
 
   .card-title,
   .insight-title {
-    font-size: 0.7rem !important;
+    font-size: 0.65rem !important;
     margin: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   .stat-value,
   .insight-value {
-    font-size: 1rem !important;
-    margin: 0.2rem 0 !important;
+    font-size: 0.85rem !important;
+    margin: 0.15rem 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.2 !important;
   }
 
   .stat-label,
   .insight-content {
-    font-size: 0.65rem !important;
+    font-size: 0.6rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.2 !important;
   }
 
   /* All selects full width within container */
   select,
   .chart-select {
     width: 100% !important;
-    font-size: 14px !important; /* iOS zoom fix */
+    font-size: 13px !important; /* iOS zoom fix */
     box-sizing: border-box !important;
-    padding: 6px 8px !important;
+    padding: 5px 6px !important;
+    white-space: nowrap !important;
   }
 
   input[type="date"] {
     width: 100% !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
     box-sizing: border-box !important;
   }
 
-  /* Never truncate text or numbers */
-  .stat-value,
-  .insight-value,
-  .expense-amount-detail,
-  .category-total,
-  .subcategory-total,
-  .card-title,
-  .insight-title {
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: unset !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    hyphens: auto !important;
+  /* Selector labels smaller */
+  .wallet-selector-container label,
+  .date-range-selector-container label,
+  .month-selector-container label {
+    font-size: 0.65rem !important;
+    white-space: nowrap !important;
   }
 
   /* Icon-only navigation */
@@ -1450,23 +1471,36 @@ body {
 
   .page-title {
     font-size: 1.3rem !important;
+    white-space: nowrap !important;
   }
 
   .page-subtitle {
-    font-size: 0.8rem !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   /* Insight header horizontal */
   .insight-header {
     flex-direction: row !important;
     align-items: center !important;
-    gap: 6px !important;
-    margin-bottom: 0.4rem !important;
+    gap: 4px !important;
+    margin-bottom: 0.3rem !important;
   }
 
   .trend-indicator {
-    font-size: 0.65rem !important;
-    margin-top: 0.2rem !important;
+    font-size: 0.6rem !important;
+    margin-top: 0.15rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Expense amounts in breakdown */
+  .expense-amount-detail,
+  .category-total,
+  .subcategory-total {
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
   }
 }
 
@@ -1480,6 +1514,16 @@ body {
   .card:last-child,
   .insight-card:last-child {
     grid-column: span 2 !important;
+  }
+  
+  .stat-value,
+  .insight-value {
+    font-size: 0.75rem !important;
+  }
+  
+  .card-title,
+  .insight-title {
+    font-size: 0.6rem !important;
   }
 }
 
