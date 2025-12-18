@@ -1659,7 +1659,10 @@ body {
     text-overflow: ellipsis !important;
     margin: 0 !important;
     padding-right: 12px !important;
+    font-size: clamp(0.85rem, 2vw, 1rem) !important; /* Auto-adjusting font size */
+    transition: font-size 0.2s ease !important;
 }
+
 
 /* Same for subcategory */
 .subcategory-header {
@@ -1676,6 +1679,71 @@ body {
     text-overflow: ellipsis !important;
     margin: 0 !important;
     padding-right: 12px !important;
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem) !important; /* Auto-adjusting font size */
+    transition: font-size 0.2s ease !important;
+}
+
+/* JavaScript-based font size adjustment (will be added below) */
+.category-header h3.auto-font {
+    font-size: inherit !important; /* Let JavaScript control it */
+}
+
+.subcategory-header h4.auto-font {
+    font-size: inherit !important; /* Let JavaScript control it */
+}
+
+/* Adjust layout for better spacing */
+.category-header {
+    align-items: center !important;
+    gap: 8px !important;
+    position: relative !important;
+}
+
+.subcategory-header {
+    align-items: center !important;
+    gap: 6px !important;
+    position: relative !important;
+}
+
+.category-header > div,
+.subcategory-header > div {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* For mobile, show full text with wrapping */
+@media (max-width: 768px) {
+    .category-header h3,
+    .subcategory-header h4 {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
+        font-size: clamp(0.8rem, 4vw, 0.9rem) !important;
+        line-height: 1.3 !important;
+        word-break: break-word !important;
+        max-width: none !important;
+    }
+    
+    .category-header {
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+    
+    .subcategory-header {
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+    }
+    
+    .category-header > div,
+    .subcategory-header > div {
+        justify-content: flex-end !important;
+        width: 100% !important;
+        gap: 6px !important;
+    }
 }
 
 /* Specific styling for percentages */
