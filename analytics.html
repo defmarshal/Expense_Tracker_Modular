@@ -748,15 +748,34 @@
         .category-total {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             white-space: nowrap;
+            justify-content: flex-end;
         }
 
         .subcategory-total {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             white-space: nowrap;
+            justify-content: flex-end;
+        }
+
+        .category-percentage,
+        .subcategory-percentage {
+            order: 2; /* Forces it to the right of the amount */
+            margin-left: 0;
+            min-width: 50px;
+            text-align: center;
+            background: rgba(147, 51, 234, 0.1); /* Slightly darker for better visibility */
+            border-radius: 6px;
+            padding: 2px 6px;
+        }
+
+        /* Add this to ensure the amount is on the left of the percentage */
+        .category-total span:first-child,
+        .subcategory-total span:first-child {
+            order: 1;
         }
 
         /* Progress bar for category visualization */
