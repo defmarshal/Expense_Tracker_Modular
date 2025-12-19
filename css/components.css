@@ -541,39 +541,110 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
-   EDIT TRANSACTION MODAL - REMOVED CONFLICTING STYLES
-   Use existing modal styles instead
+   COMPACT FORM STYLES FOR EDIT MODAL
    ========================================================================== */
 
-/* The edit modal now uses the standard .modal structure */
+.compact-form .form-group {
+    margin-bottom: 0.8rem !important;
+}
+
+.compact-form label {
+    font-size: 0.85rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+.compact-form input,
+.compact-form select {
+    padding: 10px 12px !important;
+    font-size: 0.95rem !important;
+    min-height: 40px !important;
+}
+
+.compact-form .currency-input input {
+    padding-left: 38px !important;
+}
+
+/* Edit modal specific styles */
 #editTransactionModal .modal {
-    max-width: 500px;
+    max-width: 480px;
 }
 
-#editTransactionModal .form-row {
-    display: flex;
-    gap: 1rem;
-}
-
-#editTransactionModal .form-row .form-group {
-    flex: 1;
-    min-width: 0;
-}
-
-/* Mobile responsive adjustments */
+/* Smaller modal padding for mobile */
 @media (max-width: 768px) {
     #editTransactionModal .modal {
-        max-width: calc(100% - 2rem);
+        max-width: calc(100% - 1.5rem);
+        max-height: 85vh;
+        margin: 0.75rem;
     }
     
-    #editTransactionModal .form-row {
+    #editTransactionModal .modal-body {
+        padding: 1rem !important;
+        max-height: calc(85vh - 120px);
+        overflow-y: auto;
+    }
+    
+    .compact-form .form-row {
         flex-direction: column;
-        gap: 0;
+        gap: 0.6rem !important;
+    }
+    
+    #editTransactionModal .btn {
+        padding: 12px !important;
+        min-height: 46px;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+    #editTransactionModal .modal {
+        max-width: 100%;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    #editTransactionModal .modal-body {
+        max-height: calc(100vh - 130px);
+        padding: 1rem 0.75rem !important;
+    }
+    
+    #editTransactionModal h2.modal-title {
+        font-size: 1.3rem !important;
+    }
+    
+    #editTransactionModal .modal-subtitle {
+        font-size: 0.85rem !important;
+    }
+}
+
+/* Fix for iOS date input */
+@media (max-width: 768px) {
+    #editTransactionModal input[type="date"] {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+}
+
+/* Ensure modal doesn't push content off screen */
+#editTransactionModal.modal-overlay {
+    display: none;
+    align-items: flex-start;
+    padding-top: 2rem;
+}
+
+#editTransactionModal.modal-overlay.active {
+    display: flex;
+}
+
+@media (max-width: 768px) {
+    #editTransactionModal.modal-overlay {
+        padding-top: 1rem;
+        align-items: flex-start;
     }
 }
 
 @media (max-width: 480px) {
-    #editTransactionModal .modal {
-        max-width: calc(100% - 1rem);
+    #editTransactionModal.modal-overlay {
+        padding-top: 0;
+        align-items: flex-start;
     }
 }

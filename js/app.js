@@ -292,66 +292,66 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-        // Locate this block in app.js (inside setupFormHandlers)
-        const editForm = document.getElementById('editTransactionForm');
-        if (editForm) {
-            editForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const type = document.getElementById('editItemType').value;
-                const id = document.getElementById('editItemId').value;
-                const description = document.getElementById('editDescription').value;
-                const amountStr = document.getElementById('editAmount').value;
-                const amount = currencyUtils.parseCurrency(amountStr);
-                const date = document.getElementById('editDate').value;
-                const categoryValue = document.getElementById('editCategory').value;
-                const walletId = document.getElementById('editWallet').value;
+    // In the edit form submit handler (around line 200 in app.js)
+    const editForm = document.getElementById('editTransactionForm');
+    if (editForm) {
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const type = document.getElementById('editItemType').value;
+            const id = document.getElementById('editItemId').value;
+            const description = document.getElementById('editDescription').value;
+            const amountStr = document.getElementById('editAmount').value;
+            const amount = currencyUtils.parseCurrency(amountStr);
+            const date = document.getElementById('editDate').value;
+            const categoryValue = document.getElementById('editCategory').value;
+            const subcategoryValue = document.getElementById('editSubcategory').value || '';
 
-                // Construct the object carefully to avoid syntax errors
-                const updateData = {
-                    description: description,
-                    amount: amount,
-                    date: date,
-                    wallet_id: walletId
-                };
+            const updateData = {
+                description: description,
+                amount: amount,
+                date: date
+            };
 
-                // Assign the category or source based on type
+            // Assign the category or source based on type
+            if (type === 'expense') {
+                updateData.category = categoryValue;
+                updateData.subcategory = subcategoryValue || null;
+                updateData.wallet_id = this.state.getState().currentWalletId;
+            } else {
+                updateData.source = categoryValue;
+                updateData.wallet_id = this.state.getState().currentWalletId;
+            }
+
+            try {
+                // Show loading
+                if (this.ui && typeof this.ui.showLoading === 'function') {
+                    this.ui.showLoading(true);
+                }
+
                 if (type === 'expense') {
-                    updateData.category = categoryValue;
+                    const updated = await this.db.updateExpense(id, updateData);
+                    this.state.updateExpense(updated);
                 } else {
-                    updateData.source = categoryValue;
+                    const updated = await this.db.updateIncome(id, updateData);
+                    this.state.updateIncome(updated);
                 }
-
-                try {
-                    // Safety check for showLoading
-                    if (this.ui && typeof this.ui.showLoading === 'function') {
-                        this.ui.showLoading(true);
-                    }
-
-                    if (type === 'expense') {
-                        const updated = await this.db.updateExpense(id, updateData);
-                        this.state.updateExpense(updated);
-                    } else {
-                        const updated = await this.db.updateIncome(id, updateData);
-                        this.state.updateIncome(updated);
-                    }
-                    
-                    // Refresh and close
-                    this.ui.updateAllUI();
-                    document.getElementById('editTransactionModal').classList.remove('active');
-                    this.showAlert('Changes saved successfully', 'success');
-                } catch (error) {
-                    console.error('Update error:', error);
-                    this.showAlert('Update failed: ' + error.message, 'error');
-                } finally {
-                    if (this.ui && typeof this.ui.showLoading === 'function') {
-                        this.ui.showLoading(false);
-                    }
+                
+                // Refresh and close
+                this.ui.updateAllUI();
+                document.getElementById('editTransactionModal').classList.remove('active');
+                this.showAlert('Changes saved successfully', 'success');
+            } catch (error) {
+                console.error('Update error:', error);
+                this.showAlert('Update failed: ' + error.message, 'error');
+            } finally {
+                if (this.ui && typeof this.ui.showLoading === 'function') {
+                    this.ui.showLoading(false);
                 }
-            });
-        }
+            }
+        });
     }
-    
+        
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
@@ -1535,36 +1535,80 @@ class UIController {
     openEditModal(type, item) {
         const modal = document.getElementById('editTransactionModal');
         const title = document.getElementById('editModalTitle');
+        const subtitle = document.getElementById('editModalSubtitle');
         const categorySelect = document.getElementById('editCategory');
-        const walletSelect = document.getElementById('editWallet');
+        const subcategorySelect = document.getElementById('editSubcategory');
 
-        // 1. Set Modal Identity
-        title.innerHTML = type === 'expense' ? '<i class="fas fa-arrow-down text-danger"></i> Edit Expense' : '<i class="fas fa-arrow-up text-success"></i> Edit Income';
+        // Set modal identity
+        if (type === 'expense') {
+            title.innerHTML = '<i class="fas fa-arrow-down text-danger"></i> Edit Expense';
+            subtitle.textContent = 'Update expense details';
+        } else {
+            title.innerHTML = '<i class="fas fa-arrow-up text-success"></i> Edit Income';
+            subtitle.textContent = 'Update income details';
+        }
+        
         document.getElementById('editItemType').value = type;
         document.getElementById('editItemId').value = item.id;
         
-        // 2. Populate Dropdowns
-        this.populateCategorySelect(categorySelect, type);
+        // Populate dropdowns
+        this.populateCategorySelect(categorySelect, type, item);
         
-        // Fill Wallets (using your existing state)
-        walletSelect.innerHTML = '';
-        this.state.getWallets().forEach(wallet => {
-            const option = document.createElement('option');
-            option.value = wallet.id;
-            option.textContent = wallet.name;
-            walletSelect.appendChild(option);
-        });
+        // Setup subcategory if it's an expense
+        if (type === 'expense') {
+            subcategorySelect.style.display = 'block';
+            subcategorySelect.previousElementSibling.style.display = 'block';
+            
+            // Load subcategories based on selected category
+            const mainCategories = this.state.getMainCategories();
+            const mainCategory = mainCategories.find(c => c.name === item.category);
+            
+            if (mainCategory) {
+                const subcategories = this.state.getSubcategories(mainCategory.id);
+                subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                subcategories.forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = subcat.name;
+                    option.textContent = subcat.name;
+                    if (subcat.name === item.subcategory) {
+                        option.selected = true;
+                    }
+                    subcategorySelect.appendChild(option);
+                });
+                
+                // Update subcategories when category changes
+                categorySelect.addEventListener('change', (e) => {
+                    const selectedCategory = e.target.value;
+                    const selectedMainCategory = mainCategories.find(c => c.name === selectedCategory);
+                    
+                    if (selectedMainCategory) {
+                        const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
+                        subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                        newSubcategories.forEach(subcat => {
+                            const option = document.createElement('option');
+                            option.value = subcat.name;
+                            option.textContent = subcat.name;
+                            subcategorySelect.appendChild(option);
+                        });
+                    } else {
+                        subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                    }
+                });
+            }
+        } else {
+            // Hide subcategory for income
+            subcategorySelect.style.display = 'none';
+            subcategorySelect.previousElementSibling.style.display = 'none';
+        }
 
-        // 3. Fill values from the transaction
+        // Fill values from the transaction
         document.getElementById('editDescription').value = item.description;
-        // Format amount back to standard number string for the input
-        document.getElementById('editAmount').value = item.amount; 
+        document.getElementById('editAmount').value = item.amount;
         document.getElementById('editDate').value = item.date;
         document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
-        document.getElementById('editWallet').value = item.walletId;
 
         modal.classList.add('active');
-    }   
+    } 
 
     populateCategorySelect(selectElement, type) {
         // Clear existing options
