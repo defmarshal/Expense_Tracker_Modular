@@ -150,11 +150,21 @@ class AnalyticsService {
         const expenses = this.filterDataByDateRange(this.state.getExpenses(), startDate, endDate, walletId);
         const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
         
+        // Get wallets for name lookup
+        const wallets = this.state.getWallets();
+        
         const categories = {};
         
         expenses.forEach(expense => {
             const category = expense.category || 'Uncategorized';
             const subcategory = expense.subcategory || 'General';
+            
+            // Add wallet name to expense
+            const wallet = wallets.find(w => w.id === expense.walletId);
+            const enrichedExpense = {
+                ...expense,
+                walletName: wallet ? wallet.name : 'Unknown'
+            };
             
             if (!categories[category]) {
                 categories[category] = {
@@ -174,7 +184,7 @@ class AnalyticsService {
             
             categories[category].total += expense.amount;
             categories[category].subcategories[subcategory].total += expense.amount;
-            categories[category].subcategories[subcategory].expenses.push(expense);
+            categories[category].subcategories[subcategory].expenses.push(enrichedExpense); // Use enriched expense
         });
         
         // Calculate percentages
@@ -292,11 +302,21 @@ class AnalyticsService {
         const expenses = this.filterDataByPeriodAndWallet(this.state.getExpenses(), periodKey, walletId);
         const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
         
+        // Get wallets for name lookup
+        const wallets = this.state.getWallets();
+        
         const categories = {};
         
         expenses.forEach(expense => {
             const category = expense.category || 'Uncategorized';
             const subcategory = expense.subcategory || 'General';
+            
+            // Add wallet name to expense
+            const wallet = wallets.find(w => w.id === expense.walletId);
+            const enrichedExpense = {
+                ...expense,
+                walletName: wallet ? wallet.name : 'Unknown'
+            };
             
             if (!categories[category]) {
                 categories[category] = {
@@ -316,7 +336,7 @@ class AnalyticsService {
             
             categories[category].total += expense.amount;
             categories[category].subcategories[subcategory].total += expense.amount;
-            categories[category].subcategories[subcategory].expenses.push(expense);
+            categories[category].subcategories[subcategory].expenses.push(enrichedExpense); // Use enriched expense
         });
         
         // Calculate percentages
