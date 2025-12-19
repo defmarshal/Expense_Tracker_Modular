@@ -266,7 +266,7 @@ class AuthService {
                 return;
             }
             
-            const userId = this.state.getUser().id; // ← ADD THIS LINE
+            const userId = this.state.getUser().id;
             console.log('Auth: Loading data for user:', this.state.getUser().email);
             
             // Load all user data in parallel
@@ -290,33 +290,23 @@ class AuthService {
             this.state.setExpenses(expenses);
             this.state.setIncomes(incomes);
             
-            // ← REPLACE THE FOLLOWING SECTION:
-            // OLD CODE (DELETE):
-            // Set default wallet if one exists
-            // const defaultWallet = wallets.find(w => w.isDefault);
-            // if (defaultWallet) {
-            //     this.state.setCurrentWallet(defaultWallet.id);
-            // } else if (wallets.length > 0) {
-            //     // If no default, use first wallet
-            //     this.state.setCurrentWallet(wallets[0].id);
-            // }
-            
-            // NEW CODE (ADD):
             // Load and set default wallet using persistence
             if (this.walletPersistence && wallets.length > 0) {
-                await loadAndSetDefaultWallet(
+                const selectedWalletId = await loadAndSetDefaultWallet(
                     this.walletPersistence,
                     wallets,
                     userId,
                     (walletId) => {
+                        console.log('Auth: Setting current wallet to:', walletId); // 👈 ADD LOG
                         this.state.setCurrentWallet(walletId);
                     }
                 );
+                console.log('Auth: Default wallet loaded:', selectedWalletId); // 👈 ADD LOG
             } else if (wallets.length > 0) {
                 // Fallback if wallet persistence not available
+                console.log('Auth: Using fallback - first wallet'); // 👈 ADD LOG
                 this.state.setCurrentWallet(wallets[0].id);
             }
-            // ← END OF REPLACED SECTION
             
             console.log('Auth: State updated, emitting dataLoaded event');
             this.emitAuthEvent('dataLoaded', { wallets, categories, expenses, incomes });

@@ -331,16 +331,17 @@ class FinTrackApp {
         });
     }
     
-    async checkInitialAuthState() {
-        const authState = await this.auth.checkAuth();
-        console.log('Initial auth state:', authState);
-        
-        if (authState.isAuthenticated) {
-            this.showDashboard();
-        } else {
-            this.showLandingPage();
-        }
+async checkInitialAuthState() {
+    const authState = await this.auth.checkAuth();
+    console.log('Initial auth state:', authState);
+    
+    if (authState.isAuthenticated) {
+        this.showDashboard();
+        await new Promise(resolve => setTimeout(resolve, 100));
+    } else {
+        this.showLandingPage();
     }
+}
     
     async handleSignup(e) {
         e.preventDefault(); // Make sure to prevent default
@@ -892,8 +893,11 @@ class UIController {
         const selector = document.getElementById('globalWalletSelect');
         if (!selector) return;
         
-        selector.innerHTML = '<option value="">Select wallet</option>';
         const wallets = this.state.getWallets();
+        const currentWalletId = this.state.getState().currentWalletId;
+        
+        // Clear and rebuild options
+        selector.innerHTML = '<option value="">Select wallet</option>';
         
         wallets.forEach(wallet => {
             const option = document.createElement('option');
@@ -902,22 +906,30 @@ class UIController {
             selector.appendChild(option);
         });
         
-        // Set current wallet if available
-        const currentWalletId = this.state.getState().currentWalletId;
-        if (currentWalletId) {
+        // 👇 FIX: Set the value AFTER adding all options
+        if (currentWalletId && wallets.some(w => w.id === currentWalletId)) {
             selector.value = currentWalletId;
+            console.log('Set wallet selector to:', currentWalletId);
         } else if (wallets.length > 0) {
-            // Auto-select first wallet if none selected
-            this.state.setCurrentWallet(wallets[0].id);
-            selector.value = wallets[0].id;
+            // Fallback to first wallet
+            const firstWalletId = wallets[0].id;
+            this.state.setCurrentWallet(firstWalletId);
+            selector.value = firstWalletId;
+            console.log('Set wallet selector to first wallet:', firstWalletId);
         }
         
-        // 👇 UPDATE THIS EVENT LISTENER
-        // Remove old listener if it exists
+        // Remove old event listener by cloning
         const newSelector = selector.cloneNode(true);
         selector.parentNode.replaceChild(newSelector, selector);
         
-        // Add new listener with persistence
+        // Restore the selected value after cloning
+        if (currentWalletId && wallets.some(w => w.id === currentWalletId)) {
+            newSelector.value = currentWalletId;
+        } else if (wallets.length > 0) {
+            newSelector.value = wallets[0].id;
+        }
+        
+        // Add change event listener with persistence
         newSelector.addEventListener('change', async (e) => {
             const newWalletId = e.target.value || null;
             const userId = this.app.auth.getUser()?.id;
@@ -940,6 +952,17 @@ class UIController {
         this.updateStats();
         this.updateMonthYearFilters();
     }
+
+    syncWalletSelector() {
+        const selector = document.getElementById('globalWalletSelect');
+        if (!selector) return;
+        
+        const currentWalletId = this.state.getState().currentWalletId;
+        if (currentWalletId && selector.value !== currentWalletId) {
+            selector.value = currentWalletId;
+            console.log('Synced wallet selector to:', currentWalletId);
+        }
+    }    
     
     // ==================== EXPENSE UI ====================
     
@@ -1616,6 +1639,7 @@ class UIController {
         this.updateCategoriesUI();
         this.updateStats();  // Make sure this is here
         this.updateMonthYearFilters();
+        this.syncWalletSelector();
     }
 
     getDataForCurrentWallet() {
