@@ -587,44 +587,58 @@
     <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 350px;"></div>
 
     <div id="editTransactionModal" class="modal-overlay">
-        <div class="modal-content card">
+        <div class="modal">
             <div class="modal-header">
-                <h3 id="editModalTitle"><i class="fas fa-edit"></i> Edit Transaction</h3>
-                <button class="close-modal" onclick="document.getElementById('editTransactionModal').classList.remove('active')">&times;</button>
+                <button class="modal-close" onclick="document.getElementById('editTransactionModal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title" id="editModalTitle"><i class="fas fa-edit"></i> Edit Transaction</h2>
+                <p class="modal-subtitle" id="editModalSubtitle">Make changes and save</p>
             </div>
-            <form id="editTransactionForm">
-                <input type="hidden" id="editItemId">
-                <input type="hidden" id="editItemType"> <div class="form-group">
-                    <label for="editAmount">Amount</label>
-                    <input type="number" id="editAmount" step="0.01" required placeholder="0.00">
-                </div>
-                
-                <div class="form-row">
+            <div class="modal-body">
+                <form id="editTransactionForm">
+                    <input type="hidden" id="editItemId">
+                    <input type="hidden" id="editItemType">
+                    
                     <div class="form-group">
-                        <label for="editCategory">Category</label>
-                        <select id="editCategory" required></select>
+                        <label for="editAmount">Amount</label>
+                        <div class="currency-input">
+                            <span class="currency-symbol">Rp</span>
+                            <input type="text" id="editAmount" step="0.01" required placeholder="0">
+                        </div>
                     </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editCategory">Category</label>
+                            <select id="editCategory" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editWallet">Wallet</label>
+                            <select id="editWallet" required></select>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="editWallet">Wallet</label>
-                        <select id="editWallet" required></select>
+                        <label for="editDate">Date</label>
+                        <input type="date" id="editDate" required>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="editDate">Date</label>
-                    <input type="date" id="editDate" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="editDescription">Description (Optional)</label>
-                    <input type="text" id="editDescription" placeholder="What was this for?">
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('editTransactionModal').classList.remove('active')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
+                    
+                    <div class="form-group">
+                        <label for="editDescription">Description (Optional)</label>
+                        <input type="text" id="editDescription" placeholder="What was this for?">
+                    </div>
+                    
+                    <div class="form-row" style="margin-top: 1.5rem;">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('editTransactionModal').classList.remove('active')" style="flex: 1;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>    
 
