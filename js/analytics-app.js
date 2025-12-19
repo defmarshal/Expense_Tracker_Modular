@@ -295,11 +295,19 @@ class AnalyticsApp {
         this.setLoading(true);
 
         try {
-            // 1. Load wallets
+            // 1. Get wallets from STATE (already loaded by auth)
             const wallets = this.state.getWallets();
+            
+            // If no wallets in state, something went wrong
+            if (wallets.length === 0) {
+                console.warn('No wallets found in state');
+                this.ui.showNoDataMessage();
+                return;
+            }
+            
             this.ui.populateWalletSelector(wallets);
 
-            // 2. NEW: Load and set default wallet using persistence
+            // 2. Load and set default wallet using persistence
             const userId = this.auth.getUser?.()?.id;
             const defaultWalletId = await loadAndSetDefaultWallet(
                 this.walletPersistence,
@@ -336,7 +344,6 @@ class AnalyticsApp {
             this.setLoading(false);
         }
     }
-
 
     handleDataChange() {
         if (this.appState.hasData && this.debouncedUpdateAnalytics) {
