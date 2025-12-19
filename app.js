@@ -292,7 +292,6 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-        // Locate this block in app.js (inside setupFormHandlers)
         const editForm = document.getElementById('editTransactionForm');
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
@@ -305,25 +304,26 @@ class FinTrackApp {
                 const amount = currencyUtils.parseCurrency(amountStr);
                 const date = document.getElementById('editDate').value;
                 const categoryValue = document.getElementById('editCategory').value;
-                const walletId = document.getElementById('editWallet').value;
+                const subcategoryValue = document.getElementById('editSubcategory').value || '';
 
-                // Construct the object carefully to avoid syntax errors
                 const updateData = {
                     description: description,
                     amount: amount,
-                    date: date,
-                    wallet_id: walletId
+                    date: date
                 };
 
                 // Assign the category or source based on type
                 if (type === 'expense') {
                     updateData.category = categoryValue;
+                    updateData.subcategory = subcategoryValue || null;
+                    updateData.wallet_id = this.state.getState().currentWalletId;
                 } else {
                     updateData.source = categoryValue;
+                    updateData.wallet_id = this.state.getState().currentWalletId;
                 }
 
                 try {
-                    // Safety check for showLoading
+                    // Show loading
                     if (this.ui && typeof this.ui.showLoading === 'function') {
                         this.ui.showLoading(true);
                     }
@@ -350,8 +350,8 @@ class FinTrackApp {
                 }
             });
         }
-    }
-    
+    }    
+        
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
@@ -1532,104 +1532,93 @@ class UIController {
         this.openEditModal('income', income);
     }
 
-    openEditModal(type, item) {
-        const modal = document.getElementById('editTransactionModal');
-        if (!modal) {
-            console.error('Edit modal not found');
-            return;
-        }
+openEditModal(type, item) {
+    const modal = document.getElementById('editTransactionModal');
+    const title = document.getElementById('editModalTitle');
+    const subtitle = document.getElementById('editModalSubtitle');
+    const categorySelect = document.getElementById('editCategory');
+    const subcategorySelect = document.getElementById('editSubcategory');
 
-        // 1. Set Modal Title and Subtitle (using class selectors now)
-        const modalTitle = modal.querySelector('.modal-title');
-        const modalSubtitle = modal.querySelector('.modal-subtitle');
+    // Set modal identity
+    if (type === 'expense') {
+        title.innerHTML = '<i class="fas fa-arrow-down text-danger"></i> Edit Expense';
+        subtitle.textContent = 'Update expense details';
+    } else {
+        title.innerHTML = '<i class="fas fa-arrow-up text-success"></i> Edit Income';
+        subtitle.textContent = 'Update income details';
+    }
+    
+    document.getElementById('editItemType').value = type;
+    document.getElementById('editItemId').value = item.id;
+    
+    // Populate dropdowns - FIX: Pass only 2 arguments, not 3
+    this.populateCategorySelect(categorySelect, type);
+    
+    // Setup subcategory if it's an expense
+    if (type === 'expense') {
+        subcategorySelect.style.display = 'block';
+        subcategorySelect.previousElementSibling.style.display = 'block';
         
-        if (modalTitle) {
-            const icon = type === 'expense' ? 'fa-arrow-down' : 'fa-arrow-up';
-            const typeText = type === 'expense' ? 'Expense' : 'Income';
-            modalTitle.innerHTML = `<i class="fas ${icon}"></i> Edit ${typeText}`;
-        }
+        // Load subcategories based on selected category
+        const mainCategories = this.state.getMainCategories();
+        const mainCategory = mainCategories.find(c => c.name === item.category);
         
-        if (modalSubtitle) {
-            modalSubtitle.textContent = `Update ${type === 'expense' ? 'expense' : 'income'} details`;
-        }
-
-        // 2. Set hidden fields
-        document.getElementById('editItemId').value = item.id;
-        document.getElementById('editItemType').value = type;
-        
-        // 3. Populate form fields
-        // Amount - use your currency utils to format for input
-        const amountInput = document.getElementById('editAmount');
-        if (amountInput) {
-            // Format the amount properly for display
-            const numericAmount = parseFloat(item.amount) || 0;
-            amountInput.value = numericAmount;
-        }
-
-        // Description
-        const descInput = document.getElementById('editDescription');
-        if (descInput) {
-            descInput.value = item.description || '';
-        }
-        
-        // Date - ensure proper format
-        const dateInput = document.getElementById('editDate');
-        if (dateInput && item.date) {
-            // Ensure date is in YYYY-MM-DD format
-            const date = new Date(item.date);
-            dateInput.value = date.toISOString().split('T')[0];
-        }
-
-        // 4. Populate Category dropdown
-        const categorySelect = document.getElementById('editCategory');
-        if (categorySelect) {
-            this.populateCategorySelect(categorySelect, type);
-            
-            // Set the selected value
-            const currentValue = type === 'expense' ? item.category : item.source;
-            if (currentValue) {
-                categorySelect.value = currentValue;
-            }
-        }
-
-        // 5. Populate Wallet dropdown
-        const walletSelect = document.getElementById('editWallet');
-        if (walletSelect) {
-            const wallets = this.state.getWallets();
-            walletSelect.innerHTML = '<option value="">Select wallet</option>';
-            
-            wallets.forEach(wallet => {
+        if (mainCategory) {
+            const subcategories = this.state.getSubcategories(mainCategory.id);
+            subcategorySelect.innerHTML = '<option value="">Optional</option>';
+            subcategories.forEach(subcat => {
                 const option = document.createElement('option');
-                option.value = wallet.id;
-                option.textContent = wallet.name;
-                if (item.walletId === wallet.id) {
+                option.value = subcat.name;
+                option.textContent = subcat.name;
+                if (subcat.name === item.subcategory) {
                     option.selected = true;
                 }
-                walletSelect.appendChild(option);
+                subcategorySelect.appendChild(option);
+            });
+            
+            // Update subcategories when category changes
+            categorySelect.addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                const selectedMainCategory = mainCategories.find(c => c.name === selectedCategory);
+                
+                if (selectedMainCategory) {
+                    const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
+                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                    newSubcategories.forEach(subcat => {
+                        const option = document.createElement('option');
+                        option.value = subcat.name;
+                        option.textContent = subcat.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                } else {
+                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                }
             });
         }
+    } else {
+        // Hide subcategory for income
+        subcategorySelect.style.display = 'none';
+        subcategorySelect.previousElementSibling.style.display = 'none';
+    }
 
-        // Show modal
-        modal.classList.add('active');
-        
-        // Focus on first input for better UX
-        setTimeout(() => {
-            const firstInput = modal.querySelector('input, select');
-            if (firstInput) firstInput.focus();
-        }, 100);
-    } 
+    // Fill values from the transaction
+    document.getElementById('editDescription').value = item.description;
+    document.getElementById('editAmount').value = item.amount;
+    document.getElementById('editDate').value = item.date;
+    document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
+
+    modal.classList.add('active');
+}
 
     populateCategorySelect(selectElement, type) {
-        if (!selectElement) return;
-        
         // Clear existing options
-        selectElement.innerHTML = '<option value="">Select ' + (type === 'expense' ? 'category' : 'source') + '</option>';
+        selectElement.innerHTML = '';
         
         if (type === 'expense') {
-            // Get categories from state - only main categories for expense dropdown
-            const mainCategories = this.state.getCategories().filter(cat => cat.type === 'main');
+            // Get categories from state
+            const categories = this.state.getCategories();
             
-            mainCategories.forEach(cat => {
+            categories.forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.name;
                 option.textContent = cat.name;
@@ -1645,7 +1634,7 @@ class UIController {
                 selectElement.appendChild(option);
             });
         }
-    }  
+    }    
 
     // Add this inside the UIController class in app.js
     showLoading(isLoading) {
