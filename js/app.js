@@ -312,7 +312,7 @@ class FinTrackApp {
                     description: description,
                     amount: amount,
                     date: date,
-                    walletId: walletId
+                    wallet_id: walletId
                 };
 
                 // Assign the category or source based on type
