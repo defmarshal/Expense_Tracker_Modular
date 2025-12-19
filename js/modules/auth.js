@@ -7,6 +7,7 @@
 
 import { getState } from './state.js';
 import { getDatabase } from './database.js';
+import { loadAndSetDefaultWallet } from './wallet-persistence.js'; // ← ADD THIS LINE
 
 class AuthService {
     constructor(supabase) {
@@ -14,6 +15,12 @@ class AuthService {
         this.state = getState();
         this.database = getDatabase(supabase);
         this.initialized = false;
+        this.walletPersistence = null; // ← ADD THIS LINE
+    }
+
+    // ← ADD THIS NEW METHOD after constructor
+    setWalletPersistence(walletPersistence) {
+        this.walletPersistence = walletPersistence;
     }
 
     // Initialize auth state listener
@@ -259,6 +266,7 @@ class AuthService {
                 return;
             }
             
+            const userId = this.state.getUser().id; // ← ADD THIS LINE
             console.log('Auth: Loading data for user:', this.state.getUser().email);
             
             // Load all user data in parallel
@@ -282,14 +290,33 @@ class AuthService {
             this.state.setExpenses(expenses);
             this.state.setIncomes(incomes);
             
+            // ← REPLACE THE FOLLOWING SECTION:
+            // OLD CODE (DELETE):
             // Set default wallet if one exists
-            const defaultWallet = wallets.find(w => w.isDefault);
-            if (defaultWallet) {
-                this.state.setCurrentWallet(defaultWallet.id);
+            // const defaultWallet = wallets.find(w => w.isDefault);
+            // if (defaultWallet) {
+            //     this.state.setCurrentWallet(defaultWallet.id);
+            // } else if (wallets.length > 0) {
+            //     // If no default, use first wallet
+            //     this.state.setCurrentWallet(wallets[0].id);
+            // }
+            
+            // NEW CODE (ADD):
+            // Load and set default wallet using persistence
+            if (this.walletPersistence && wallets.length > 0) {
+                await loadAndSetDefaultWallet(
+                    this.walletPersistence,
+                    wallets,
+                    userId,
+                    (walletId) => {
+                        this.state.setCurrentWallet(walletId);
+                    }
+                );
             } else if (wallets.length > 0) {
-                // If no default, use first wallet
+                // Fallback if wallet persistence not available
                 this.state.setCurrentWallet(wallets[0].id);
             }
+            // ← END OF REPLACED SECTION
             
             console.log('Auth: State updated, emitting dataLoaded event');
             this.emitAuthEvent('dataLoaded', { wallets, categories, expenses, incomes });
@@ -330,6 +357,11 @@ class AuthService {
 
     getUserId() {
         return this.state.getUser()?.id || null;
+    }
+    
+    // ← ADD THIS NEW METHOD at the end
+    getUser() {
+        return this.state.getUser();
     }
 }
 

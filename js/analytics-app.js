@@ -9,6 +9,12 @@ import { getAnalyticsUI } from './modules/analytics-ui.js';
 import { debounce } from './modules/debounce.js';
 import { asyncUtils, storageUtils } from './modules/utils.js';
 
+import { 
+    getWalletPersistence, 
+    loadAndSetDefaultWallet, 
+    handleWalletChange 
+} from './modules/wallet-persistence.js';
+
 /**
  * Main analytics application orchestrator
  */
@@ -21,6 +27,7 @@ class AnalyticsApp {
         this.analytics = getAnalytics();
         this.charts = getChartService();
         this.ui = getAnalyticsUI();
+        this.walletPersistence = null;
         
         // Application state
         this.appState = {
@@ -63,7 +70,26 @@ class AnalyticsApp {
             this.auth = getAuth(supabaseClient);
             this.db = getDatabase(supabaseClient);
             await this.auth.initialize();
+            this.walletPersistence = getWalletPersistence(this.db);
             
+            this.walletPersistence.setupCrossTabSync((newWalletId) => {
+                // Update the UI when wallet changes in another tab
+                this.appState.currentView.walletId = newWalletId;
+                const walletSelect = document.getElementById('walletSelect') || 
+                                     document.getElementById('globalWalletSelect');
+                if (walletSelect) {
+                    walletSelect.value = newWalletId;
+                }
+                
+                // Refresh analytics/dashboard
+                if (this.debouncedUpdateAnalytics) {
+                    this.debouncedUpdateAnalytics();
+                } else if (this.ui) {
+                    this.ui.updateAllUI();
+                }
+            });
+
+
             // Initialize analytics with database
             initializeAnalytics(this.db);
             
@@ -89,32 +115,26 @@ class AnalyticsApp {
         }
     }
 
-        setupEventListeners() {
-        // Wallet selector change (debounced)
+    setupEventListeners() {
+        // Wallet selector change
         const walletSelect = document.getElementById('walletSelect');
         if (walletSelect) {
-        walletSelect.addEventListener('change', async (e) => {
-            const walletId = e.target.value;
-            this.appState.currentView.walletId = walletId;
-
-            // Persist default wallet
-            try {
-                const user = this.auth.getUser?.();
-                if (user) {
-                    await this.db.supabase
-                        .from('profiles')
-                        .update({ default_wallet_id: walletId })
-                        .eq('id', user.id);
-                }
-            } catch (err) {
-                console.error('Failed to update default wallet:', err);
-            }
-
-            if (this.debouncedUpdateAnalytics) {
-                this.debouncedUpdateAnalytics();
-            }
-        });
-
+            walletSelect.addEventListener('change', async (e) => {
+                const newWalletId = e.target.value;
+                const userId = this.auth.getUser?.()?.id;
+                
+                await handleWalletChange(
+                    this.walletPersistence,
+                    newWalletId,
+                    userId,
+                    (walletId) => {
+                        this.appState.currentView.walletId = walletId;
+                        if (this.debouncedUpdateAnalytics) {
+                            this.debouncedUpdateAnalytics();
+                        }
+                    }
+                );
+            });
         }
 
         // Period selector change (debounced)
@@ -174,6 +194,11 @@ class AnalyticsApp {
         // Logout button
         document.getElementById('logoutBtn')?.addEventListener('click', async () => {
             try {
+                // Clear wallet persistence
+                if (this.walletPersistence) {
+                    this.walletPersistence.clearStoredWallet();
+                }
+                
                 await this.auth.signOut();
                 this.showAlert('Logged out', 'success');
                 setTimeout(() => window.location.href = 'index.html', 1000);
@@ -270,19 +295,22 @@ class AnalyticsApp {
             const wallets = this.state.getWallets();
             this.ui.populateWalletSelector(wallets);
 
-            // 2. Load default wallet from Supabase
-            const defaultWalletId = await this.getDefaultWalletId();
+            // 2. NEW: Load and set default wallet using persistence
+            const userId = this.auth.getUser?.()?.id;
+            const defaultWalletId = await loadAndSetDefaultWallet(
+                this.walletPersistence,
+                wallets,
+                userId,
+                (walletId) => {
+                    this.appState.currentView.walletId = walletId;
+                    const walletSelect = document.getElementById('walletSelect');
+                    if (walletSelect) {
+                        walletSelect.value = walletId;
+                    }
+                }
+            );
 
-            // 3. Apply default wallet safely
-            const walletSelect = document.getElementById('walletSelect');
-            const exists = wallets.some(w => w.id === defaultWalletId);
-
-            this.appState.currentView.walletId = exists ? defaultWalletId : 'all';
-            if (walletSelect) {
-                walletSelect.value = this.appState.currentView.walletId;
-            }
-
-            // 4. Generate periods
+            // 3. Generate periods
             const availablePeriods = this.analytics.generateAvailablePeriods();
             this.ui.populatePeriodSelector(availablePeriods);
 
@@ -291,7 +319,7 @@ class AnalyticsApp {
                 this.appState.hasData = true;
                 this.ui.hideNoDataMessage();
 
-                // 5. Run analytics AFTER wallet is set
+                // 4. Run analytics
                 await this.updateAnalytics();
             } else {
                 this.ui.showNoDataMessage();

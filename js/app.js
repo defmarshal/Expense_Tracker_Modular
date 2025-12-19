@@ -15,6 +15,12 @@ import {
     domUtils 
 } from './modules/utils.js';
 
+import { 
+    getWalletPersistence, 
+    loadAndSetDefaultWallet, 
+    handleWalletChange 
+} from './modules/wallet-persistence.js';
+
 class FinTrackApp {
     constructor(supabase) {
         // Store Supabase client
@@ -25,6 +31,25 @@ class FinTrackApp {
         this.state = null;
         this.db = null;
         this.ui = null;
+        this.walletPersistence = null;
+
+        this.walletPersistence.setupCrossTabSync((newWalletId) => {
+            // Update the UI when wallet changes in another tab
+            this.appState.currentView.walletId = newWalletId;
+            const walletSelect = document.getElementById('walletSelect') || 
+                                 document.getElementById('globalWalletSelect');
+            if (walletSelect) {
+                walletSelect.value = newWalletId;
+            }
+            
+            // Refresh analytics/dashboard
+            if (this.debouncedUpdateAnalytics) {
+                this.debouncedUpdateAnalytics();
+            } else if (this.ui) {
+                this.ui.updateAllUI();
+            }
+        });
+        
         
         // Store DOM references
         this.domElements = {};
@@ -42,6 +67,7 @@ class FinTrackApp {
             this.state = getState();
             this.db = getDatabase(this.supabase);
             this.auth = await initializeAuth(this.supabase);
+            this.walletPersistence = getWalletPersistence(this.db);
             
             // Initialize UI Controller (defined inline below)
             this.ui = new UIController(this);
@@ -879,10 +905,19 @@ class UIController {
         }
         
         // Add change listener
-        selector.addEventListener('change', (e) => {
+        selector.addEventListener('change', async (e) => {
             const newWalletId = e.target.value || null;
-            this.state.setCurrentWallet(newWalletId);
-            this.updateWalletDependentUI();
+            const userId = this.app.auth.getUser()?.id;
+            
+            await handleWalletChange(
+                this.app.walletPersistence,
+                newWalletId,
+                userId,
+                (walletId) => {
+                    this.state.setCurrentWallet(walletId);
+                    this.updateWalletDependentUI();
+                }
+            );
         });
     }
     
