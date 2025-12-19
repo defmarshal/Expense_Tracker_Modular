@@ -263,9 +263,9 @@ footer {
     }
     
     .stat-card {
-        flex: 0 0 calc(33.333% - 0.4rem);
-        max-width: calc(33.333% - 0.4rem);
-        min-width: 0;
+        flex: 0 0 110px;
+        max-width: 110px;
+        min-width: 110px;
     }
     
     .dashboard-header {
@@ -343,9 +343,9 @@ footer {
     }
     
     .stat-card {
-        flex: 0 0 calc(33.333% - 0.27rem);
-        max-width: calc(33.333% - 0.27rem);
-        min-width: 0;
+        flex: 0 0 105px;
+        max-width: 105px;
+        min-width: 105px;
     }
     
     .hero {
