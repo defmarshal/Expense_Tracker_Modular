@@ -292,20 +292,22 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
+        // Inside setupFormHandlers() in app.js
         const editForm = document.getElementById('editTransactionForm');
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const type = document.getElementById('editItemType').value;
-                const id = document.getElementById('editItemId').value; // This is the key!
+                const id = document.getElementById('editItemId').value; // Get the ID of existing item
                 const description = document.getElementById('editDescription').value;
                 const amount = currencyUtils.parseCurrency(document.getElementById('editAmount').value);
                 const date = document.getElementById('editDate').value;
                 const categoryValue = document.getElementById('editCategory').value;
                 const walletId = document.getElementById('editWallet').value;
 
-                const data = {
+                // Prepare the data object
+                const updateData = {
                     description,
                     amount,
                     date,
@@ -314,31 +316,29 @@ class FinTrackApp {
                 };
 
                 try {
-                    this.ui.showLoading(true);
-                    
+                    this.ui.showLoading(true); // This now exists!
+
                     if (type === 'expense') {
-                        // IMPORTANT: Use updateExpense, not createExpense
-                        const updated = await this.db.updateExpense(id, data);
+                        // We MUST call the specific update function, not create
+                        const updated = await this.db.updateExpense(id, updateData);
                         this.state.updateExpense(updated);
                     } else {
-                        // IMPORTANT: Use updateIncome, not createIncome
-                        const updated = await this.db.updateIncome(id, data);
+                        const updated = await this.db.updateIncome(id, updateData);
                         this.state.updateIncome(updated);
                     }
-
-                    // Close and Refresh
-                    document.getElementById('editTransactionModal').classList.remove('active');
+                    
+                    // Refresh UI and Close
                     this.ui.updateAllUI();
-                    this.showAlert('Updated successfully', 'success');
+                    document.getElementById('editTransactionModal').classList.remove('active');
+                    this.showAlert('Update successful', 'success');
                 } catch (error) {
                     console.error('Update failed:', error);
                     this.showAlert('Update failed: ' + error.message, 'error');
                 } finally {
-                    this.ui.showLoading(false);
+                    this.ui.showLoading(false); // Hide loading state
                 }
             });
-        }        
-    }
+        }
     
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
@@ -1577,6 +1577,23 @@ class UIController {
                 option.textContent = source;
                 selectElement.appendChild(option);
             });
+        }
+    }    
+
+    // Add this inside the UIController class in app.js
+    showLoading(isLoading) {
+        const submitBtn = document.querySelector('#editTransactionForm button[type="submit"]');
+        if (!submitBtn) return;
+
+        if (isLoading) {
+            submitBtn.disabled = true;
+            // Save the original text to restore it later
+            submitBtn.dataset.originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        } else {
+            submitBtn.disabled = false;
+            // Restore the original text (e.g., "Save Changes")
+            submitBtn.innerHTML = submitBtn.dataset.originalText || 'Save Changes';
         }
     }    
     
