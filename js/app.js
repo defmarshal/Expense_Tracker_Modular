@@ -1551,8 +1551,8 @@ class UIController {
         document.getElementById('editItemType').value = type;
         document.getElementById('editItemId').value = item.id;
         
-        // Populate dropdowns
-        this.populateCategorySelect(categorySelect, type, item);
+        // Populate dropdowns - FIX: Pass only 2 arguments, not 3
+        this.populateCategorySelect(categorySelect, type);
         
         // Setup subcategory if it's an expense
         if (type === 'expense') {
@@ -1608,7 +1608,7 @@ class UIController {
         document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
 
         modal.classList.add('active');
-    } 
+    }
 
     populateCategorySelect(selectElement, type) {
         // Clear existing options
