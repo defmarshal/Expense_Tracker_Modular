@@ -33,24 +33,6 @@ class FinTrackApp {
         this.ui = null;
         this.walletPersistence = null;
 
-        this.walletPersistence.setupCrossTabSync((newWalletId) => {
-            // Update the UI when wallet changes in another tab
-            this.appState.currentView.walletId = newWalletId;
-            const walletSelect = document.getElementById('walletSelect') || 
-                                 document.getElementById('globalWalletSelect');
-            if (walletSelect) {
-                walletSelect.value = newWalletId;
-            }
-            
-            // Refresh analytics/dashboard
-            if (this.debouncedUpdateAnalytics) {
-                this.debouncedUpdateAnalytics();
-            } else if (this.ui) {
-                this.ui.updateAllUI();
-            }
-        });
-        
-        
         // Store DOM references
         this.domElements = {};
         
@@ -99,7 +81,29 @@ class FinTrackApp {
             this.showAlert('Failed to initialize app. Please refresh.', 'error');
         }
     }
-    
+
+    setupCrossTabSync() {
+        if (!this.walletPersistence) return;
+        
+        this.walletPersistence.setupCrossTabSync((newWalletId) => {
+            console.log('Wallet changed in another tab:', newWalletId);
+            
+            // Update state
+            this.state.setCurrentWallet(newWalletId);
+            
+            // Update UI selector
+            const selector = document.getElementById('globalWalletSelect');
+            if (selector && selector.value !== newWalletId) {
+                selector.value = newWalletId;
+            }
+            
+            // Refresh UI
+            if (this.ui) {
+                this.ui.updateWalletDependentUI();
+            }
+        });
+    }    
+        
     cacheDomElements() {
         // Store frequently accessed DOM elements
         this.domElements = {

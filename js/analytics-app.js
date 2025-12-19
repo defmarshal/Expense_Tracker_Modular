@@ -71,24 +71,6 @@ class AnalyticsApp {
             this.db = getDatabase(supabaseClient);
             await this.auth.initialize();
             this.walletPersistence = getWalletPersistence(this.db);
-            
-            this.walletPersistence.setupCrossTabSync((newWalletId) => {
-                // Update the UI when wallet changes in another tab
-                this.appState.currentView.walletId = newWalletId;
-                const walletSelect = document.getElementById('walletSelect') || 
-                                     document.getElementById('globalWalletSelect');
-                if (walletSelect) {
-                    walletSelect.value = newWalletId;
-                }
-                
-                // Refresh analytics/dashboard
-                if (this.debouncedUpdateAnalytics) {
-                    this.debouncedUpdateAnalytics();
-                } else if (this.ui) {
-                    this.ui.updateAllUI();
-                }
-            });
-
 
             // Initialize analytics with database
             initializeAnalytics(this.db);
@@ -114,6 +96,28 @@ class AnalyticsApp {
             this.showAlert('Failed to load analytics. Please refresh.', 'error');
         }
     }
+
+    setupCrossTabSync() {
+        if (!this.walletPersistence) return;
+        
+        this.walletPersistence.setupCrossTabSync((newWalletId) => {
+            console.log('Wallet changed in another tab:', newWalletId);
+            
+            // Update state
+            this.state.setCurrentWallet(newWalletId);
+            
+            // Update UI selector
+            const selector = document.getElementById('globalWalletSelect');
+            if (selector && selector.value !== newWalletId) {
+                selector.value = newWalletId;
+            }
+            
+            // Refresh UI
+            if (this.ui) {
+                this.ui.updateWalletDependentUI();
+            }
+        });
+    }    
 
     setupEventListeners() {
         // Wallet selector change
