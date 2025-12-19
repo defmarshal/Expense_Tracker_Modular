@@ -97,6 +97,7 @@ header {
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
+    margin-top: 1rem;
 }
 
 .features-grid {
@@ -250,12 +251,14 @@ footer {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.6rem;
         margin-bottom: 1.2rem;
+        margin-top: 0.8rem;
     }
     
     .dashboard-header {
         flex-direction: column;
         align-items: stretch;
         gap: 0.8rem;
+        margin-bottom: 0.8rem;
     }
     
     .hero {
@@ -321,6 +324,7 @@ footer {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.4rem;
         margin-bottom: 1rem;
+        margin-top: 0.6rem;
     }
     
     .hero {
