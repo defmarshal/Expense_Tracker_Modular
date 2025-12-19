@@ -586,6 +586,48 @@
 
     <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 350px;"></div>
 
+    <div id="editTransactionModal" class="modal-overlay">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h3 id="editModalTitle"><i class="fas fa-edit"></i> Edit Transaction</h3>
+                <button class="close-modal" onclick="document.getElementById('editTransactionModal').classList.remove('active')">&times;</button>
+            </div>
+            <form id="editTransactionForm">
+                <input type="hidden" id="editItemId">
+                <input type="hidden" id="editItemType"> <div class="form-group">
+                    <label for="editAmount">Amount</label>
+                    <input type="number" id="editAmount" step="0.01" required placeholder="0.00">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCategory">Category</label>
+                        <select id="editCategory" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editWallet">Wallet</label>
+                        <select id="editWallet" required></select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editDate">Date</label>
+                    <input type="date" id="editDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editDescription">Description (Optional)</label>
+                    <input type="text" id="editDescription" placeholder="What was this for?">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('editTransactionModal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>    
+
     <script type="module">
 
         const SUPABASE_URL = 'https://slgzgaojmgzjhtuaptod.supabase.co';
