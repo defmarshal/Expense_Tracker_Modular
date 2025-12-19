@@ -71,34 +71,36 @@ class DatabaseService {
   }
 
   async read(table, filters = {}, orderBy = { column: 'created_at', ascending: false }) {
-    try {
-      if (!this.user) throw new Error('User not authenticated');
-      
-      let query = this.supabase
-        .from(table)
-        .select('*')
-        .eq('user_id', this.user.id);
-      
-      // Apply filters
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          query = query.eq(key, value);
-        }
-      });
-      
-      // Apply ordering
-      if (orderBy) {
-        query = query.order(orderBy.column, { ascending: orderBy.ascending });
+      try {
+          if (!this.user) throw new Error('User not authenticated');
+          
+          let query = this.supabase
+              .from(table)
+              .select('*')
+              .eq('user_id', this.user.id);
+          
+          // Apply filters - convert keys to snake_case
+          Object.entries(filters).forEach(([key, value]) => {
+              if (value !== undefined && value !== null) {
+                  // Convert camelCase to snake_case
+                  const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+                  query = query.eq(snakeKey, value);
+              }
+          });
+          
+          // Apply ordering
+          if (orderBy) {
+              query = query.order(orderBy.column, { ascending: orderBy.ascending });
+          }
+          
+          const { data, error } = await query;
+          
+          if (error) throw error;
+          return this.toCamelCase(data);
+      } catch (error) {
+          console.error(`Error reading ${table}:`, error);
+          throw error;
       }
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      return this.toCamelCase(data);
-    } catch (error) {
-      console.error(`Error reading ${table}:`, error);
-      throw error;
-    }
   }
 
   async update(table, id, updates) {
