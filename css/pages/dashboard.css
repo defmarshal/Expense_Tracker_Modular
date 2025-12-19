@@ -395,7 +395,8 @@
     background: white;
     border-radius: var(--radius-md);
     padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
+    margin-top: var(--space-xs);
+    margin-bottom: var(--space-xs);
     box-shadow: var(--shadow);
     text-align: center;
     border: 1px solid rgba(147, 51, 234, 0.05);
@@ -638,4 +639,5 @@
     .income-list {
         padding: var(--space-md);
     }
+
 }
