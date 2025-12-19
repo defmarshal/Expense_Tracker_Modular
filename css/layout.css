@@ -127,10 +127,9 @@ header {
 .dashboard-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; 
     margin-bottom: var(--space-md);
     gap: var(--space-md);
-    flex-wrap: wrap;
 }
 
 /* Landing Page Layout */

@@ -166,6 +166,10 @@
 
 .expense-amount {
     color: var(--primary);
+    text-align: right;
+    margin-right: 20px;
+    flex: 1;
+
 }
 
 .income-amount {
@@ -185,7 +189,13 @@
     font-size: 0.75rem;
     color: var(--gray);
     margin-top: var(--space-xs);
-    display: inline-block;
+    
+    /* CHANGE THESE LINES */
+    display: block;        /* Changed from inline-block */
+    margin-left: auto;     /* This is the magic line that pushes it right */
+    width: fit-content;    /* Ensures the background only covers the text */
+    text-align: right;     /* Keeps text aligned inside the badge */
+    margin-right: 0px;    /* Matches the alignment of .expense-amount */
 }
 
 /* Action Buttons */
@@ -289,6 +299,7 @@
     box-shadow: var(--shadow);
     gap: var(--space-xs);
     flex-wrap: wrap;
+    margin-top:var(--space-sm);
 }
 
 .wallet-selector-container label {
@@ -370,7 +381,7 @@
     display: flex;
     gap: var(--space-md);
     align-items: center;
-    margin-bottom: var(--space-lg);
+    margin-bottom: 0px;
     padding: var(--space-md);
     background: white;
     border-radius: var(--radius-md);
@@ -395,8 +406,8 @@
     background: white;
     border-radius: var(--radius-md);
     padding: var(--space-lg);
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 0px;
+    margin-bottom: 0px;
     box-shadow: var(--shadow);
     text-align: center;
     border: 1px solid rgba(147, 51, 234, 0.05);
@@ -430,7 +441,7 @@
     background: white;
     border-radius: 14px;
     padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
+    /*margin-bottom: var(--space-xs);*/
     box-shadow: var(--shadow);
     border: 1px solid rgba(147, 51, 234, 0.05);
 }
@@ -639,6 +650,4 @@
     .income-list {
         padding: var(--space-md);
     }
-
 }
-
