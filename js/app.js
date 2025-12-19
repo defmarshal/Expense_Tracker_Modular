@@ -292,7 +292,7 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-        // Locate this in your setupFormHandlers() method in app.js
+        // Locate this block in app.js (inside setupFormHandlers)
         const editForm = document.getElementById('editTransactionForm');
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
@@ -301,12 +301,13 @@ class FinTrackApp {
                 const type = document.getElementById('editItemType').value;
                 const id = document.getElementById('editItemId').value;
                 const description = document.getElementById('editDescription').value;
-                const amount = currencyUtils.parseCurrency(document.getElementById('editAmount').value);
+                const amountStr = document.getElementById('editAmount').value;
+                const amount = currencyUtils.parseCurrency(amountStr);
                 const date = document.getElementById('editDate').value;
                 const categoryValue = document.getElementById('editCategory').value;
                 const walletId = document.getElementById('editWallet').value;
 
-                // Corrected object construction
+                // Construct the object carefully to avoid syntax errors
                 const updateData = {
                     description: description,
                     amount: amount,
@@ -314,7 +315,7 @@ class FinTrackApp {
                     walletId: walletId
                 };
 
-                // Add the specific field based on type
+                // Assign the category or source based on type
                 if (type === 'expense') {
                     updateData.category = categoryValue;
                 } else {
@@ -322,8 +323,8 @@ class FinTrackApp {
                 }
 
                 try {
-                    // Check if showLoading exists before calling
-                    if (this.ui.showLoading) {
+                    // Safety check for showLoading
+                    if (this.ui && typeof this.ui.showLoading === 'function') {
                         this.ui.showLoading(true);
                     }
 
@@ -335,14 +336,15 @@ class FinTrackApp {
                         this.state.updateIncome(updated);
                     }
                     
+                    // Refresh and close
                     this.ui.updateAllUI();
                     document.getElementById('editTransactionModal').classList.remove('active');
-                    this.showAlert('Updated successfully', 'success');
+                    this.showAlert('Changes saved successfully', 'success');
                 } catch (error) {
-                    console.error('Update failed:', error);
+                    console.error('Update error:', error);
                     this.showAlert('Update failed: ' + error.message, 'error');
                 } finally {
-                    if (this.ui.showLoading) {
+                    if (this.ui && typeof this.ui.showLoading === 'function') {
                         this.ui.showLoading(false);
                     }
                 }
