@@ -94,7 +94,7 @@ header {
 /* Grid Layouts */
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -246,18 +246,10 @@ footer {
     }
     
     .dashboard-stats {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        gap: 0.8rem;
-        padding-bottom: 0.5rem;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: none;
-    }
-    
-    .dashboard-stats::-webkit-scrollbar {
-        display: none;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+        margin-bottom: 1.2rem;
     }
     
     .dashboard-header {
@@ -322,6 +314,13 @@ footer {
         padding: 0 0.75rem;
         padding-left: max(0.75rem, env(safe-area-inset-left));
         padding-right: max(0.75rem, env(safe-area-inset-right));
+    }
+    
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        margin-bottom: 1rem;
     }
     
     .hero {
