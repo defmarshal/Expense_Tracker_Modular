@@ -13,7 +13,7 @@ class WalletPersistence {
 
     /**
      * Get the wallet ID that should be selected
-     * Priority: localStorage > database default > first wallet
+     * Priority: localStorage > database default (is_default in wallets) > first wallet
      */
     async getDefaultWalletId(wallets, userId) {
         try {
@@ -24,15 +24,13 @@ class WalletPersistence {
                 return storedWalletId;
             }
 
-            // 2. Check database for default wallet
-            if (userId) {
-                const dbDefaultId = await this.getDatabaseDefaultWallet(userId);
-                if (dbDefaultId && wallets.some(w => w.id === dbDefaultId)) {
-                    console.log('Using wallet from database:', dbDefaultId);
-                    // Sync to localStorage
-                    this.saveWalletId(dbDefaultId);
-                    return dbDefaultId;
-                }
+            // 2. Check for default wallet in the wallets array (is_default field)
+            const defaultWallet = wallets.find(w => w.isDefault === true);
+            if (defaultWallet) {
+                console.log('Using default wallet from database:', defaultWallet.id);
+                // Sync to localStorage
+                this.saveWalletId(defaultWallet.id);
+                return defaultWallet.id;
             }
 
             // 3. Fallback to first wallet
@@ -81,40 +79,36 @@ class WalletPersistence {
     }
 
     /**
-     * Get default wallet from database (profiles table)
-     */
-    async getDatabaseDefaultWallet(userId) {
-        try {
-            const { data, error } = await this.db.supabase
-                .from('profiles')
-                .select('default_wallet_id')
-                .eq('id', userId)
-                .single();
-
-            if (error) {
-                console.error('Error fetching database default wallet:', error);
-                return null;
-            }
-
-            return data?.default_wallet_id || null;
-        } catch (error) {
-            console.error('Error in getDatabaseDefaultWallet:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Set default wallet in database
+     * Set a wallet as default in the database
+     * This updates the is_default field in the wallets table
      */
     async setDatabaseDefaultWallet(userId, walletId) {
         try {
-            const { error } = await this.db.supabase
-                .from('profiles')
-                .update({ default_wallet_id: walletId })
-                .eq('id', userId);
+            if (!userId || !walletId) {
+                console.warn('Missing userId or walletId for setDatabaseDefaultWallet');
+                return false;
+            }
 
-            if (error) {
-                console.error('Error updating database default wallet:', error);
+            // First, unset all wallets as default for this user
+            const { error: unsetError } = await this.db.supabase
+                .from('wallets')
+                .update({ is_default: false })
+                .eq('user_id', userId);
+
+            if (unsetError) {
+                console.error('Error unsetting default wallets:', unsetError);
+                // Continue anyway - not critical
+            }
+
+            // Then set the selected wallet as default
+            const { error: setError } = await this.db.supabase
+                .from('wallets')
+                .update({ is_default: true })
+                .eq('id', walletId)
+                .eq('user_id', userId);
+
+            if (setError) {
+                console.error('Error setting default wallet:', setError);
                 return false;
             }
 
@@ -200,8 +194,8 @@ export async function handleWalletChange(walletPersistence, newWalletId, userId,
     // Save to localStorage
     walletPersistence.saveWalletId(newWalletId);
     
-    // Optionally save to database
-    if (userId) {
+    // Optionally save to database (set as default)
+    if (userId && newWalletId) {
         await walletPersistence.setDatabaseDefaultWallet(userId, newWalletId);
     }
     
