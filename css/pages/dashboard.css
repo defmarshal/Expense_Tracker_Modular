@@ -566,7 +566,7 @@
     
     .stat-card {
         padding: 0.6rem 0.4rem;
-        min-height: 60px;
+        min-height: 70px;
         max-width: 100%;
         border-radius: 12px;
     }
@@ -640,3 +640,4 @@
     }
 
 }
+
