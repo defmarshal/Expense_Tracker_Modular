@@ -350,6 +350,7 @@ class FinTrackApp {
                 }
             });
         }
+    }    
         
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
