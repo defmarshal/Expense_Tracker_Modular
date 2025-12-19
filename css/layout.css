@@ -8,21 +8,19 @@ header {
     left: 0;
     right: 0;
     z-index: var(--z-fixed);
-    padding: 0.75rem 1rem;
+    padding: var(--space-sm) var(--space-md);
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(147, 51, 234, 0.1);
-    /* Safe area for iOS notch */
-    padding-top: max(0.75rem, env(safe-area-inset-top));
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-top: max(var(--space-sm), env(safe-area-inset-top));
+    padding-left: max(var(--space-md), env(safe-area-inset-left));
+    padding-right: max(var(--space-md), env(safe-area-inset-right));
 }
 
-/* Navigation */
 .nav-links {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-md);
     align-items: center;
 }
 
@@ -33,9 +31,9 @@ header {
     transition: all var(--transition-normal);
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: 12px;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-md);
     font-size: 0.9rem;
     /* Better touch target */
     min-height: 44px;
@@ -62,7 +60,7 @@ header {
 .logo {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-xs);
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--dark);
@@ -77,7 +75,7 @@ header {
 /* Auth Section */
 .auth-section {
     display: flex;
-    gap: 10px;
+    gap: var(--space-sm);
     align-items: center;
 }
 
@@ -85,24 +83,25 @@ header {
 .container {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 var(--space-md);
     /* Safe area for iOS */
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-left: max(var(--space-md), env(safe-area-inset-left));
+    padding-right: max(var(--space-md), env(safe-area-inset-right));
 }
 
 /* Grid Layouts */
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    margin-top: var(--space-xs);
 }
 
 .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: var(--space-lg);
     max-width: 1100px;
     margin: 0 auto;
 }
@@ -112,8 +111,8 @@ header {
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
 }
 
 /* Dashboard Layout */
@@ -121,17 +120,16 @@ header {
     display: none;
     min-height: 100vh;
     padding-top: calc(70px + env(safe-area-inset-top));
-    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    padding-bottom: max(var(--space-xl), env(safe-area-inset-bottom));
     background: linear-gradient(180deg, #F9F5FF 0%, #FFFFFF 100%);
 }
 
 .dashboard-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    gap: 1rem;
-    flex-wrap: wrap;
+    align-items: center; 
+    margin-bottom: var(--space-md);
+    gap: var(--space-md);
 }
 
 /* Landing Page Layout */
@@ -147,8 +145,8 @@ header {
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 2rem;
-    padding-top: max(2rem, calc(70px + env(safe-area-inset-top)));
+    padding: var(--space-xl);
+    padding-top: max(var(--space-xl), calc(70px + env(safe-area-inset-top)));
     background: linear-gradient(135deg, #F9F5FF 0%, #FFFFFF 100%);
     position: relative;
     overflow: hidden;
@@ -174,28 +172,28 @@ header {
 
 .hero-buttons {
     display: flex;
-    gap: 12px;
+    gap: var(--space-md);
     justify-content: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-xl);
     flex-wrap: wrap;
 }
 
 /* Features Section */
 .features {
-    padding: 4rem 2rem;
+    padding: var(--space-3xl) var(--space-xl);
     background-color: var(--light);
 }
 
 .section-header {
     text-align: center;
     max-width: 650px;
-    margin: 0 auto 3rem;
+    margin: 0 auto var(--space-2xl);
 }
 
 /* Footer Layout */
 footer {
-    padding: 3rem 2rem 1.5rem;
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    padding: var(--space-2xl) var(--space-xl) var(--space-lg);
+    padding-bottom: max(var(--space-lg), env(safe-area-inset-bottom));
     background: var(--dark);
     color: white;
 }
@@ -203,7 +201,7 @@ footer {
 .footer-bottom {
     max-width: 1100px;
     margin: 0 auto;
-    padding-top: 1.5rem;
+    padding-top: var(--space-lg);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
     color: rgba(255, 255, 255, 0.6);
@@ -213,13 +211,13 @@ footer {
 /* Mobile optimizations */
 @media (max-width: 768px) {
     header {
-        padding: 0.6rem 0.8rem;
-        padding-top: max(0.6rem, env(safe-area-inset-top));
+        padding: var(--space-xs) var(--space-sm);
+        padding-top: max(var(--space-xs), env(safe-area-inset-top));
     }
     
     .logo {
         font-size: 1.1rem;
-        gap: 6px;
+        gap: var(--space-xs);
     }
     
     .logo i {
@@ -227,7 +225,7 @@ footer {
     }
     
     .nav-links {
-        gap: 0.5rem;
+        gap: var(--space-xs);
     }
     
     .nav-link span {
@@ -235,61 +233,55 @@ footer {
     }
     
     .nav-link {
-        padding: 8px;
+        padding: var(--space-xs);
         min-width: 40px;
     }
     
     .container {
-        padding: 0 0.8rem;
-        padding-left: max(0.8rem, env(safe-area-inset-left));
-        padding-right: max(0.8rem, env(safe-area-inset-right));
+        padding: 0 var(--space-sm);
+        padding-left: max(var(--space-sm), env(safe-area-inset-left));
+        padding-right: max(var(--space-sm), env(safe-area-inset-right));
     }
     
     .dashboard-stats {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        gap: 0.8rem;
-        padding-bottom: 0.5rem;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: none;
-    }
-    
-    .dashboard-stats::-webkit-scrollbar {
-        display: none;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-xs);
+        margin-bottom: var(--space-md);
+        margin-top: var(--space-xs);
     }
     
     .dashboard-header {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.8rem;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-xs);
     }
     
     .hero {
-        padding: 1.5rem 1rem;
-        padding-top: max(1.5rem, calc(70px + env(safe-area-inset-top)));
+        padding: var(--space-lg) var(--space-md);
+        padding-top: max(var(--space-lg), calc(70px + env(safe-area-inset-top)));
     }
     
     .features {
-        padding: 3rem 1rem;
+        padding: var(--space-2xl) var(--space-md);
     }
     
     .features-grid {
         grid-template-columns: 1fr;
-        gap: 1.2rem;
+        gap: var(--space-md);
     }
     
     .footer-content {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
+        gap: var(--space-lg);
     }
 }
 
 @media (max-width: 480px) {
     header {
-        padding: 0.5rem 0.6rem;
-        padding-top: max(0.5rem, env(safe-area-inset-top));
+        padding: var(--space-xs) var(--space-xs);
+        padding-top: max(var(--space-xs), env(safe-area-inset-top));
     }
     
     .logo {
@@ -309,19 +301,27 @@ footer {
     }
     
     .auth-section .btn {
-        padding: 9px 11px;
+        padding: var(--space-xs);
         gap: 0;
         min-width: 42px;
     }
     
     .auth-section {
-        gap: 6px;
+        gap: var(--space-xs);
     }
     
     .container {
-        padding: 0 0.75rem;
-        padding-left: max(0.75rem, env(safe-area-inset-left));
-        padding-right: max(0.75rem, env(safe-area-inset-right));
+        padding: 0 var(--space-sm);
+        padding-left: max(var(--space-sm), env(safe-area-inset-left));
+        padding-right: max(var(--space-sm), env(safe-area-inset-right));
+    }
+    
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-xs);
+        margin-bottom: var(--space-md);
+        margin-top: var(--space-xs);
     }
     
     .hero {
@@ -330,7 +330,7 @@ footer {
     
     .footer-content {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: var(--space-xl);
     }
 }
 
@@ -338,7 +338,7 @@ footer {
 @media (max-width: 896px) and (orientation: landscape) {
     .hero {
         min-height: auto;
-        padding: 3rem 1rem;
+        padding: var(--space-2xl) var(--space-md);
     }
     
     .dashboard-container {
@@ -346,6 +346,6 @@ footer {
     }
     
     header {
-        padding: 0.5rem 1rem;
+        padding: var(--space-xs) var(--space-md);
     }
 }

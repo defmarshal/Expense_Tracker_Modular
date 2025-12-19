@@ -291,8 +291,67 @@ class FinTrackApp {
             e.preventDefault();
             this.handleAddSubcategory(e);
         });
-    }
-    
+
+        const editForm = document.getElementById('editTransactionForm');
+        if (editForm) {
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const type = document.getElementById('editItemType').value;
+                const id = document.getElementById('editItemId').value;
+                const description = document.getElementById('editDescription').value;
+                const amountStr = document.getElementById('editAmount').value;
+                const amount = currencyUtils.parseCurrency(amountStr);
+                const date = document.getElementById('editDate').value;
+                const categoryValue = document.getElementById('editCategory').value;
+                const subcategoryValue = document.getElementById('editSubcategory').value || '';
+
+                const updateData = {
+                    description: description,
+                    amount: amount,
+                    date: date
+                };
+
+                // Assign the category or source based on type
+                if (type === 'expense') {
+                    updateData.category = categoryValue;
+                    updateData.subcategory = subcategoryValue || null;
+                    updateData.wallet_id = this.state.getState().currentWalletId;
+                } else {
+                    updateData.source = categoryValue;
+                    updateData.wallet_id = this.state.getState().currentWalletId;
+                }
+
+                try {
+                    // Show loading
+                    if (this.ui && typeof this.ui.showLoading === 'function') {
+                        this.ui.showLoading(true);
+                    }
+
+                    if (type === 'expense') {
+                        const updated = await this.db.updateExpense(id, updateData);
+                        this.state.updateExpense(updated);
+                    } else {
+                        const updated = await this.db.updateIncome(id, updateData);
+                        this.state.updateIncome(updated);
+                    }
+                    
+                    // Refresh and close
+                    this.ui.updateAllUI();
+                    document.getElementById('editTransactionModal').classList.remove('active');
+                    this.showAlert('Changes saved successfully', 'success');
+                } catch (error) {
+                    console.error('Update error:', error);
+                    this.showAlert('Update failed: ' + error.message, 'error');
+                } finally {
+                    if (this.ui && typeof this.ui.showLoading === 'function') {
+                        this.ui.showLoading(false);
+                    }
+                }
+            });
+        }
+    }    
+        
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
@@ -1464,55 +1523,149 @@ class UIController {
     editExpense(id) {
         const expense = this.state.getExpenses().find(e => e.id === id);
         if (!expense) return;
-        
-        // Fill form
-        document.getElementById('expenseId').value = expense.id;
-        document.getElementById('expenseDescription').value = expense.description;
-        document.getElementById('expenseAmount').value = currencyUtils.formatCurrency(expense.amount.toString());
-        document.getElementById('expenseDate').value = expense.date;
-        document.getElementById('expenseCategory').value = expense.category;
-        
-        // Update subcategory dropdown and set value
-        setTimeout(() => {
-            const categoryChangeEvent = new Event('change');
-            document.getElementById('expenseCategory').dispatchEvent(categoryChangeEvent);
-            
-            setTimeout(() => {
-                document.getElementById('expenseSubcategory').value = expense.subcategory || '';
-            }, 100);
-        }, 100);
-        
-        // Update button text and show cancel
-        const expenseSubmitBtn = document.getElementById('expenseSubmitBtn');
-        const expenseCancelBtn = document.getElementById('expenseCancelBtn');
-        
-        if (expenseSubmitBtn) expenseSubmitBtn.innerHTML = '<i class="fas fa-save"></i> Update';
-        if (expenseCancelBtn) expenseCancelBtn.classList.remove('hidden');
-        
-        // Switch to expenses tab and scroll to form
-        this.state.setActiveTab('expenses');
-        domUtils.scrollToElement(document.getElementById('expenseForm'));
+        this.openEditModal('expense', expense);
     }
     
     editIncome(id) {
         const income = this.state.getIncomes().find(i => i.id === id);
         if (!income) return;
-        
-        document.getElementById('incomeId').value = income.id;
-        document.getElementById('incomeDescription').value = income.description;
-        document.getElementById('incomeAmount').value = currencyUtils.formatCurrency(income.amount.toString());
-        document.getElementById('incomeDate').value = income.date;
-        document.getElementById('incomeSource').value = income.source;
-        
-        const incomeSubmitBtn = document.getElementById('incomeSubmitBtn');
-        const incomeCancelBtn = document.getElementById('incomeCancelBtn');
-        
-        if (incomeSubmitBtn) incomeSubmitBtn.innerHTML = '<i class="fas fa-save"></i> Update';
-        if (incomeCancelBtn) incomeCancelBtn.classList.remove('hidden');
-        
-        this.state.setActiveTab('income');
-        domUtils.scrollToElement(document.getElementById('incomeForm'));
+        this.openEditModal('income', income);
     }
+
+openEditModal(type, item) {
+    const modal = document.getElementById('editTransactionModal');
+    const title = document.getElementById('editModalTitle');
+    const subtitle = document.getElementById('editModalSubtitle');
+    const categorySelect = document.getElementById('editCategory');
+    const subcategorySelect = document.getElementById('editSubcategory');
+
+    // Set modal identity
+    if (type === 'expense') {
+        title.innerHTML = 'Edit Expense';
+        subtitle.textContent = 'Update expense details';
+    } else {
+        title.innerHTML = 'Edit Income';
+        subtitle.textContent = 'Update income details';
+    }
+    
+    document.getElementById('editItemType').value = type;
+    document.getElementById('editItemId').value = item.id;
+    
+    // Populate dropdowns - FIX: Pass only 2 arguments, not 3
+    this.populateCategorySelect(categorySelect, type);
+    
+    // Setup subcategory if it's an expense
+    if (type === 'expense') {
+        subcategorySelect.style.display = 'block';
+        subcategorySelect.previousElementSibling.style.display = 'block';
+        
+        // Load subcategories based on selected category
+        const mainCategories = this.state.getMainCategories();
+        const mainCategory = mainCategories.find(c => c.name === item.category);
+        
+        if (mainCategory) {
+            const subcategories = this.state.getSubcategories(mainCategory.id);
+            subcategorySelect.innerHTML = '<option value="">Optional</option>';
+            subcategories.forEach(subcat => {
+                const option = document.createElement('option');
+                option.value = subcat.name;
+                option.textContent = subcat.name;
+                if (subcat.name === item.subcategory) {
+                    option.selected = true;
+                }
+                subcategorySelect.appendChild(option);
+            });
+            
+            // Update subcategories when category changes
+            categorySelect.addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                const selectedMainCategory = mainCategories.find(c => c.name === selectedCategory);
+                
+                if (selectedMainCategory) {
+                    const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
+                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                    newSubcategories.forEach(subcat => {
+                        const option = document.createElement('option');
+                        option.value = subcat.name;
+                        option.textContent = subcat.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                } else {
+                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                }
+            });
+        }
+    } else {
+        // Hide subcategory for income
+        subcategorySelect.style.display = 'none';
+        subcategorySelect.previousElementSibling.style.display = 'none';
+    }
+
+    // Fill values from the transaction
+    document.getElementById('editDescription').value = item.description;
+    
+    // ✅ Format amount with thousand separators (remove "Rp " prefix)
+    document.getElementById('editAmount').value = currencyUtils.formatDisplayCurrency(item.amount).replace('Rp ', '');
+    
+    document.getElementById('editDate').value = item.date;
+    document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
+    
+    // ✅ Add live formatting for edit amount input
+    const editAmountInput = document.getElementById('editAmount');
+    // Remove any existing listeners by cloning
+    const newEditAmountInput = editAmountInput.cloneNode(true);
+    editAmountInput.parentNode.replaceChild(newEditAmountInput, editAmountInput);
+    
+    // Add new event listener
+    newEditAmountInput.addEventListener('input', function() {
+        this.value = currencyUtils.formatCurrency(this.value);
+    });
+
+    modal.classList.add('active');
+}
+
+    populateCategorySelect(selectElement, type) {
+        // Clear existing options
+        selectElement.innerHTML = '';
+        
+        if (type === 'expense') {
+            // Get categories from state
+            const categories = this.state.getCategories();
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = cat.name;
+                selectElement.appendChild(option);
+            });
+        } else {
+            // For Income, use standard sources
+            const sources = ['Salary', 'Freelance', 'Investment', 'Gift', 'Bonus', 'Other'];
+            sources.forEach(source => {
+                const option = document.createElement('option');
+                option.value = source;
+                option.textContent = source;
+                selectElement.appendChild(option);
+            });
+        }
+    }    
+
+    // Add this inside the UIController class in app.js
+    showLoading(isLoading) {
+        const submitBtn = document.querySelector('#editTransactionForm button[type="submit"]');
+        if (!submitBtn) return;
+
+        if (isLoading) {
+            submitBtn.disabled = true;
+            // Save the original text to restore it later
+            submitBtn.dataset.originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        } else {
+            submitBtn.disabled = false;
+            // Restore the original text (e.g., "Save Changes")
+            submitBtn.innerHTML = submitBtn.dataset.originalText || 'Save Changes';
+        }
+    }    
     
     editWallet(id) {
         const wallet = this.state.getWallets().find(w => w.id === id);

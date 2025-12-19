@@ -22,18 +22,18 @@
     text-align: right;
 }
 
-/* Margins */
-.mt-1 { margin-top: 0.25rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
-.mt-5 { margin-top: 2rem; }
+/* Margins - Using unified spacing variables */
+.mt-1 { margin-top: var(--space-xs); }
+.mt-2 { margin-top: var(--space-sm); }
+.mt-3 { margin-top: var(--space-md); }
+.mt-4 { margin-top: var(--space-lg); }
+.mt-5 { margin-top: var(--space-xl); }
 
-.mb-1 { margin-bottom: 0.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-3 { margin-bottom: 1rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mb-5 { margin-bottom: 2rem; }
+.mb-1 { margin-bottom: var(--space-xs); }
+.mb-2 { margin-bottom: var(--space-sm); }
+.mb-3 { margin-bottom: var(--space-md); }
+.mb-4 { margin-bottom: var(--space-lg); }
+.mb-5 { margin-bottom: var(--space-xl); }
 
 /* Flex Utilities */
 .flex {
@@ -56,11 +56,11 @@
     justify-content: center;
 }
 
-.gap-1 { gap: 0.25rem; }
-.gap-2 { gap: 0.5rem; }
-.gap-3 { gap: 1rem; }
-.gap-4 { gap: 1.5rem; }
-.gap-5 { gap: 2rem; }
+.gap-1 { gap: var(--space-xs); }
+.gap-2 { gap: var(--space-sm); }
+.gap-3 { gap: var(--space-md); }
+.gap-4 { gap: var(--space-lg); }
+.gap-5 { gap: var(--space-xl); }
 
 /* Grid Utilities */
 .grid {
@@ -166,18 +166,18 @@
     }
     
     /* Smaller margins on mobile */
-    .mt-3 { margin-top: 0.75rem; }
-    .mt-4 { margin-top: 1rem; }
-    .mt-5 { margin-top: 1.5rem; }
+    .mt-3 { margin-top: var(--space-sm); }
+    .mt-4 { margin-top: var(--space-md); }
+    .mt-5 { margin-top: var(--space-lg); }
     
-    .mb-3 { margin-bottom: 0.75rem; }
-    .mb-4 { margin-bottom: 1rem; }
-    .mb-5 { margin-bottom: 1.5rem; }
+    .mb-3 { margin-bottom: var(--space-sm); }
+    .mb-4 { margin-bottom: var(--space-md); }
+    .mb-5 { margin-bottom: var(--space-lg); }
     
     /* Smaller gaps on mobile */
-    .gap-3 { gap: 0.75rem; }
-    .gap-4 { gap: 1rem; }
-    .gap-5 { gap: 1.5rem; }
+    .gap-3 { gap: var(--space-sm); }
+    .gap-4 { gap: var(--space-md); }
+    .gap-5 { gap: var(--space-lg); }
 }
 
 /* Landscape mode optimizations */
@@ -188,13 +188,13 @@
     
     /* Reduce vertical spacing in landscape */
     .mt-4, .mb-4 { 
-        margin-top: 0.75rem;
-        margin-bottom: 0.75rem;
+        margin-top: var(--space-sm);
+        margin-bottom: var(--space-sm);
     }
     
     .mt-5, .mb-5 { 
-        margin-top: 1rem;
-        margin-bottom: 1rem;
+        margin-top: var(--space-md);
+        margin-bottom: var(--space-md);
     }
 }
 

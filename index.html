@@ -182,13 +182,13 @@
         <div class="container">    
             <div class="dashboard-header">
                 <h1 class="dashboard-title">Dashboard</h1>
-                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <!-- <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;"> -->
                     <div class="wallet-selector-container">
                         <label for="globalWalletSelect" style="font-size: 0.8rem; color: var(--gray); margin-bottom: 0;">Wallet:</label>
                         <select id="globalWalletSelect">
                             <option value="">Select wallet</option>
                         </select>
-                    </div>
+                    <!-- </div> -->
                     <span id="userEmail" style="color: var(--gray); font-size: 0.85rem;"></span>
                 </div>
             </div>
@@ -586,11 +586,80 @@
 
     <div id="alertContainer" style="position: fixed; top: 80px; right: 12px; z-index: 3000; max-width: 350px;"></div>
 
+    <div id="editTransactionModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #9333EA 0%, #C084FC 100%); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float 3s ease-in-out infinite;"></div>
+                <button class="modal-close" onclick="document.getElementById('editTransactionModal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px;">
+                    <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <i class="fas fa-edit" style="font-size: 1.3rem; color: white;"></i>
+                    </div>
+                    <h2 class="modal-title" id="editModalTitle" style="margin: 0; color: white;">Edit Transaction</h2>
+                </div>
+                <p class="modal-subtitle" id="editModalSubtitle">Make changes and save</p>
+            </div>
+
+            <style>
+            @keyframes float {
+                0%, 100% { transform: translateY(0px) rotate(0deg); }
+                50% { transform: translateY(-20px) rotate(180deg); }
+            }
+            </style>
+            <div class="modal-body" style="padding: 1.25rem;">
+                <form id="editTransactionForm" class="compact-form">
+                    <input type="hidden" id="editItemId">
+                    <input type="hidden" id="editItemType">
+                    
+                    <div class="form-group" style="margin-bottom: 0.8rem;">
+                        <label for="editDescription" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Description</label>
+                        <input type="text" id="editDescription" placeholder="What was this for?" style="padding: 10px 12px; font-size: 0.95rem;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0.8rem;">
+                        <label for="editAmount" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Amount</label>
+                        <div class="currency-input">
+                            <span class="currency-symbol">Rp</span>
+                            <input type="text" id="editAmount" placeholder="0" style="padding: 10px 12px 10px 38px; font-size: 0.95rem;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" style="gap: 0.8rem; margin-bottom: 0.8rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="editCategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Category</label>
+                            <select id="editCategory" required style="padding: 10px 12px; font-size: 0.95rem;">
+                                <option value="">Select category</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="editSubcategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Subcategory</label>
+                            <select id="editSubcategory" style="padding: 10px 12px; font-size: 0.95rem;">
+                                <option value="">Optional</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="editDate" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Date</label>
+                        <input type="date" id="editDate" required style="padding: 10px 12px; font-size: 0.95rem;">
+                    </div>
+                    
+                    <div class="form-row" style="gap: 0.8rem; margin-top: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('editTransactionModal').classList.remove('active')" style="padding: 10px; font-size: 0.9rem; flex: 1;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="padding: 10px; font-size: 0.9rem; flex: 1;">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div> 
+
     <script type="module">
-
-        const SUPABASE_URL = 'https://slgzgaojmgzjhtuaptod.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZ3pnYW9qbWd6amh0dWFwdG9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyNzQyMzMsImV4cCI6MjA3ODg1MDIzM30.aD9cjbekiufRaatuNaAEP2uD2uU7ggpPor6jtSGM-F4';
-
         async function initApp() {
             try {
                 console.log('Fetching config...');

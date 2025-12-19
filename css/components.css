@@ -1,6 +1,6 @@
 /* Buttons */
 .btn {
-    padding: 10px 18px;
+    padding: var(--space-sm) var(--space-md);
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: var(--space-xs);
     font-size: 0.9rem;
     /* Better touch targets */
     min-height: 44px;
@@ -94,7 +94,7 @@
 .card {
     background: white;
     border-radius: var(--radius-lg);
-    padding: 1.5rem;
+    padding: var(--space-lg);
     box-shadow: var(--shadow);
     border: 1px solid rgba(147, 51, 234, 0.05);
     transition: all var(--transition-normal);
@@ -114,12 +114,12 @@
 
 /* Form Components */
 .form-group {
-    margin-bottom: 1.2rem;
+    margin-bottom: var(--space-lg);
 }
 
 label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-xs);
     font-weight: 500;
     color: var(--text);
     font-size: 0.9rem;
@@ -127,7 +127,7 @@ label {
 
 input, select, textarea {
     width: 100%;
-    padding: 12px 14px;
+    padding: var(--space-sm) var(--space-md);
     border: 1.5px solid var(--gray-light);
     border-radius: 10px;
     font-size: 16px; /* Prevent iOS zoom */
@@ -159,7 +159,7 @@ select {
     /* Add custom arrow */
     background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239B8BA8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-13%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2013l128%20128c3.6%203.6%207.8%205.4%2013%205.4s9.4-1.8%2013-5.4l128-128c3.6-3.6%205.4-7.8%205.4-13%200-5-1.8-9.3-5.4-13z%22%2F%3E%3C%2Fsvg%3E');
     background-repeat: no-repeat;
-    background-position: right 12px top 50%;
+    background-position: right var(--space-sm) top 50%;
     background-size: 0.65em auto;
     padding-right: 40px;
 }
@@ -187,7 +187,7 @@ input:focus, select:focus, textarea:focus {
 
 .currency-symbol {
     position: absolute;
-    left: 14px;
+    left: var(--space-md);
     top: 50%;
     transform: translateY(-50%);
     color: var(--gray);
@@ -199,7 +199,7 @@ input:focus, select:focus, textarea:focus {
 /* Form Row */
 .form-row {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-md);
 }
 
 .form-row .form-group {
@@ -216,18 +216,18 @@ input:focus, select:focus, textarea:focus {
     
     input, select, textarea {
         font-size: 16px !important; /* Force to prevent zoom */
-        padding: 13px 14px;
+        padding: var(--space-sm) var(--space-md);
     }
 }
 
 /* Alert Components */
 .alert {
-    padding: 12px 16px;
+    padding: var(--space-sm) var(--space-md);
     border-radius: 10px;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-md);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-sm);
     box-shadow: var(--shadow);
     animation: slideIn 0.3s ease;
     font-size: 0.9rem;
@@ -275,7 +275,7 @@ input:focus, select:focus, textarea:focus {
     opacity: 0;
     visibility: hidden;
     transition: all var(--transition-normal);
-    padding: 1rem;
+    padding: var(--space-md);
     /* Prevent body scroll when modal is open */
     overscroll-behavior: contain;
 }
@@ -307,14 +307,14 @@ input:focus, select:focus, textarea:focus {
 /* Better mobile modal sizing */
 @media (max-width: 768px) {
     .modal {
-        max-width: calc(100% - 2rem);
+        max-width: calc(100% - var(--space-xl));
         max-height: 85vh;
     }
 }
 
 @media (max-width: 480px) {
     .modal-overlay {
-        padding: 0.75rem;
+        padding: var(--space-sm);
         align-items: flex-end;
     }
     
@@ -329,7 +329,7 @@ input:focus, select:focus, textarea:focus {
 .modal-header {
     background: var(--gradient);
     color: white;
-    padding: 1.5rem;
+    padding: var(--space-lg);
     text-align: center;
     position: relative;
     flex-shrink: 0;
@@ -342,7 +342,7 @@ input:focus, select:focus, textarea:focus {
 .modal-title {
     font-size: 1.6rem;
     font-weight: 700;
-    margin-bottom: 0.3rem;
+    margin-bottom: var(--space-xs);
 }
 
 .modal-subtitle {
@@ -351,7 +351,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .modal-body {
-    padding: 1.5rem;
+    padding: var(--space-lg);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     flex: 1;
@@ -359,7 +359,7 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 480px) {
     .modal-header {
-        padding: 1.25rem;
+        padding: var(--space-md);
     }
     
     .modal-title {
@@ -367,14 +367,14 @@ input:focus, select:focus, textarea:focus {
     }
     
     .modal-body {
-        padding: 1.25rem;
+        padding: var(--space-md);
     }
 }
 
 .modal-close {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: var(--space-sm);
+    right: var(--space-sm);
     background: rgba(255, 255, 255, 0.25);
     border: none;
     color: white;
@@ -407,7 +407,7 @@ input:focus, select:focus, textarea:focus {
     height: 4px;
     background: #eee;
     border-radius: 2px;
-    margin-top: 8px;
+    margin-top: var(--space-xs);
     overflow: hidden;
 }
 
@@ -436,13 +436,13 @@ input:focus, select:focus, textarea:focus {
 .dashboard-tabs {
     display: flex;
     background: white;
-    border-radius: 12px;
-    padding: 0.5rem;
-    margin-bottom: 1.5rem;
+    border-radius: var(--radius-md);
+    padding: var(--space-xs);
+    margin-bottom: var(--space-lg);
     box-shadow: var(--shadow);
     overflow-x: auto;
     overflow-y: hidden;
-    gap: 0.5rem;
+    gap: var(--space-xs);
     /* Smooth scrolling on mobile */
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -455,7 +455,7 @@ input:focus, select:focus, textarea:focus {
 
 .tab {
     flex: 1;
-    padding: 0.9rem 1rem;
+    padding: var(--space-sm) var(--space-md);
     text-align: center;
     cursor: pointer;
     border-radius: 10px;
@@ -488,28 +488,28 @@ input:focus, select:focus, textarea:focus {
 .tab-content.active {
     display: flex !important;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--space-lg);
 }
 
 /* Mobile tab optimizations */
 @media (max-width: 768px) {
     .dashboard-tabs {
         scroll-snap-type: x mandatory;
-        scroll-padding: 0 0.5rem;
+        scroll-padding: 0 var(--space-xs);
     }
     
     .tab {
         scroll-snap-align: start;
         flex-shrink: 0;
         min-width: fit-content;
-        padding: 0.9rem 1.2rem;
+        padding: var(--space-sm) var(--space-md);
         font-size: 0.8rem;
     }
 }
 
 @media (max-width: 480px) {
     .tab {
-        padding: 0.9rem 0.7rem;
+        padding: var(--space-sm);
         font-size: 0;
         position: relative;
         min-width: 50px;
@@ -538,4 +538,173 @@ input:focus, select:focus, textarea:focus {
         transform: scale(0.96);
         transition: transform 0.1s;
     }
+}
+
+/* ==========================================================================
+   COMPACT FORM STYLES FOR EDIT MODAL
+   ========================================================================== */
+
+.compact-form .form-group {
+    margin-bottom: var(--space-md) !important;
+}
+
+.compact-form label {
+    font-size: 0.85rem !important;
+    margin-bottom: var(--space-xs) !important;
+}
+
+.compact-form input,
+.compact-form select {
+    padding: var(--space-sm) var(--space-md) !important;
+    font-size: 0.95rem !important;
+    min-height: 40px !important;
+}
+
+.compact-form .currency-input input {
+    padding-left: 38px !important;
+}
+
+/* Edit modal specific styles */
+#editTransactionModal .modal {
+    max-width: 480px;
+}
+
+/* Smaller modal padding for mobile */
+@media (max-width: 768px) {
+    #editTransactionModal .modal {
+        max-width: calc(100% - var(--space-lg));
+        max-height: 85vh;
+        margin: var(--space-sm);
+    }
+    
+    #editTransactionModal .modal-body {
+        padding: var(--space-md) !important;
+        max-height: calc(85vh - 120px);
+        overflow-y: auto;
+    }
+    
+    .compact-form .form-row {
+        flex-direction: column;
+        gap: var(--space-sm) !important;
+    }
+    
+    #editTransactionModal .btn {
+        padding: var(--space-sm) !important;
+        min-height: 46px;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+    #editTransactionModal .modal {
+        max-width: 100%;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    #editTransactionModal .modal-body {
+        max-height: calc(100vh - 130px);
+        padding: var(--space-md) var(--space-sm) !important;
+    }
+    
+    #editTransactionModal h2.modal-title {
+        font-size: 1.3rem !important;
+    }
+    
+    #editTransactionModal .modal-subtitle {
+        font-size: 0.85rem !important;
+    }
+}
+
+/* Fix for iOS date input */
+@media (max-width: 768px) {
+    #editTransactionModal input[type="date"] {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+}
+
+/* Ensure modal doesn't push content off screen */
+#editTransactionModal.modal-overlay {
+    display: none;
+    align-items: flex-start;
+    padding-top: var(--space-xl);
+}
+
+#editTransactionModal.modal-overlay.active {
+    display: flex;
+}
+
+@media (max-width: 768px) {
+    #editTransactionModal.modal-overlay {
+        padding-top: var(--space-md);
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    #editTransactionModal.modal-overlay {
+        padding-top: 0;
+        align-items: flex-start;
+    }
+}
+
+/* Enhanced Edit Modal Animation */
+#editTransactionModal .modal-header {
+    background: linear-gradient(135deg, #9333EA 0%, #C084FC 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+#editTransactionModal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+        opacity: 0.6;
+    }
+    50% { 
+        transform: translateY(-20px) rotate(180deg); 
+        opacity: 0.8;
+    }
+}
+
+/* Icon container styling */
+#editTransactionModal .modal-header .icon-container {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Currency input with better formatting */
+#editAmount {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }

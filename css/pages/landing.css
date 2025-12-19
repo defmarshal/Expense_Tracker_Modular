@@ -4,7 +4,7 @@
 .hero h1 {
     font-size: 3rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-md);
     background: var(--gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -15,7 +15,7 @@
 .hero p {
     font-size: 1.2rem;
     color: var(--gray);
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-xl);
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
@@ -25,10 +25,10 @@
 .hero-image {
     max-width: 800px;
     width: 100%;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     box-shadow: 0 10px 30px rgba(147, 51, 234, 0.12);
     overflow: hidden;
-    margin-top: 1.5rem;
+    margin-top: var(--space-lg);
     border: 1px solid rgba(147, 51, 234, 0.1);
 }
 
@@ -47,7 +47,7 @@
 .feature-card {
     background: white;
     border-radius: var(--radius-lg);
-    padding: 2rem;
+    padding: var(--space-xl);
     text-align: center;
     box-shadow: var(--shadow);
     transition: all var(--transition-normal);
@@ -73,7 +73,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1rem;
+    margin: 0 auto var(--space-md);
     background: var(--gradient);
     color: white;
     font-size: 1.5rem;
@@ -82,7 +82,7 @@
 .feature-title {
     font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 0.8rem;
+    margin-bottom: var(--space-md);
     color: var(--dark);
 }
 
@@ -94,7 +94,7 @@
 
 /* CTA Section */
 .cta {
-    padding: 4rem 2rem;
+    padding: var(--space-3xl) var(--space-xl);
     background: var(--gradient);
     color: white;
     text-align: center;
@@ -103,21 +103,21 @@
 .cta h2 {
     font-size: 2.2rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-md);
     color: white;
 }
 
 .cta p {
     font-size: 1.1rem;
     max-width: 550px;
-    margin: 0 auto 2rem;
+    margin: 0 auto var(--space-xl);
     opacity: 0.95;
     line-height: 1.6;
 }
 
 .cta-buttons {
     display: flex;
-    gap: 12px;
+    gap: var(--space-md);
     justify-content: center;
     flex-wrap: wrap;
 }
@@ -125,7 +125,7 @@
 /* Footer Links */
 .footer-column h3 {
     font-size: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-md);
     font-weight: 600;
     color: white;
 }
@@ -136,7 +136,7 @@
 }
 
 .footer-links li {
-    margin-bottom: 0.6rem;
+    margin-bottom: var(--space-xs);
 }
 
 .footer-links a {
@@ -145,7 +145,7 @@
     transition: color var(--transition-normal);
     font-size: 0.9rem;
     display: inline-block;
-    padding: 0.2rem 0;
+    padding: var(--space-xs) 0;
 }
 
 .footer-links a:hover {
@@ -160,14 +160,14 @@
     
     .hero p {
         font-size: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: var(--space-lg);
     }
     
     .hero-buttons {
         flex-direction: column;
         width: 100%;
         max-width: 300px;
-        margin: 0 auto 1.5rem;
+        margin: 0 auto var(--space-lg);
     }
     
     .hero-buttons .btn {
@@ -176,18 +176,18 @@
     }
     
     .hero-image {
-        margin-top: 1rem;
-        border-radius: 12px;
+        margin-top: var(--space-md);
+        border-radius: var(--radius-md);
     }
     
     .hero-image > div {
         height: 220px;
         font-size: 1rem;
-        padding: 1rem;
+        padding: var(--space-md);
     }
     
     .feature-card {
-        padding: 1.5rem;
+        padding: var(--space-lg);
     }
     
     .feature-icon {
@@ -205,7 +205,7 @@
     }
     
     .cta {
-        padding: 3rem 1.5rem;
+        padding: var(--space-2xl) var(--space-lg);
     }
     
     .cta h2 {
@@ -232,12 +232,12 @@
 @media (max-width: 480px) {
     .hero h1 {
         font-size: 1.8rem;
-        margin-bottom: 0.8rem;
+        margin-bottom: var(--space-md);
     }
     
     .hero p {
         font-size: 0.95rem;
-        margin-bottom: 1.2rem;
+        margin-bottom: var(--space-lg);
     }
     
     .hero-image > div {
@@ -246,19 +246,19 @@
     }
     
     .feature-card {
-        padding: 1.2rem;
+        padding: var(--space-lg);
     }
     
     .feature-icon {
         width: 45px;
         height: 45px;
         font-size: 1.2rem;
-        margin-bottom: 0.8rem;
+        margin-bottom: var(--space-md);
     }
     
     .feature-title {
         font-size: 1rem;
-        margin-bottom: 0.6rem;
+        margin-bottom: var(--space-xs);
     }
     
     .feature-description {
@@ -266,17 +266,17 @@
     }
     
     .cta {
-        padding: 2.5rem 1rem;
+        padding: var(--space-2xl) var(--space-md);
     }
     
     .cta h2 {
         font-size: 1.5rem;
-        margin-bottom: 0.8rem;
+        margin-bottom: var(--space-md);
     }
     
     .cta p {
         font-size: 0.9rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: var(--space-lg);
     }
     
     .footer-column h3 {
@@ -291,7 +291,7 @@
 /* Landscape mode for mobile */
 @media (max-width: 896px) and (orientation: landscape) {
     .hero {
-        padding: 2rem 1rem;
+        padding: var(--space-xl) var(--space-md);
     }
     
     .hero h1 {
@@ -300,12 +300,12 @@
     
     .hero p {
         font-size: 0.9rem;
-        margin-bottom: 1rem;
+        margin-bottom: var(--space-md);
     }
     
     .hero-buttons {
         flex-direction: row;
-        margin-bottom: 1rem;
+        margin-bottom: var(--space-md);
     }
     
     .hero-image {
@@ -317,7 +317,7 @@
     }
     
     .cta {
-        padding: 2rem 1.5rem;
+        padding: var(--space-xl) var(--space-lg);
     }
     
     .cta h2 {

@@ -10,7 +10,7 @@
 .section-title {
     font-size: 2.2rem;
     font-weight: 700;
-    margin-bottom: 0.8rem;
+    margin-bottom: var(--space-md);
     color: var(--dark);
 }
 
@@ -22,7 +22,7 @@
 .form-title {
     font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 1.2rem;
+    margin-bottom: var(--space-lg);
     color: var(--dark);
 }
 
@@ -30,20 +30,70 @@
 .stat-card {
     background: white;
     border-radius: 14px;
-    padding: 1.2rem;
+    padding: var(--space-lg);
     box-shadow: var(--shadow);
-    text-align: center;
     border: 1px solid rgba(147, 51, 234, 0.05);
+    transition: transform 0.3s ease;
     /* Mobile optimizations */
     scroll-snap-align: start;
     flex-shrink: 0;
+    /* New: Center content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 100px;
+    box-sizing: border-box;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+/* Card Header with Icon */
+.card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    gap: var(--space-xs);
+    width: 100%;
+}
+
+.card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-bottom: var(--space-xs);
+}
+
+.card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin: 0;
 }
 
 .stat-value {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    margin: 0.4rem 0;
+    margin: var(--space-xs) 0;
+    line-height: 1.2;
     word-break: break-word;
+    overflow-wrap: break-word;
+    text-align: center;
+    width: 100%;
 }
 
 .stat-value.income {
@@ -60,10 +110,14 @@
 
 .stat-label {
     color: var(--gray);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+    margin-top: var(--space-xs);
 }
 
 /* List Items */
@@ -71,9 +125,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 0;
+    padding: var(--space-md) 0;
     border-bottom: 1px solid var(--gray-light);
-    gap: 1rem;
+    gap: var(--space-md);
     min-height: 60px;
 }
 
@@ -98,7 +152,7 @@
 .income-description {
     font-weight: 600;
     color: var(--dark);
-    margin-bottom: 0.3rem;
+    margin-bottom: var(--space-xs);
     word-break: break-word;
 }
 
@@ -112,6 +166,10 @@
 
 .expense-amount {
     color: var(--primary);
+    text-align: right;
+    margin-right: 20px;
+    flex: 1;
+
 }
 
 .income-amount {
@@ -126,18 +184,24 @@
 
 .expense-category, .income-source {
     background: var(--light-gray);
-    padding: 4px 10px;
+    padding: var(--space-xs) var(--space-sm);
     border-radius: 16px;
     font-size: 0.75rem;
     color: var(--gray);
-    margin-top: 0.3rem;
-    display: inline-block;
+    margin-top: var(--space-xs);
+    
+    /* CHANGE THESE LINES */
+    display: block;        /* Changed from inline-block */
+    margin-left: auto;     /* This is the magic line that pushes it right */
+    width: fit-content;    /* Ensures the background only covers the text */
+    text-align: right;     /* Keeps text aligned inside the badge */
+    margin-right: 0px;    /* Matches the alignment of .expense-amount */
 }
 
 /* Action Buttons */
 .action-buttons {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-xs);
     align-items: center;
     flex-shrink: 0;
 }
@@ -146,7 +210,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 10px;
+    padding: var(--space-sm);
     border-radius: 8px;
     transition: all var(--transition-normal);
     display: flex;
@@ -191,15 +255,15 @@
 
 /* Category Components */
 .subcategory-item {
-    padding-left: 1.5rem;
+    padding-left: var(--space-lg);
     color: var(--gray);
     border-left: 2px solid var(--gray-light);
-    margin-left: 0.8rem;
+    margin-left: var(--space-md);
 }
 
 .category-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-xs);
 }
 
 .add-subcategory-btn {
@@ -207,12 +271,12 @@
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 6px 12px;
+    padding: var(--space-xs) var(--space-sm);
     cursor: pointer;
     font-size: 0.8rem;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-xs);
     min-height: 36px;
     transition: all var(--transition-normal);
 }
@@ -229,12 +293,13 @@
     display: flex;
     align-items: center;
     background: white;
-    padding: 10px 14px;
+    padding: var(--space-sm) var(--space-md);
     border-radius: 10px;
     border: 1.5px solid var(--gray-light);
     box-shadow: var(--shadow);
-    gap: 8px;
+    gap: var(--space-xs);
     flex-wrap: wrap;
+    margin-top:var(--space-sm);
 }
 
 .wallet-selector-container label {
@@ -268,9 +333,9 @@
 .balance-warning {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 1.2rem;
-    padding: 1rem;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md);
     border-radius: 10px;
     background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.15);
@@ -285,17 +350,17 @@
 .balance-details {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 1.2rem;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
 }
 
 .balance-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
+    padding: var(--space-sm) 0;
     border-bottom: 1px solid var(--gray-light);
     font-size: 0.9rem;
-    gap: 1rem;
+    gap: var(--space-md);
 }
 
 .balance-item:last-child {
@@ -314,12 +379,12 @@
 /* Month Filter */
 .month-filter {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-md);
     align-items: center;
-    margin-bottom: 1.2rem;
-    padding: 1rem;
+    margin-bottom: 0px;
+    padding: var(--space-md);
     background: white;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow);
     flex-wrap: wrap;
 }
@@ -339,16 +404,17 @@
 /* Expense Summary */
 .expense-summary {
     background: white;
-    border-radius: 12px;
-    padding: 1.2rem;
-    margin-bottom: 1.2rem;
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    margin-top: 0px;
+    margin-bottom: 0px;
     box-shadow: var(--shadow);
     text-align: center;
     border: 1px solid rgba(147, 51, 234, 0.05);
 }
 
 .expense-summary h3 {
-    margin-bottom: 0.8rem;
+    margin-bottom: var(--space-md);
     color: var(--text);
     font-size: 1rem;
     font-weight: 600;
@@ -364,7 +430,7 @@
 /* Empty States */
 .no-expenses-message {
     text-align: center;
-    padding: 2rem 1rem;
+    padding: var(--space-xl) var(--space-md);
     color: var(--gray);
     font-style: italic;
     font-size: 0.95rem;
@@ -374,8 +440,8 @@
 .form-card {
     background: white;
     border-radius: 14px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: var(--space-lg);
+    /*margin-bottom: var(--space-xs);*/
     box-shadow: var(--shadow);
     border: 1px solid rgba(147, 51, 234, 0.05);
 }
@@ -384,7 +450,7 @@
 .expense-list, .wallet-list, .category-list, .income-list {
     background: white;
     border-radius: 14px;
-    padding: 1.5rem;
+    padding: var(--space-lg);
     box-shadow: var(--shadow);
     border: 1px solid rgba(147, 51, 234, 0.05);
 }
@@ -393,7 +459,7 @@
 .tab-content.active {
     display: flex !important;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--space-lg);
 }
 
 /* Specific styling for tabs */
@@ -404,7 +470,7 @@
 #categoriesTab.active {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--space-lg);
 }
 
 /* Make sure lists take available space */
@@ -423,16 +489,29 @@
     }
     
     .stat-card {
-        width: 75%;
-        min-width: 150px;
+        padding: var(--space-md) var(--space-xs);
+        min-height: 90px;
+        max-width: 100%;
+    }
+    
+    .card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+        margin-bottom: var(--space-xs);
+    }
+    
+    .card-title {
+        font-size: 0.75rem;
     }
     
     .stat-value {
-        font-size: 1.5rem;
+        font-size: 1rem;
+        margin: var(--space-xs) 0;
     }
     
     .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
     }
     
     .expense-item, 
@@ -441,8 +520,8 @@
     .category-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
-        padding: 1.2rem 0;
+        gap: var(--space-md);
+        padding: var(--space-lg) 0;
     }
     
     .expense-item > div:last-child, 
@@ -458,11 +537,11 @@
     .month-filter {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.8rem;
+        gap: var(--space-md);
     }
     
     .month-filter label {
-        margin-bottom: 0.3rem;
+        margin-bottom: var(--space-xs);
     }
     
     .month-filter select {
@@ -479,7 +558,7 @@
     .wallet-list, 
     .category-list, 
     .income-list {
-        padding: 1.2rem;
+        padding: var(--space-lg);
     }
 }
 
@@ -498,13 +577,30 @@
     }
     
     .stat-card {
-        width: 85%;
-        min-width: 130px;
-        padding: 1rem;
+        padding: var(--space-sm) var(--space-xs);
+        min-height: 70px;
+        max-width: 100%;
+        border-radius: var(--radius-md);
+    }
+    
+    .card-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+        margin-bottom: var(--space-xs);
+    }
+    
+    .card-title {
+        font-size: 0.7rem;
     }
     
     .stat-value {
-        font-size: 1.4rem;
+        font-size: 0.85rem;
+        margin: var(--space-xs) 0;
+    }
+    
+    .stat-label {
+        font-size: 0.6rem;
     }
     
     .expense-summary-amount {
@@ -522,25 +618,25 @@
     .wallet-list, 
     .category-list, 
     .income-list {
-        padding: 1rem;
-        border-radius: 12px;
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
     }
     
     .action-buttons {
-        gap: 0.3rem;
+        gap: var(--space-xs);
     }
     
     .edit-btn, .delete-btn {
         min-width: 42px;
         min-height: 42px;
-        padding: 8px;
+        padding: var(--space-xs);
     }
 }
 
 /* Landscape mode optimizations */
 @media (max-width: 896px) and (orientation: landscape) {
     .stat-card {
-        padding: 0.8rem;
+        padding: var(--space-md);
     }
     
     .stat-value {
@@ -552,6 +648,6 @@
     .wallet-list,
     .category-list,
     .income-list {
-        padding: 1rem;
+        padding: var(--space-md);
     }
 }
