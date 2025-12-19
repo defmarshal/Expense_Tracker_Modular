@@ -292,7 +292,6 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-    // In the edit form submit handler (around line 200 in app.js)
     const editForm = document.getElementById('editTransactionForm');
     if (editForm) {
         editForm.addEventListener('submit', async (e) => {
@@ -1532,83 +1531,83 @@ class UIController {
         this.openEditModal('income', income);
     }
 
-    openEditModal(type, item) {
-        const modal = document.getElementById('editTransactionModal');
-        const title = document.getElementById('editModalTitle');
-        const subtitle = document.getElementById('editModalSubtitle');
-        const categorySelect = document.getElementById('editCategory');
-        const subcategorySelect = document.getElementById('editSubcategory');
+openEditModal(type, item) {
+    const modal = document.getElementById('editTransactionModal');
+    const title = document.getElementById('editModalTitle');
+    const subtitle = document.getElementById('editModalSubtitle');
+    const categorySelect = document.getElementById('editCategory');
+    const subcategorySelect = document.getElementById('editSubcategory');
 
-        // Set modal identity
-        if (type === 'expense') {
-            title.innerHTML = '<i class="fas fa-arrow-down text-danger"></i> Edit Expense';
-            subtitle.textContent = 'Update expense details';
-        } else {
-            title.innerHTML = '<i class="fas fa-arrow-up text-success"></i> Edit Income';
-            subtitle.textContent = 'Update income details';
-        }
-        
-        document.getElementById('editItemType').value = type;
-        document.getElementById('editItemId').value = item.id;
-        
-        // Populate dropdowns - FIX: Pass only 2 arguments, not 3
-        this.populateCategorySelect(categorySelect, type);
-        
-        // Setup subcategory if it's an expense
-        if (type === 'expense') {
-            subcategorySelect.style.display = 'block';
-            subcategorySelect.previousElementSibling.style.display = 'block';
-            
-            // Load subcategories based on selected category
-            const mainCategories = this.state.getMainCategories();
-            const mainCategory = mainCategories.find(c => c.name === item.category);
-            
-            if (mainCategory) {
-                const subcategories = this.state.getSubcategories(mainCategory.id);
-                subcategorySelect.innerHTML = '<option value="">Optional</option>';
-                subcategories.forEach(subcat => {
-                    const option = document.createElement('option');
-                    option.value = subcat.name;
-                    option.textContent = subcat.name;
-                    if (subcat.name === item.subcategory) {
-                        option.selected = true;
-                    }
-                    subcategorySelect.appendChild(option);
-                });
-                
-                // Update subcategories when category changes
-                categorySelect.addEventListener('change', (e) => {
-                    const selectedCategory = e.target.value;
-                    const selectedMainCategory = mainCategories.find(c => c.name === selectedCategory);
-                    
-                    if (selectedMainCategory) {
-                        const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
-                        subcategorySelect.innerHTML = '<option value="">Optional</option>';
-                        newSubcategories.forEach(subcat => {
-                            const option = document.createElement('option');
-                            option.value = subcat.name;
-                            option.textContent = subcat.name;
-                            subcategorySelect.appendChild(option);
-                        });
-                    } else {
-                        subcategorySelect.innerHTML = '<option value="">Optional</option>';
-                    }
-                });
-            }
-        } else {
-            // Hide subcategory for income
-            subcategorySelect.style.display = 'none';
-            subcategorySelect.previousElementSibling.style.display = 'none';
-        }
-
-        // Fill values from the transaction
-        document.getElementById('editDescription').value = item.description;
-        document.getElementById('editAmount').value = item.amount;
-        document.getElementById('editDate').value = item.date;
-        document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
-
-        modal.classList.add('active');
+    // Set modal identity
+    if (type === 'expense') {
+        title.innerHTML = '<i class="fas fa-arrow-down text-danger"></i> Edit Expense';
+        subtitle.textContent = 'Update expense details';
+    } else {
+        title.innerHTML = '<i class="fas fa-arrow-up text-success"></i> Edit Income';
+        subtitle.textContent = 'Update income details';
     }
+    
+    document.getElementById('editItemType').value = type;
+    document.getElementById('editItemId').value = item.id;
+    
+    // Populate dropdowns - FIX: Pass only 2 arguments, not 3
+    this.populateCategorySelect(categorySelect, type);
+    
+    // Setup subcategory if it's an expense
+    if (type === 'expense') {
+        subcategorySelect.style.display = 'block';
+        subcategorySelect.previousElementSibling.style.display = 'block';
+        
+        // Load subcategories based on selected category
+        const mainCategories = this.state.getMainCategories();
+        const mainCategory = mainCategories.find(c => c.name === item.category);
+        
+        if (mainCategory) {
+            const subcategories = this.state.getSubcategories(mainCategory.id);
+            subcategorySelect.innerHTML = '<option value="">Optional</option>';
+            subcategories.forEach(subcat => {
+                const option = document.createElement('option');
+                option.value = subcat.name;
+                option.textContent = subcat.name;
+                if (subcat.name === item.subcategory) {
+                    option.selected = true;
+                }
+                subcategorySelect.appendChild(option);
+            });
+            
+            // Update subcategories when category changes
+            categorySelect.addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                const selectedMainCategory = mainCategories.find(c => c.name === selectedCategory);
+                
+                if (selectedMainCategory) {
+                    const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
+                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                    newSubcategories.forEach(subcat => {
+                        const option = document.createElement('option');
+                        option.value = subcat.name;
+                        option.textContent = subcat.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                } else {
+                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                }
+            });
+        }
+    } else {
+        // Hide subcategory for income
+        subcategorySelect.style.display = 'none';
+        subcategorySelect.previousElementSibling.style.display = 'none';
+    }
+
+    // Fill values from the transaction
+    document.getElementById('editDescription').value = item.description;
+    document.getElementById('editAmount').value = item.amount;
+    document.getElementById('editDate').value = item.date;
+    document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
+
+    modal.classList.add('active');
+}
 
     populateCategorySelect(selectElement, type) {
         // Clear existing options
