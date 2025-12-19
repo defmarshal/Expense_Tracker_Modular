@@ -292,34 +292,42 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-        // Inside setupFormHandlers() in app.js
+        // Locate this in your setupFormHandlers() method in app.js
         const editForm = document.getElementById('editTransactionForm');
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const type = document.getElementById('editItemType').value;
-                const id = document.getElementById('editItemId').value; // Get the ID of existing item
+                const id = document.getElementById('editItemId').value;
                 const description = document.getElementById('editDescription').value;
                 const amount = currencyUtils.parseCurrency(document.getElementById('editAmount').value);
                 const date = document.getElementById('editDate').value;
                 const categoryValue = document.getElementById('editCategory').value;
                 const walletId = document.getElementById('editWallet').value;
 
-                // Prepare the data object
+                // Corrected object construction
                 const updateData = {
-                    description,
-                    amount,
-                    date,
-                    walletId,
-                    ...(type === 'expense' ? { category: categoryValue } : { source: categoryValue })
+                    description: description,
+                    amount: amount,
+                    date: date,
+                    walletId: walletId
                 };
 
+                // Add the specific field based on type
+                if (type === 'expense') {
+                    updateData.category = categoryValue;
+                } else {
+                    updateData.source = categoryValue;
+                }
+
                 try {
-                    this.ui.showLoading(true); // This now exists!
+                    // Check if showLoading exists before calling
+                    if (this.ui.showLoading) {
+                        this.ui.showLoading(true);
+                    }
 
                     if (type === 'expense') {
-                        // We MUST call the specific update function, not create
                         const updated = await this.db.updateExpense(id, updateData);
                         this.state.updateExpense(updated);
                     } else {
@@ -327,15 +335,16 @@ class FinTrackApp {
                         this.state.updateIncome(updated);
                     }
                     
-                    // Refresh UI and Close
                     this.ui.updateAllUI();
                     document.getElementById('editTransactionModal').classList.remove('active');
-                    this.showAlert('Update successful', 'success');
+                    this.showAlert('Updated successfully', 'success');
                 } catch (error) {
                     console.error('Update failed:', error);
                     this.showAlert('Update failed: ' + error.message, 'error');
                 } finally {
-                    this.ui.showLoading(false); // Hide loading state
+                    if (this.ui.showLoading) {
+                        this.ui.showLoading(false);
+                    }
                 }
             });
         }
