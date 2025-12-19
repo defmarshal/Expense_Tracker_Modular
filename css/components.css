@@ -648,3 +648,63 @@ input:focus, select:focus, textarea:focus {
         align-items: flex-start;
     }
 }
+
+/* Enhanced Edit Modal Animation */
+#editTransactionModal .modal-header {
+    background: linear-gradient(135deg, #9333EA 0%, #C084FC 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+#editTransactionModal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+        opacity: 0.6;
+    }
+    50% { 
+        transform: translateY(-20px) rotate(180deg); 
+        opacity: 0.8;
+    }
+}
+
+/* Icon container styling */
+#editTransactionModal .modal-header .icon-container {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Currency input with better formatting */
+#editAmount {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}

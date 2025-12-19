@@ -1541,10 +1541,10 @@ openEditModal(type, item) {
 
     // Set modal identity
     if (type === 'expense') {
-        title.innerHTML = '<i class="fas fa-arrow-down text-danger"></i> Edit Expense';
+        title.innerHTML = 'Edit Expense';
         subtitle.textContent = 'Update expense details';
     } else {
-        title.innerHTML = '<i class="fas fa-arrow-up text-success"></i> Edit Income';
+        title.innerHTML = 'Edit Income';
         subtitle.textContent = 'Update income details';
     }
     
@@ -1603,9 +1603,23 @@ openEditModal(type, item) {
 
     // Fill values from the transaction
     document.getElementById('editDescription').value = item.description;
-    document.getElementById('editAmount').value = item.amount;
+    
+    // ✅ Format amount with thousand separators (remove "Rp " prefix)
+    document.getElementById('editAmount').value = currencyUtils.formatDisplayCurrency(item.amount).replace('Rp ', '');
+    
     document.getElementById('editDate').value = item.date;
     document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
+    
+    // ✅ Add live formatting for edit amount input
+    const editAmountInput = document.getElementById('editAmount');
+    // Remove any existing listeners by cloning
+    const newEditAmountInput = editAmountInput.cloneNode(true);
+    editAmountInput.parentNode.replaceChild(newEditAmountInput, editAmountInput);
+    
+    // Add new event listener
+    newEditAmountInput.addEventListener('input', function() {
+        this.value = currencyUtils.formatCurrency(this.value);
+    });
 
     modal.classList.add('active');
 }

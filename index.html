@@ -588,13 +588,26 @@
 
     <div id="editTransactionModal" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header">
+            <div class="modal-header" style="background: linear-gradient(135deg, #9333EA 0%, #C084FC 100%); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float 3s ease-in-out infinite;"></div>
                 <button class="modal-close" onclick="document.getElementById('editTransactionModal').classList.remove('active')">
                     <i class="fas fa-times"></i>
                 </button>
-                <h2 class="modal-title" id="editModalTitle"><i class="fas fa-edit"></i> Edit Transaction</h2>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px;">
+                    <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <i class="fas fa-edit" style="font-size: 1.3rem; color: white;"></i>
+                    </div>
+                    <h2 class="modal-title" id="editModalTitle" style="margin: 0; color: white;">Edit Transaction</h2>
+                </div>
                 <p class="modal-subtitle" id="editModalSubtitle">Make changes and save</p>
             </div>
+
+            <style>
+            @keyframes float {
+                0%, 100% { transform: translateY(0px) rotate(0deg); }
+                50% { transform: translateY(-20px) rotate(180deg); }
+            }
+            </style>
             <div class="modal-body" style="padding: 1.25rem;">
                 <form id="editTransactionForm" class="compact-form">
                     <input type="hidden" id="editItemId">
