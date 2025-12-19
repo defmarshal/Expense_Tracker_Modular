@@ -44,7 +44,6 @@
     text-align: center;
     min-height: 120px;
     box-sizing: border-box;
-    width: 100%;
 }
 
 .stat-card:hover {
@@ -480,7 +479,6 @@
     .stat-card {
         padding: 0.8rem 0.5rem;
         min-height: 110px;
-        width: 100%;
         max-width: 100%;
     }
     
@@ -569,7 +567,6 @@
     .stat-card {
         padding: 0.6rem 0.4rem;
         min-height: 100px;
-        width: 100%;
         max-width: 100%;
         border-radius: 12px;
     }
