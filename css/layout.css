@@ -324,7 +324,7 @@ footer {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.4rem;
         margin-bottom: 1rem;
-        margin-top: 0.6rem;
+        margin-top: 0.3rem;
     }
     
     .hero {
@@ -351,4 +351,5 @@ footer {
     header {
         padding: 0.5rem 1rem;
     }
+
 }
