@@ -50,6 +50,8 @@ class FinTrackApp {
             this.db = getDatabase(this.supabase);
             this.auth = await initializeAuth(this.supabase);
             this.walletPersistence = getWalletPersistence(this.db);
+
+            this.auth.setWalletPersistence(this.walletPersistence);
             
             // Initialize UI Controller (defined inline below)
             this.ui = new UIController(this);
@@ -71,6 +73,9 @@ class FinTrackApp {
             
             // Setup other modal handlers
             this.setupOtherModalHandlers();
+
+            // Setup cross-tab sync
+            this.setupCrossTabSync();
             
             // Check current auth state
             await this.checkInitialAuthState();
@@ -883,7 +888,6 @@ class UIController {
     
     // ==================== WALLET UI ====================
     
-// In UIController's updateGlobalWalletSelector method:
     updateGlobalWalletSelector() {
         const selector = document.getElementById('globalWalletSelect');
         if (!selector) return;
@@ -908,8 +912,13 @@ class UIController {
             selector.value = wallets[0].id;
         }
         
-        // Add change listener
-        selector.addEventListener('change', async (e) => {
+        // 👇 UPDATE THIS EVENT LISTENER
+        // Remove old listener if it exists
+        const newSelector = selector.cloneNode(true);
+        selector.parentNode.replaceChild(newSelector, selector);
+        
+        // Add new listener with persistence
+        newSelector.addEventListener('change', async (e) => {
             const newWalletId = e.target.value || null;
             const userId = this.app.auth.getUser()?.id;
             
