@@ -1509,23 +1509,58 @@ class UIController {
         const categorySelect = document.getElementById('editCategory');
         const walletSelect = document.getElementById('editWallet');
 
-        // Set type-specific UI
+        // 1. Set Modal Identity
         title.innerHTML = type === 'expense' ? '<i class="fas fa-arrow-down text-danger"></i> Edit Expense' : '<i class="fas fa-arrow-up text-success"></i> Edit Income';
         document.getElementById('editItemType').value = type;
         document.getElementById('editItemId').value = item.id;
         
-        // Populate dropdowns
-        this.syncWalletSelector('editWallet'); // Reuse your existing sync logic
-        this.populateCategorySelect(categorySelect, type); // Create this helper or use existing logic
+        // 2. Populate Dropdowns
+        this.populateCategorySelect(categorySelect, type);
+        
+        // Fill Wallets (using your existing state)
+        walletSelect.innerHTML = '';
+        this.state.getWallets().forEach(wallet => {
+            const option = document.createElement('option');
+            option.value = wallet.id;
+            option.textContent = wallet.name;
+            walletSelect.appendChild(option);
+        });
 
-        // Populate fields
-        document.getElementById('editAmount').value = item.amount;
-        document.getElementById('editCategory').value = item.category;
-        document.getElementById('editWallet').value = item.walletId;
+        // 3. Fill values from the transaction
+        document.getElementById('editDescription').value = item.description;
+        // Format amount back to standard number string for the input
+        document.getElementById('editAmount').value = item.amount; 
         document.getElementById('editDate').value = item.date;
-        document.getElementById('editDescription').value = item.description || '';
+        document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
+        document.getElementById('editWallet').value = item.walletId;
 
         modal.classList.add('active');
+    }   
+
+    populateCategorySelect(selectElement, type) {
+        // Clear existing options
+        selectElement.innerHTML = '';
+        
+        if (type === 'expense') {
+            // Get categories from state
+            const categories = this.state.getCategories();
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.name;
+                option.textContent = cat.name;
+                selectElement.appendChild(option);
+            });
+        } else {
+            // For Income, use standard sources
+            const sources = ['Salary', 'Freelance', 'Investment', 'Gift', 'Bonus', 'Other'];
+            sources.forEach(source => {
+                const option = document.createElement('option');
+                option.value = source;
+                option.textContent = source;
+                selectElement.appendChild(option);
+            });
+        }
     }    
     
     editWallet(id) {
