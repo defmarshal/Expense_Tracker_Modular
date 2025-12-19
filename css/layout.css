@@ -320,11 +320,17 @@ footer {
     }
     
     .dashboard-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        justify-content: center;  /* Center the cards */
         gap: 0.4rem;
         margin-bottom: 1rem;
         margin-top: 0.6rem;
+    }
+
+    .stat-card {
+        flex: 0 0 100px;
+        max-width: 100px;
+        min-width: 100px;
     }
     
     .hero {
