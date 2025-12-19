@@ -292,35 +292,52 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-        document.getElementById('editTransactionForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const type = document.getElementById('editItemType').value;
-            const id = document.getElementById('editItemId').value;
-            const description = document.getElementById('editDescription').value;
-            const amount = currencyUtils.parseCurrency(document.getElementById('editAmount').value);
-            const date = document.getElementById('editDate').value;
-            const categoryValue = document.getElementById('editCategory').value;
-            const walletId = this.state.getState().currentWalletId;
-
-            try {
-                let savedItem;
-                if (type === 'expense') {
-                    const data = { id, description, amount, date, category: categoryValue, walletId };
-                    savedItem = await this.db.createExpense(data); // createExpense handles updates if ID is present
-                    this.state.updateExpense(savedItem);
-                } else {
-                    const data = { id, description, amount, date, source: categoryValue, walletId };
-                    savedItem = await this.db.createIncome(data);
-                    this.state.updateIncome(savedItem);
-                }
+        const editForm = document.getElementById('editTransactionForm');
+        if (editForm) {
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 
-                document.getElementById('editTransactionModal').classList.remove('active');
-                this.showAlert('Update successful', 'success');
-            } catch (error) {
-                this.showAlert('Error updating transaction', 'error');
-            }
-        });        
+                const type = document.getElementById('editItemType').value;
+                const id = document.getElementById('editItemId').value; // This is the key!
+                const description = document.getElementById('editDescription').value;
+                const amount = currencyUtils.parseCurrency(document.getElementById('editAmount').value);
+                const date = document.getElementById('editDate').value;
+                const categoryValue = document.getElementById('editCategory').value;
+                const walletId = document.getElementById('editWallet').value;
+
+                const data = {
+                    description,
+                    amount,
+                    date,
+                    walletId,
+                    ...(type === 'expense' ? { category: categoryValue } : { source: categoryValue })
+                };
+
+                try {
+                    this.ui.showLoading(true);
+                    
+                    if (type === 'expense') {
+                        // IMPORTANT: Use updateExpense, not createExpense
+                        const updated = await this.db.updateExpense(id, data);
+                        this.state.updateExpense(updated);
+                    } else {
+                        // IMPORTANT: Use updateIncome, not createIncome
+                        const updated = await this.db.updateIncome(id, data);
+                        this.state.updateIncome(updated);
+                    }
+
+                    // Close and Refresh
+                    document.getElementById('editTransactionModal').classList.remove('active');
+                    this.ui.updateAllUI();
+                    this.showAlert('Updated successfully', 'success');
+                } catch (error) {
+                    console.error('Update failed:', error);
+                    this.showAlert('Update failed: ' + error.message, 'error');
+                } finally {
+                    this.ui.showLoading(false);
+                }
+            });
+        }        
     }
     
     setupDeleteModalHandlers() {
