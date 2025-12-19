@@ -292,64 +292,64 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-    const editForm = document.getElementById('editTransactionForm');
-    if (editForm) {
-        editForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const type = document.getElementById('editItemType').value;
-            const id = document.getElementById('editItemId').value;
-            const description = document.getElementById('editDescription').value;
-            const amountStr = document.getElementById('editAmount').value;
-            const amount = currencyUtils.parseCurrency(amountStr);
-            const date = document.getElementById('editDate').value;
-            const categoryValue = document.getElementById('editCategory').value;
-            const subcategoryValue = document.getElementById('editSubcategory').value || '';
-
-            const updateData = {
-                description: description,
-                amount: amount,
-                date: date
-            };
-
-            // Assign the category or source based on type
-            if (type === 'expense') {
-                updateData.category = categoryValue;
-                updateData.subcategory = subcategoryValue || null;
-                updateData.wallet_id = this.state.getState().currentWalletId;
-            } else {
-                updateData.source = categoryValue;
-                updateData.wallet_id = this.state.getState().currentWalletId;
-            }
-
-            try {
-                // Show loading
-                if (this.ui && typeof this.ui.showLoading === 'function') {
-                    this.ui.showLoading(true);
-                }
-
-                if (type === 'expense') {
-                    const updated = await this.db.updateExpense(id, updateData);
-                    this.state.updateExpense(updated);
-                } else {
-                    const updated = await this.db.updateIncome(id, updateData);
-                    this.state.updateIncome(updated);
-                }
+        const editForm = document.getElementById('editTransactionForm');
+        if (editForm) {
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 
-                // Refresh and close
-                this.ui.updateAllUI();
-                document.getElementById('editTransactionModal').classList.remove('active');
-                this.showAlert('Changes saved successfully', 'success');
-            } catch (error) {
-                console.error('Update error:', error);
-                this.showAlert('Update failed: ' + error.message, 'error');
-            } finally {
-                if (this.ui && typeof this.ui.showLoading === 'function') {
-                    this.ui.showLoading(false);
+                const type = document.getElementById('editItemType').value;
+                const id = document.getElementById('editItemId').value;
+                const description = document.getElementById('editDescription').value;
+                const amountStr = document.getElementById('editAmount').value;
+                const amount = currencyUtils.parseCurrency(amountStr);
+                const date = document.getElementById('editDate').value;
+                const categoryValue = document.getElementById('editCategory').value;
+                const subcategoryValue = document.getElementById('editSubcategory').value || '';
+
+                const updateData = {
+                    description: description,
+                    amount: amount,
+                    date: date
+                };
+
+                // Assign the category or source based on type
+                if (type === 'expense') {
+                    updateData.category = categoryValue;
+                    updateData.subcategory = subcategoryValue || null;
+                    updateData.wallet_id = this.state.getState().currentWalletId;
+                } else {
+                    updateData.source = categoryValue;
+                    updateData.wallet_id = this.state.getState().currentWalletId;
                 }
-            }
-        });
-    }
+
+                try {
+                    // Show loading
+                    if (this.ui && typeof this.ui.showLoading === 'function') {
+                        this.ui.showLoading(true);
+                    }
+
+                    if (type === 'expense') {
+                        const updated = await this.db.updateExpense(id, updateData);
+                        this.state.updateExpense(updated);
+                    } else {
+                        const updated = await this.db.updateIncome(id, updateData);
+                        this.state.updateIncome(updated);
+                    }
+                    
+                    // Refresh and close
+                    this.ui.updateAllUI();
+                    document.getElementById('editTransactionModal').classList.remove('active');
+                    this.showAlert('Changes saved successfully', 'success');
+                } catch (error) {
+                    console.error('Update error:', error);
+                    this.showAlert('Update failed: ' + error.message, 'error');
+                } finally {
+                    if (this.ui && typeof this.ui.showLoading === 'function') {
+                        this.ui.showLoading(false);
+                    }
+                }
+            });
+        }
         
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
