@@ -20,7 +20,7 @@ class FinTrackState {
       
       // UI state
       currentWalletId: null,
-      activeTab: 'expenses',
+      activeTab: 'overview',
       activeModal: null,
       loading: false,
       
@@ -76,10 +76,12 @@ class FinTrackState {
 
   // Setters with immutability
   setState(updates) {
-    const oldState = { ...this.state };
-    this.state = { ...this.state, ...updates };
-    this.notifyListeners(oldState, this.state);
-    return this.state;
+      console.log('State: setState called with updates:', updates);
+      const oldState = { ...this.state };
+      this.state = { ...this.state, ...updates };
+      console.log('State: calling notifyListeners');
+      this.notifyListeners(oldState, this.state);
+      return this.state;
   }
 
   // Specific state updates
@@ -118,7 +120,10 @@ class FinTrackState {
   }
 
   setActiveTab(tab) {
-    return this.setState({ activeTab: tab });
+      console.log('State: setActiveTab called, changing from', this.state.activeTab, 'to', tab);
+      const result = this.setState({ activeTab: tab });
+      console.log('State: activeTab is now', this.state.activeTab);
+      return result;
   }
 
   setActiveModal(modalName) {
@@ -275,15 +280,22 @@ class FinTrackState {
   }
 
   notifyListeners(oldState, newState) {
-    // Notify all listeners
-    this.listeners.forEach((callbacks, key) => {
-      const oldValue = oldState[key];
-      const newValue = newState[key];
-      
-      if (oldValue !== newValue) {
-        callbacks.forEach(callback => callback(newValue, oldValue));
-      }
-    });
+      console.log('State: notifyListeners called');
+      // Notify all listeners
+      this.listeners.forEach((callbacks, key) => {
+        const oldValue = oldState[key];
+        const newValue = newState[key];
+        
+        console.log(`Checking key: ${key}, old:`, oldValue, 'new:', newValue, 'changed:', oldValue !== newValue);
+        
+        if (oldValue !== newValue) {
+          console.log(`Notifying ${callbacks.size} listeners for key: ${key}`);
+          callbacks.forEach(callback => {
+            console.log('Calling callback for', key);
+            callback(newValue, oldValue);
+          });
+        }
+      });
   }
 
   // Transaction support for batch updates
@@ -317,7 +329,7 @@ class FinTrackState {
       wallets: [],
       categories: [],
       currentWalletId: null,
-      activeTab: 'expenses',
+      activeTab: 'overview',
       activeModal: null,
       loading: false,
       filters: {

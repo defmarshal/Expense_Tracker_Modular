@@ -15,11 +15,14 @@ import {
     domUtils 
 } from './modules/utils.js';
 
+import { initFAB } from './fab.js';
+
 import { 
     getWalletPersistence, 
     loadAndSetDefaultWallet, 
     handleWalletChange 
 } from './modules/wallet-persistence.js';
+import { initializeSidebar } from './modules/sidebar.js';
 
 class FinTrackApp {
     constructor(supabase) {
@@ -74,9 +77,15 @@ class FinTrackApp {
             // Setup other modal handlers
             this.setupOtherModalHandlers();
 
+            // Setup FAB form handlers
+            this.setupFABFormHandlers();            
+
             // Setup cross-tab sync
             this.setupCrossTabSync();
             
+            // Initialize FAB
+            initFAB();
+
             // Check current auth state
             await this.checkInitialAuthState();
             
@@ -292,6 +301,7 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
+        // Edit Transaction form
         const editForm = document.getElementById('editTransactionForm');
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
@@ -350,7 +360,74 @@ class FinTrackApp {
                 }
             });
         }
-    }    
+
+        // Edit Wallet form
+        document.getElementById('editWalletForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('editWalletId').value;
+            const name = document.getElementById('editWalletName').value;
+            
+            try {
+                const walletData = { id, name };
+                const savedWallet = await this.db.createWallet(walletData);
+                
+                this.state.updateWallet(savedWallet);
+                this.showAlert('Wallet updated', 'success');
+                
+                document.getElementById('editWalletModal').classList.remove('active');
+                this.ui.updateAllUI();
+            } catch (error) {
+                this.showAlert('Error updating wallet', 'error');
+            }
+        });
+
+        // Edit Category form
+        document.getElementById('editCategoryForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('editCategoryId').value;
+            const type = document.getElementById('editCategoryType').value;
+            const name = document.getElementById('editCategoryName').value;
+            let parentId = null;
+            
+            if (type === 'sub') {
+                parentId = document.getElementById('editParentCategory').value;
+                if (!parentId) {
+                    this.showAlert('Select a parent category', 'error');
+                    return;
+                }
+            }
+            
+            try {
+                const categoryData = { id, name, type, parentId };
+                const savedCategory = await this.db.createCategory(categoryData);
+                
+                this.state.updateCategory(savedCategory);
+                this.showAlert('Category updated', 'success');
+                
+                document.getElementById('editCategoryModal').classList.remove('active');
+                this.ui.updateAllUI();
+            } catch (error) {
+                this.showAlert('Error updating category', 'error');
+            }
+        });
+
+        // Category type toggle for edit modal
+        const editCategoryType = document.getElementById('editCategoryType');
+        const editParentCategoryGroup = document.getElementById('editParentCategoryGroup');
+
+        if (editCategoryType && editParentCategoryGroup) {
+            editCategoryType.addEventListener('change', (e) => {
+                if (e.target.value === 'sub') {
+                    editParentCategoryGroup.classList.remove('hidden');
+                    this.ui.loadEditParentCategories();
+                } else {
+                    editParentCategoryGroup.classList.add('hidden');
+                }
+            });
+        }
+    }   
         
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
@@ -389,6 +466,193 @@ class FinTrackApp {
             document.getElementById('insufficientBalanceModal').classList.remove('active');
         });
     }
+
+    // Add this method inside the FinTrackApp class in app.js
+    // Add it after setupOtherModalHandlers() method
+
+    setupFABFormHandlers() {
+        // FAB Expense form
+        document.getElementById('fabExpenseForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleFABAddExpense(e);
+        });
+
+        // FAB Income form
+        document.getElementById('fabIncomeForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleFABAddIncome(e);
+        });
+
+        // FAB Wallet form
+        document.getElementById('fabWalletForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleFABAddWallet(e);
+        });
+
+        // FAB Category form
+        document.getElementById('fabCategoryForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleFABAddCategory(e);
+        });
+
+        // FAB Category type toggle
+        const fabCategoryType = document.getElementById('fabCategoryType');
+        const fabParentCategoryGroup = document.getElementById('fabParentCategoryGroup');
+        
+        if (fabCategoryType && fabParentCategoryGroup) {
+            fabCategoryType.addEventListener('change', (e) => {
+                if (e.target.value === 'sub') {
+                    fabParentCategoryGroup.classList.remove('hidden');
+                    this.loadFABParentCategories();
+                } else {
+                    fabParentCategoryGroup.classList.add('hidden');
+                }
+            });
+        }
+
+        // Setup currency formatting for FAB forms
+        const fabExpenseAmount = document.getElementById('fabExpenseAmount');
+        const fabIncomeAmount = document.getElementById('fabIncomeAmount');
+        
+        if (fabExpenseAmount) {
+            fabExpenseAmount.addEventListener('input', function() {
+                this.value = currencyUtils.formatCurrency(this.value);
+            });
+        }
+        
+        if (fabIncomeAmount) {
+            fabIncomeAmount.addEventListener('input', function() {
+                this.value = currencyUtils.formatCurrency(this.value);
+            });
+        }
+    }
+
+    loadFABParentCategories() {
+        const parentCategory = document.getElementById('fabParentCategory');
+        if (!parentCategory) return;
+        
+        parentCategory.innerHTML = '<option value="">Select parent</option>';
+        const mainCategories = this.state.getMainCategories();
+        
+        mainCategories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            parentCategory.appendChild(option);
+        });
+    }
+
+    async handleFABAddExpense(e) {
+        const description = document.getElementById('fabExpenseDescription').value;
+        const amount = currencyUtils.parseCurrency(document.getElementById('fabExpenseAmount').value);
+        const date = document.getElementById('fabExpenseDate').value;
+        const category = document.getElementById('fabExpenseCategory').value;
+        const subcategory = document.getElementById('fabExpenseSubcategory').value;
+        const walletId = this.state.getState().currentWalletId;
+        
+        if (!walletId) {
+            this.showAlert('Select a wallet first', 'error');
+            return;
+        }
+        
+        if (amount <= 0) {
+            this.showAlert('Enter a valid amount', 'error');
+            return;
+        }
+        
+        try {
+            const expenseData = { description, amount, date, category, subcategory, walletId };
+            const savedExpense = await this.db.createExpense(expenseData);
+            
+            this.state.addExpense(savedExpense);
+            this.showAlert('Expense added', 'success');
+            
+            // Close modal and reset form
+            document.getElementById('fabQuickAddModal').classList.remove('active');
+            document.getElementById('fabExpenseForm').reset();
+        } catch (error) {
+            this.showAlert('Error saving expense', 'error');
+        }
+    }
+
+    async handleFABAddIncome(e) {
+        const description = document.getElementById('fabIncomeDescription').value;
+        const amount = currencyUtils.parseCurrency(document.getElementById('fabIncomeAmount').value);
+        const date = document.getElementById('fabIncomeDate').value;
+        const source = document.getElementById('fabIncomeSource').value;
+        const walletId = this.state.getState().currentWalletId;
+        
+        if (!walletId) {
+            this.showAlert('Select a wallet first', 'error');
+            return;
+        }
+        
+        if (amount <= 0) {
+            this.showAlert('Enter a valid amount', 'error');
+            return;
+        }
+        
+        try {
+            const incomeData = { description, amount, date, source, walletId };
+            const savedIncome = await this.db.createIncome(incomeData);
+            
+            this.state.addIncome(savedIncome);
+            this.showAlert('Income added', 'success');
+            
+            // Close modal and reset form
+            document.getElementById('fabQuickAddModal').classList.remove('active');
+            document.getElementById('fabIncomeForm').reset();
+        } catch (error) {
+            this.showAlert('Error saving income', 'error');
+        }
+    }
+
+    async handleFABAddWallet(e) {
+        const name = document.getElementById('fabWalletName').value;
+        
+        try {
+            const walletData = { name };
+            const savedWallet = await this.db.createWallet(walletData);
+            
+            this.state.addWallet(savedWallet);
+            this.showAlert('Wallet added', 'success');
+            
+            // Close modal and reset form
+            document.getElementById('fabQuickAddModal').classList.remove('active');
+            document.getElementById('fabWalletForm').reset();
+        } catch (error) {
+            this.showAlert('Error saving wallet', 'error');
+        }
+    }
+
+    async handleFABAddCategory(e) {
+        const type = document.getElementById('fabCategoryType').value;
+        const name = document.getElementById('fabCategoryName').value;
+        let parentId = null;
+        
+        if (type === 'sub') {
+            parentId = document.getElementById('fabParentCategory').value;
+            if (!parentId) {
+                this.showAlert('Select a parent category', 'error');
+                return;
+            }
+        }
+        
+        try {
+            const categoryData = { name, type, parentId };
+            const savedCategory = await this.db.createCategory(categoryData);
+            
+            this.state.addCategory(savedCategory);
+            this.showAlert('Category added', 'success');
+            
+            // Close modal and reset form
+            document.getElementById('fabQuickAddModal').classList.remove('active');
+            document.getElementById('fabCategoryForm').reset();
+            document.getElementById('fabParentCategoryGroup').classList.add('hidden');
+        } catch (error) {
+            this.showAlert('Error saving category', 'error');
+        }
+    }    
     
 async checkInitialAuthState() {
     const authState = await this.auth.checkAuth();
@@ -806,16 +1070,20 @@ class UIController {
         // Initialize dropdowns
         this.updateGlobalWalletSelector();
         this.updateMonthYearFilters();
+
+        initializeSidebar(this.state);
     }
     
     setupStateListeners() {
         // Listen for state changes and update UI
         this.state.subscribe('expenses', () => {
             this.updateExpensesUI();
+            this.updateOverviewUI();
             this.updateStats();
         });
         this.state.subscribe('incomes', () => {
             this.updateIncomesUI();
+            this.updateOverviewUI();
             this.updateStats();
         });
         this.state.subscribe('wallets', () => {
@@ -885,29 +1153,56 @@ class UIController {
             parentCategory.appendChild(option);
         });
     }
+
+    loadEditParentCategories() {
+        const parentCategory = document.getElementById('editParentCategory');
+        if (!parentCategory) return;
+        
+        parentCategory.innerHTML = '<option value="">Select parent</option>';
+        const mainCategories = this.state.getMainCategories();
+        
+        mainCategories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            parentCategory.appendChild(option);
+        });
+    }    
     
     // ==================== TAB MANAGEMENT ====================
     
     setupTabs() {
         const tabs = document.querySelectorAll('.tab');
         
+        console.log('setupTabs: Found', tabs.length, 'tabs');
+        
         tabs.forEach(tab => {
+            const tabId = tab.getAttribute('data-tab');
+            console.log('Setting up tab:', tabId);
+            
             tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
+                console.log('Tab clicked:', tabId);
+                console.log('this.state is:', this.state);
+                console.log('typeof this.state.setActiveTab:', typeof this.state.setActiveTab);
                 this.state.setActiveTab(tabId);
             });
         });
     }
-    
+        
     updateActiveTab() {
         const activeTab = this.state.getActiveTab();
+        console.log('=== updateActiveTab called, activeTab:', activeTab);
+        
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
+        
+        console.log('Found tabs:', tabs.length, 'Found tab contents:', tabContents.length);
         
         // Update tab buttons
         tabs.forEach(tab => {
             if (tab.getAttribute('data-tab') === activeTab) {
                 tab.classList.add('active');
+                console.log('Activated tab button:', activeTab);
             } else {
                 tab.classList.remove('active');
             }
@@ -915,32 +1210,42 @@ class UIController {
         
         // Update tab content
         tabContents.forEach(content => {
-            if (content.id === `${activeTab}Tab`) {
+            const contentId = content.id;
+            const shouldBeActive = contentId === `${activeTab}Tab`;
+            
+            if (shouldBeActive) {
                 content.classList.add('active');
+                console.log('Activated tab content:', contentId);
             } else {
                 content.classList.remove('active');
             }
         });
         
         // Load data for active tab
+        console.log('Loading tab data for:', activeTab);
         this.loadTabData(activeTab);
     }
     
     loadTabData(tabId) {
+        console.log('loadTabData called for:', tabId);
         switch (tabId) {
-            case 'expenses':
-                this.updateCurrentMonthExpenses();
+            case 'overview':
+                this.updateOverviewUI();
                 break;
-            case 'historical':
-                this.updateHistoricalExpensesView();
+            case 'expenses':
+                console.log('Loading expenses tab...');
+                // Force a fresh initialization
+                const monthSelect = document.getElementById('expenseMonthSelect');
+                const yearSelect = document.getElementById('expenseYearSelect');
+                if (monthSelect) console.log('Month select options:', monthSelect.options.length);
+                if (yearSelect) console.log('Year select options:', yearSelect.options.length);
+                this.updateExpensesTabUI();
                 break;
             case 'income':
-                this.updateIncomesUI();
+                this.updateIncomesTabUI();
                 break;
-            case 'wallets':
+            case 'more':
                 this.updateWalletsUI();
-                break;
-            case 'categories':
                 this.updateCategoriesUI();
                 break;
         }
@@ -1006,10 +1311,10 @@ class UIController {
     }
     
     updateWalletDependentUI() {
-        this.updateExpensesUI();
-        this.updateIncomesUI();
+        this.updateOverviewUI();
+        this.updateExpensesTabUI();
+        this.updateIncomesTabUI();
         this.updateStats();
-        this.updateMonthYearFilters();
     }
 
     syncWalletSelector() {
@@ -1026,9 +1331,521 @@ class UIController {
     // ==================== EXPENSE UI ====================
     
     updateExpensesUI() {
-        this.updateCurrentMonthExpenses();
-        this.updateHistoricalExpensesView();
+        this.updateExpensesTabUI();
+        this.updateOverviewUI();
     }
+
+    updateOverviewUI() {
+        const recentActivityList = document.getElementById('recentActivityList');
+        if (!recentActivityList) return;
+        
+        const currentWalletId = this.state.getState().currentWalletId;
+        
+        if (!currentWalletId) {
+            recentActivityList.innerHTML = `
+                <div class="expense-item">
+                    <div class="expense-details">Select a wallet first</div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Get all transactions (expenses + income) and sort by date
+        const expenses = this.state.getExpenses()
+            .filter(e => e.walletId === currentWalletId)
+            .map(e => ({ ...e, type: 'expense' }));
+        
+        const incomes = this.state.getIncomes()
+            .filter(i => i.walletId === currentWalletId)
+            .map(i => ({ ...i, type: 'income' }));
+        
+        const allTransactions = [...expenses, ...incomes]
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 10); // Last 10 transactions
+        
+        if (allTransactions.length === 0) {
+            recentActivityList.innerHTML = `
+                <div class="empty-day-message">
+                    <i class="fas fa-receipt"></i>
+                    No transactions yet. Tap <strong>+</strong> to add your first transaction.
+                </div>
+            `;
+            return;
+        }
+        
+        this.renderRecentActivity(allTransactions, recentActivityList);
+    }
+
+    renderRecentActivity(transactions, container) {
+        const wallets = this.state.getWallets();
+        container.innerHTML = '';
+        
+        // Group by day
+        const groupedByDay = this.groupTransactionsByDay(transactions);
+        
+        groupedByDay.forEach((dayGroup, index) => {
+            const dayGroupDiv = document.createElement('div');
+            dayGroupDiv.className = 'day-group';
+            
+            // Calculate daily totals for expenses and income
+            const dayExpenses = dayGroup.transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const dayIncome = dayGroup.transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const dayTotal = dayIncome - dayExpenses;
+            
+            // Day header with toggle and totals
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'day-header';
+            dayHeader.innerHTML = `
+                <i class="fas fa-calendar"></i>
+                <span class="day-header-text">${dayGroup.label}</span>
+                <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                    ${dayIncome > 0 ? `<span style="color: var(--success); font-size: 0.85rem; font-weight: 600;">+${currencyUtils.formatDisplayCurrency(dayIncome)}</span>` : ''}
+                    ${dayExpenses > 0 ? `<span style="color: var(--danger); font-size: 0.85rem; font-weight: 600;">-${currencyUtils.formatDisplayCurrency(dayExpenses)}</span>` : ''}
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+            `;
+            
+            // Create content container
+            const dayContent = document.createElement('div');
+            dayContent.className = 'day-content';
+            
+            // Toggle functionality
+            dayHeader.addEventListener('click', () => {
+                const isExpanded = dayHeader.classList.contains('expanded');
+                if (isExpanded) {
+                    dayHeader.classList.remove('expanded');
+                    dayContent.classList.remove('expanded');
+                } else {
+                    dayHeader.classList.add('expanded');
+                    dayContent.classList.add('expanded');
+                }
+            });
+            
+            dayGroupDiv.appendChild(dayHeader);
+            
+            // Transactions for this day
+            dayGroup.transactions.forEach(transaction => {
+                const wallet = wallets.find(w => w.id === transaction.walletId);
+                
+                const item = document.createElement('div');
+                item.className = transaction.type === 'expense' ? 'expense-item' : 'income-item';
+                
+                if (transaction.type === 'expense') {
+                    let categoryText = transaction.category;
+                    if (transaction.subcategory) {
+                        categoryText += ` › ${transaction.subcategory}`;
+                    }
+                    
+                    // UPDATED: Category on same line as description, right-aligned
+                    item.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                            <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                                <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                                    ${transaction.description}
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                <span class="expense-category" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                                    ${categoryText}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
+                                ${currencyUtils.formatDisplayCurrency(transaction.amount)}
+                            </div>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${transaction.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${transaction.id}', '${transaction.description}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Income items - keep source on same line too
+                    item.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                            <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                                <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                                    ${transaction.description}
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                <span class="income-source" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                                    ${transaction.source}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
+                            <div class="income-amount" style="font-weight: 600; color: var(--success);">
+                                ${currencyUtils.formatDisplayCurrency(transaction.amount)}
+                            </div>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${transaction.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${transaction.id}', '${transaction.description}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                dayContent.appendChild(item);
+            });
+            
+            // Day total footer with net amount
+            const dayTotalDiv = document.createElement('div');
+            dayTotalDiv.className = 'day-total';
+            const netColor = dayTotal >= 0 ? 'var(--success)' : 'var(--danger)';
+            const netSign = dayTotal >= 0 ? '+' : '';
+            dayTotalDiv.innerHTML = `
+                Net: <span class="day-total-amount" style="color: ${netColor};">${netSign}${currencyUtils.formatDisplayCurrency(Math.abs(dayTotal))}</span>
+            `;
+            dayContent.appendChild(dayTotalDiv);
+            
+            dayGroupDiv.appendChild(dayContent);
+            container.appendChild(dayGroupDiv);
+        });
+    }
+
+    updateExpensesTabUI() {
+        console.log('updateExpensesTabUI called');
+        const monthSelect = document.getElementById('expenseMonthSelect');
+        const yearSelect = document.getElementById('expenseYearSelect');
+        
+        // Check if elements exist
+        if (!monthSelect || !yearSelect) {
+            console.error('Expense filter elements not found!');
+            return;
+        }
+        
+        console.log('Before init - Month options:', monthSelect.options.length, 'Year options:', yearSelect.options.length);
+        this.initializeExpenseFilters();
+        console.log('After init - Month options:', monthSelect.options.length, 'Year options:', yearSelect.options.length);
+    }
+
+    initializeExpenseFilters() {
+        const monthSelect = document.getElementById('expenseMonthSelect');
+        const yearSelect = document.getElementById('expenseYearSelect');
+        
+        if (!monthSelect || !yearSelect) {
+            console.error('Month or year select not found');
+            return;
+        }
+        
+        console.log('initializeExpenseFilters - Current options:', monthSelect.options.length, yearSelect.options.length);
+        
+        // Check if already initialized
+        const isInitialized = monthSelect.options.length > 0 && yearSelect.options.length > 0;
+        
+        if (isInitialized) {
+            console.log('Filters already initialized, just updating view');
+            this.updateExpensesByDay();
+            return;
+        }
+        
+        console.log('Initializing filters for the first time...');
+        
+        // Get unique years from expenses
+        const expenses = this.state.getExpenses();
+        const years = [...new Set(expenses.map(e => new Date(e.date).getFullYear()))];
+        
+        if (years.length === 0) {
+            years.push(new Date().getFullYear());
+        }
+        
+        years.sort((a, b) => b - a);
+        
+        // Clear existing options
+        monthSelect.innerHTML = '';
+        yearSelect.innerHTML = '';
+        
+        // Populate month dropdown
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        
+        monthNames.forEach((month, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = month;
+            monthSelect.appendChild(option);
+        });
+        
+        console.log('Added month options:', monthSelect.options.length);
+        
+        // Populate year dropdown
+        years.forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearSelect.appendChild(option);
+        });
+        
+        console.log('Added year options:', yearSelect.options.length);
+        
+        // Set current month/year
+        const now = new Date();
+        monthSelect.value = now.getMonth();
+        yearSelect.value = now.getFullYear();
+        
+        console.log('Set values - Month:', monthSelect.value, 'Year:', yearSelect.value);
+        
+        // Add change listeners (only once during initialization)
+        monthSelect.addEventListener('change', () => {
+            console.log('Month changed to:', monthSelect.value);
+            this.updateExpensesByDay();
+        });
+        yearSelect.addEventListener('change', () => {
+            console.log('Year changed to:', yearSelect.value);
+            this.updateExpensesByDay();
+        });
+        
+        // FIXED: Call immediately instead of using requestAnimationFrame
+        // The wallet will load shortly and trigger updateAllUI anyway
+        console.log('Calling updateExpensesByDay immediately');
+        this.updateExpensesByDay();
+    }
+
+    updateExpensesByDay() {
+        console.log('=== updateExpensesByDay START ===');
+        const monthSelect = document.getElementById('expenseMonthSelect');
+        const yearSelect = document.getElementById('expenseYearSelect');
+        const listContainer = document.getElementById('expensesByDayList');
+        const totalElement = document.getElementById('expenseMonthlyTotal');
+        const monthYearLabel = document.getElementById('expenseSelectedMonthYear');
+        
+        console.log('Elements found:', {
+            monthSelect: !!monthSelect,
+            yearSelect: !!yearSelect,
+            listContainer: !!listContainer,
+            totalElement: !!totalElement,
+            monthYearLabel: !!monthYearLabel
+        });
+        
+        if (!monthSelect || !yearSelect || !listContainer) {
+            console.error('Missing required elements for updateExpensesByDay');
+            return;
+        }
+        
+        const selectedMonth = parseInt(monthSelect.value);
+        const selectedYear = parseInt(yearSelect.value);
+        const currentWalletId = this.state.getState().currentWalletId;
+        
+        console.log('Current state:', {
+            selectedMonth,
+            selectedYear,
+            currentWalletId
+        });
+        
+        if (!currentWalletId) {
+            console.log('No wallet selected, showing message');
+            listContainer.innerHTML = `
+                <div class="expense-item">
+                    <div class="expense-details">Select a wallet first</div>
+                </div>
+            `;
+            if (totalElement) totalElement.textContent = currencyUtils.formatDisplayCurrency(0);
+            if (monthYearLabel) monthYearLabel.textContent = 'Select a wallet';
+            return;
+        }
+        
+        // Filter expenses
+        const expenses = this.state.getExpenses().filter(expense => {
+            if (expense.walletId !== currentWalletId) return false;
+            const expenseDate = new Date(expense.date);
+            return expenseDate.getMonth() === selectedMonth && 
+                   expenseDate.getFullYear() === selectedYear;
+        });
+        
+        console.log(`Found ${expenses.length} expenses for month ${selectedMonth}, year ${selectedYear}, wallet ${currentWalletId}`);
+        
+        // Update total
+        const monthlyTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+        if (totalElement) {
+            totalElement.textContent = currencyUtils.formatDisplayCurrency(monthlyTotal);
+            console.log('Updated total:', totalElement.textContent);
+        }
+        
+        // Update month/year label
+        if (monthYearLabel) {
+            const monthName = dateUtils.getMonthName(selectedMonth);
+            monthYearLabel.textContent = `${monthName} ${selectedYear}`;
+            console.log('Updated label:', monthYearLabel.textContent);
+        }
+        
+        // Render expenses grouped by day
+        if (expenses.length === 0) {
+            console.log('No expenses, showing empty message');
+            listContainer.innerHTML = `
+                <div class="empty-day-message">
+                    <i class="fas fa-receipt"></i>
+                    No expenses for this period
+                </div>
+            `;
+            console.log('=== updateExpensesByDay END (no expenses) ===');
+            return;
+        }
+        
+        console.log('Rendering expenses by day...');
+        this.renderExpensesByDay(expenses, listContainer);
+        console.log('=== updateExpensesByDay END (rendered) ===');
+    }
+
+    renderExpensesByDay(expenses, container) {
+        const wallets = this.state.getWallets();
+        const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Group by day
+        const groupedByDay = this.groupTransactionsByDay(sortedExpenses);
+        
+        container.innerHTML = '';
+        
+        groupedByDay.forEach((dayGroup, index) => {
+            const dayGroupDiv = document.createElement('div');
+            dayGroupDiv.className = 'day-group';
+            
+            // Day header with toggle
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'day-header';
+            const dayTotal = dayGroup.transactions.reduce((sum, t) => sum + t.amount, 0);
+            dayHeader.innerHTML = `
+                <i class="fas fa-calendar"></i>
+                <span class="day-header-text">${dayGroup.label} • ${currencyUtils.formatDisplayCurrency(dayTotal)}</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            `;
+            
+            // Create content container
+            const dayContent = document.createElement('div');
+            dayContent.className = 'day-content';
+            
+            // Toggle functionality
+            dayHeader.addEventListener('click', () => {
+                const isExpanded = dayHeader.classList.contains('expanded');
+                if (isExpanded) {
+                    dayHeader.classList.remove('expanded');
+                    dayContent.classList.remove('expanded');
+                } else {
+                    dayHeader.classList.add('expanded');
+                    dayContent.classList.add('expanded');
+                }
+            });
+            
+            dayGroupDiv.appendChild(dayHeader);
+            
+            // Expenses for this day - using new format
+            dayGroup.transactions.forEach(expense => {
+                const expenseDate = new Date(expense.date);
+                const time = expenseDate.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                let categoryText = expense.category;
+                if (expense.subcategory) {
+                    categoryText += ` > ${expense.subcategory}`;
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'expense-item';
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                            <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                                ${expense.description}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <span class="expense-category" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                                ${categoryText}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
+                        <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
+                            ${currencyUtils.formatDisplayCurrency(expense.amount)}
+                        </div>
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                dayContent.appendChild(item);
+            });
+            
+            // Day total footer
+            const dayTotalDiv = document.createElement('div');
+            dayTotalDiv.className = 'day-total';
+            dayTotalDiv.innerHTML = `Total: <span class="day-total-amount">${currencyUtils.formatDisplayCurrency(dayTotal)}</span>`;
+            dayContent.appendChild(dayTotalDiv);
+            
+            dayGroupDiv.appendChild(dayContent);
+            container.appendChild(dayGroupDiv);
+        });
+    }
+
+    // Helper method to group transactions by day
+    groupTransactionsByDay(transactions) {
+        const groups = {};
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        transactions.forEach(transaction => {
+            const transactionDate = new Date(transaction.date);
+            const dateKey = transactionDate.toISOString().split('T')[0];
+            
+            if (!groups[dateKey]) {
+                groups[dateKey] = {
+                    date: transactionDate,
+                    dateKey: dateKey,
+                    transactions: []
+                };
+            }
+            
+            groups[dateKey].transactions.push(transaction);
+        });
+        
+        // Convert to array and add labels
+        return Object.values(groups)
+            .sort((a, b) => b.date - a.date)
+            .map(group => {
+                const groupDate = new Date(group.date.getFullYear(), group.date.getMonth(), group.date.getDate());
+                let label;
+                
+                if (groupDate.getTime() === today.getTime()) {
+                    label = 'Today';
+                } else if (groupDate.getTime() === yesterday.getTime()) {
+                    label = 'Yesterday';
+                } else if (now - groupDate < 7 * 24 * 60 * 60 * 1000) {
+                    // Within last 7 days
+                    label = group.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+                } else {
+                    label = group.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+                
+                return {
+                    ...group,
+                    label
+                };
+            });
+    }    
     
     updateCurrentMonthExpenses() {
         const expensesList = document.getElementById('expensesList');
@@ -1134,8 +1951,11 @@ class UIController {
         container.innerHTML = '';
         
         sortedExpenses.forEach(expense => {
-            const expenseDate = new Date(expense.date).toLocaleDateString();
-            const wallet = wallets.find(w => w.id === expense.walletId);
+            const expenseDate = new Date(expense.date);
+            const time = expenseDate.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
             
             let categoryText = expense.category;
             if (expense.subcategory) {
@@ -1144,17 +1964,29 @@ class UIController {
             
             const expenseItem = document.createElement('div');
             expenseItem.className = 'expense-item';
+            
+            // Match recent activity format
             expenseItem.innerHTML = `
-                <div class="expense-details">
-                    <div style="font-weight: 500;">${expense.description}</div>
-                    <div style="font-size: 0.8rem; color: var(--gray);">
-                        ${expenseDate} • ${wallet ? wallet.name : 'Unknown'}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                    <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                        <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                            ${expense.description}
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <span class="expense-category" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                            ${categoryText}
+                        </span>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div>
-                        <div class="expense-amount">${currencyUtils.formatDisplayCurrency(expense.amount)}</div>
-                        <span class="expense-category">${categoryText}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
+                            ${currencyUtils.formatDisplayCurrency(expense.amount)}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--gray);">
+                            ${time} • ${expenseDate.toLocaleDateString()}
+                        </div>
                     </div>
                     <div class="action-buttons">
                         <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
@@ -1173,34 +2005,216 @@ class UIController {
     // ==================== INCOME UI ====================
     
     updateIncomesUI() {
-        const incomesList = document.getElementById('incomesList');
-        if (!incomesList) return;
+        this.updateIncomesTabUI();
+        this.updateOverviewUI();
+    }
+
+    updateIncomesTabUI() {
+        this.initializeIncomeFilters();
+        this.updateIncomesByDay();
+    }
+
+    initializeIncomeFilters() {
+        const monthSelect = document.getElementById('incomeMonthSelect');
+        const yearSelect = document.getElementById('incomeYearSelect');
         
+        if (!monthSelect || !yearSelect) return;
+        
+        // Only initialize once
+        if (monthSelect.options.length > 0) {
+            this.updateIncomesByDay();
+            return;
+        }
+        
+        // Get unique years from incomes
+        const incomes = this.state.getIncomes();
+        const years = [...new Set(incomes.map(i => new Date(i.date).getFullYear()))];
+        
+        if (years.length === 0) {
+            years.push(new Date().getFullYear());
+        }
+        
+        years.sort((a, b) => b - a);
+        
+        // Populate year dropdown
+        years.forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearSelect.appendChild(option);
+        });
+        
+        // Populate month dropdown
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        
+        monthNames.forEach((month, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = month;
+            monthSelect.appendChild(option);
+        });
+        
+        // Set current month/year
+        const now = new Date();
+        monthSelect.value = now.getMonth();
+        yearSelect.value = now.getFullYear();
+        
+        // Add change listeners
+        monthSelect.addEventListener('change', () => this.updateIncomesByDay());
+        yearSelect.addEventListener('change', () => this.updateIncomesByDay());
+        
+        this.updateIncomesByDay();
+    }
+
+    updateIncomesByDay() {
+        const monthSelect = document.getElementById('incomeMonthSelect');
+        const yearSelect = document.getElementById('incomeYearSelect');
+        const listContainer = document.getElementById('incomesByDayList');
+        const totalElement = document.getElementById('incomeMonthlyTotal');
+        const monthYearLabel = document.getElementById('incomeSelectedMonthYear');
+        
+        if (!monthSelect || !yearSelect || !listContainer) return;
+        
+        const selectedMonth = parseInt(monthSelect.value);
+        const selectedYear = parseInt(yearSelect.value);
         const currentWalletId = this.state.getState().currentWalletId;
         
-        // If no wallet is selected, show message
         if (!currentWalletId) {
-            incomesList.innerHTML = `
+            listContainer.innerHTML = `
                 <div class="income-item">
                     <div class="income-details">Select a wallet first</div>
                 </div>
             `;
+            if (totalElement) totalElement.textContent = currencyUtils.formatDisplayCurrency(0);
+            if (monthYearLabel) monthYearLabel.textContent = 'Select a wallet';
             return;
         }
         
-        const incomes = this.state.getIncomes();
-        const displayIncomes = incomes.filter(income => income.walletId === currentWalletId);
+        // Filter incomes
+        const incomes = this.state.getIncomes().filter(income => {
+            if (income.walletId !== currentWalletId) return false;
+            const incomeDate = new Date(income.date);
+            return incomeDate.getMonth() === selectedMonth && 
+                   incomeDate.getFullYear() === selectedYear;
+        });
         
-        if (displayIncomes.length === 0) {
-            incomesList.innerHTML = `
-                <div class="income-item">
-                    <div class="income-details">No income yet</div>
+        // Update total
+        const monthlyTotal = incomes.reduce((sum, i) => sum + i.amount, 0);
+        if (totalElement) {
+            totalElement.textContent = currencyUtils.formatDisplayCurrency(monthlyTotal);
+        }
+        
+        // Update month/year label
+        if (monthYearLabel) {
+            const monthName = dateUtils.getMonthName(selectedMonth);
+            monthYearLabel.textContent = `${monthName} ${selectedYear}`;
+        }
+        
+        // Render incomes grouped by day
+        if (incomes.length === 0) {
+            listContainer.innerHTML = `
+                <div class="empty-day-message">
+                    <i class="fas fa-coins"></i>
+                    No income for this period
                 </div>
             `;
             return;
         }
         
-        this.renderIncomeList(displayIncomes, incomesList);
+        this.renderIncomesByDay(incomes, listContainer);
+    }
+
+    renderIncomesByDay(incomes, container) {
+        const wallets = this.state.getWallets();
+        const sortedIncomes = [...incomes].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Group by day
+        const groupedByDay = this.groupTransactionsByDay(sortedIncomes);
+        
+        container.innerHTML = '';
+        
+        groupedByDay.forEach((dayGroup, index) => {
+            const dayGroupDiv = document.createElement('div');
+            dayGroupDiv.className = 'day-group';
+            
+            // Day header with toggle
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'day-header';
+            const dayTotal = dayGroup.transactions.reduce((sum, t) => sum + t.amount, 0);
+            dayHeader.innerHTML = `
+                <i class="fas fa-calendar"></i>
+                <span class="day-header-text">${dayGroup.label} • ${currencyUtils.formatDisplayCurrency(dayTotal)}</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            `;
+            
+            // Create content container
+            const dayContent = document.createElement('div');
+            dayContent.className = 'day-content';
+            
+            // Toggle functionality
+            dayHeader.addEventListener('click', () => {
+                const isExpanded = dayHeader.classList.contains('expanded');
+                if (isExpanded) {
+                    dayHeader.classList.remove('expanded');
+                    dayContent.classList.remove('expanded');
+                } else {
+                    dayHeader.classList.add('expanded');
+                    dayContent.classList.add('expanded');
+                }
+            });
+            
+            dayGroupDiv.appendChild(dayHeader);
+            
+            // Incomes for this day - using new format
+            dayGroup.transactions.forEach(income => {
+                const incomeDate = new Date(income.date);
+                const time = incomeDate.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                const item = document.createElement('div');
+                item.className = 'income-item';
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                            <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                                ${income.description}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <span class="income-source" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                                ${income.source}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
+                        <div class="income-amount" style="font-weight: 600; color: var(--success);">
+                            ${currencyUtils.formatDisplayCurrency(income.amount)}
+                        </div>
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                dayContent.appendChild(item);
+            });
+            
+            // Day total footer
+            const dayTotalDiv = document.createElement('div');
+            dayTotalDiv.className = 'day-total';
+            dayTotalDiv.innerHTML = `Total: <span class="day-total-amount income">${currencyUtils.formatDisplayCurrency(dayTotal)}</span>`;
+            dayContent.appendChild(dayTotalDiv);
+            
+            dayGroupDiv.appendChild(dayContent);
+            container.appendChild(dayGroupDiv);
+        });
     }
     
     renderIncomeList(incomes, container) {
@@ -1210,22 +2224,37 @@ class UIController {
         container.innerHTML = '';
         
         sortedIncomes.forEach(income => {
-            const incomeDate = new Date(income.date).toLocaleDateString();
-            const wallet = wallets.find(w => w.id === income.walletId);
+            const incomeDate = new Date(income.date);
+            const time = incomeDate.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
             
             const incomeItem = document.createElement('div');
             incomeItem.className = 'income-item';
+            
+            // Match recent activity format
             incomeItem.innerHTML = `
-                <div class="income-details">
-                    <div style="font-weight: 500;">${income.description}</div>
-                    <div style="font-size: 0.8rem; color: var(--gray);">
-                        ${incomeDate} • ${wallet ? wallet.name : 'Unknown'}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                    <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                        <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                            ${income.description}
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <span class="income-source" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                            ${income.source}
+                        </span>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div>
-                        <div class="income-amount">${currencyUtils.formatDisplayCurrency(income.amount)}</div>
-                        <span class="income-source">${income.source}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="income-amount" style="font-weight: 600; color: var(--success);">
+                            ${currencyUtils.formatDisplayCurrency(income.amount)}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--gray);">
+                            ${time} • ${incomeDate.toLocaleDateString()}
+                        </div>
                     </div>
                     <div class="action-buttons">
                         <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
@@ -1240,7 +2269,7 @@ class UIController {
             container.appendChild(incomeItem);
         });
     }
-    
+        
     // ==================== WALLET UI ====================
     
     updateWalletsUI() {
@@ -1262,6 +2291,8 @@ class UIController {
         this.updateGlobalWalletSelector();
     }
     
+// In the UIController class, update the renderWalletList method:
+
     renderWalletList(wallets, container) {
         container.innerHTML = '';
         
@@ -1271,31 +2302,52 @@ class UIController {
             
             const walletItem = document.createElement('div');
             walletItem.className = 'wallet-item';
+            
+            // Mobile-friendly layout
             walletItem.innerHTML = `
-                <div class="wallet-details">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="font-weight: 500;">${wallet.name}</div>
-                        ${isDefault ? '<span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">DEFAULT</span>' : ''}
+                <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                    <!-- Top row: Wallet name and default badge -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <div style="font-weight: 500; font-size: 1rem; word-break: break-word;">
+                                ${wallet.name}
+                            </div>
+                            ${isDefault ? 
+                                '<span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;">DEFAULT</span>' 
+                                : ''}
+                        </div>
                     </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div class="wallet-balance">${currencyUtils.formatDisplayCurrency(balance)}</div>
-                    <div class="action-buttons">
-                        ${!isDefault ? `
-                            <button class="btn btn-sm" onclick="window.finTrack.app.handleSetDefaultWallet('${wallet.id}')" 
-                                    style="padding: 4px 8px; font-size: 0.75rem; background: var(--light-gray); color: var(--dark);">
-                                <i class="fas fa-star"></i> Default
+                    
+                    <!-- Bottom row: Balance and actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">
+                        <div class="wallet-balance" style="font-size: 1.1rem; font-weight: 600; color: var(--primary); min-width: 0;">
+                            ${currencyUtils.formatDisplayCurrency(balance)}
+                        </div>
+                        
+                        <div class="action-buttons" style="display: flex; gap: 8px; flex-shrink: 0;">
+                            ${!isDefault ? `
+                                <button class="btn btn-sm" 
+                                        onclick="window.finTrack.app.handleSetDefaultWallet('${wallet.id}')" 
+                                        style="padding: 6px 12px; font-size: 0.75rem; background: var(--light-gray); color: var(--dark); border-radius: 6px; white-space: nowrap; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-star" style="font-size: 0.7rem;"></i> 
+                                    <span>Default</span>
+                                </button>
+                            ` : ''}
+                            
+                            <button class="edit-btn" onclick="window.finTrack.ui.editWallet('${wallet.id}')"
+                                    style="padding: 6px; border-radius: 6px; background: var(--light-gray); color: var(--dark);">
+                                <i class="fas fa-edit"></i>
                             </button>
-                        ` : ''}
-                        <button class="edit-btn" onclick="window.finTrack.ui.editWallet('${wallet.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('wallet', '${wallet.id}', '${wallet.name}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                            
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('wallet', '${wallet.id}', '${wallet.name}')"
+                                    style="padding: 6px; border-radius: 6px; background: var(--light-danger); color: var(--danger);">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+            
             container.appendChild(walletItem);
         });
     }
@@ -1334,20 +2386,16 @@ class UIController {
                 <div class="category-details">
                     <div style="font-weight: 500;">${category.name}</div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div class="category-actions">
-                        <button class="add-subcategory-btn" data-id="${category.id}">
-                            <i class="fas fa-plus"></i> Sub
-                        </button>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="edit-btn" onclick="window.finTrack.ui.editCategory('${category.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('category', '${category.id}', '${category.name}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                <div class="category-button-group">
+                    <button class="add-subcategory-btn" data-id="${category.id}">
+                        <i class="fas fa-plus"></i> Sub
+                    </button>
+                    <button class="edit-btn" onclick="window.finTrack.ui.editCategory('${category.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('category', '${category.id}', '${category.name}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             `;
             categoriesList.appendChild(categoryItem);
@@ -1671,46 +2719,32 @@ openEditModal(type, item) {
         const wallet = this.state.getWallets().find(w => w.id === id);
         if (!wallet) return;
         
-        document.getElementById('walletId').value = wallet.id;
-        document.getElementById('walletName').value = wallet.name;
+        document.getElementById('editWalletId').value = wallet.id;
+        document.getElementById('editWalletName').value = wallet.name;
         
-        const walletSubmitBtn = document.getElementById('walletSubmitBtn');
-        const walletCancelBtn = document.getElementById('walletCancelBtn');
-        
-        if (walletSubmitBtn) walletSubmitBtn.innerHTML = '<i class="fas fa-save"></i> Update';
-        if (walletCancelBtn) walletCancelBtn.classList.remove('hidden');
-        
-        this.state.setActiveTab('wallets');
-        domUtils.scrollToElement(document.getElementById('walletForm'));
+        document.getElementById('editWalletModal').classList.add('active');
     }
     
     editCategory(id) {
         const category = this.state.getCategories().find(c => c.id === id);
         if (!category) return;
         
-        document.getElementById('categoryId').value = category.id;
-        document.getElementById('categoryName').value = category.name;
-        document.getElementById('categoryType').value = category.type;
+        document.getElementById('editCategoryId').value = category.id;
+        document.getElementById('editCategoryName').value = category.name;
+        document.getElementById('editCategoryType').value = category.type;
         
         if (category.type === 'sub') {
-            document.getElementById('parentCategoryGroup').classList.remove('hidden');
-            this.loadParentCategories();
+            document.getElementById('editParentCategoryGroup').classList.remove('hidden');
+            this.loadEditParentCategories();
             
             setTimeout(() => {
-                document.getElementById('parentCategory').value = category.parentId;
+                document.getElementById('editParentCategory').value = category.parentId;
             }, 100);
         } else {
-            document.getElementById('parentCategoryGroup').classList.add('hidden');
+            document.getElementById('editParentCategoryGroup').classList.add('hidden');
         }
         
-        const categorySubmitBtn = document.getElementById('categorySubmitBtn');
-        const categoryCancelBtn = document.getElementById('categoryCancelBtn');
-        
-        if (categorySubmitBtn) categorySubmitBtn.innerHTML = '<i class="fas fa-save"></i> Update';
-        if (categoryCancelBtn) categoryCancelBtn.classList.remove('hidden');
-        
-        this.state.setActiveTab('categories');
-        domUtils.scrollToElement(document.getElementById('categoryForm'));
+        document.getElementById('editCategoryModal').classList.add('active');
     }
     
     // ==================== MODAL FUNCTIONS ====================
@@ -1786,12 +2820,12 @@ openEditModal(type, item) {
     
     updateAllUI() {
         console.log('UIController: updateAllUI called');
-        this.updateExpensesUI();
-        this.updateIncomesUI();
+        this.updateOverviewUI();
+        this.updateExpensesTabUI();
+        this.updateIncomesTabUI();
         this.updateWalletsUI();
         this.updateCategoriesUI();
-        this.updateStats();  // Make sure this is here
-        this.updateMonthYearFilters();
+        this.updateStats();
         this.syncWalletSelector();
     }
 

@@ -26,6 +26,76 @@
     color: var(--dark);
 }
 
+/* Dashboard Header */
+.dashboard-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    gap: var(--space-md);
+}
+
+.dashboard-header .dashboard-title {
+    margin: 0;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+#userEmail {
+    display: none;
+}
+
+/* Wallet Selector Container */
+.wallet-selector-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--gray-light);
+    box-shadow: var(--shadow);
+    gap: 8px;
+    margin: 0;
+    min-width: 180px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.wallet-selector-container label {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.wallet-selector-container select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.7rem;
+    min-width: 160px;
+    width: 100%;
+    flex: 1;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 24px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.wallet-selector-container select:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 /* Stats Cards */
 .stat-card {
     background: white;
@@ -34,10 +104,8 @@
     box-shadow: var(--shadow);
     border: 1px solid rgba(147, 51, 234, 0.05);
     transition: transform 0.3s ease;
-    /* Mobile optimizations */
     scroll-snap-align: start;
     flex-shrink: 0;
-    /* New: Center content */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -127,7 +195,6 @@
     align-items: center;
     padding: var(--space-md) 0;
     border-bottom: 1px solid var(--gray-light);
-    gap: var(--space-md);
     min-height: 60px;
 }
 
@@ -144,6 +211,9 @@
 .income-details {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .expense-description,
@@ -152,8 +222,10 @@
 .income-description {
     font-weight: 600;
     color: var(--dark);
-    margin-bottom: var(--space-xs);
+    margin: 0;
+    padding: 0;
     word-break: break-word;
+    line-height: 1.3;
 }
 
 .expense-amount, 
@@ -166,10 +238,9 @@
 
 .expense-amount {
     color: var(--primary);
-    text-align: right;
+    text-align: left;
     margin-right: 20px;
     flex: 1;
-
 }
 
 .income-amount {
@@ -180,22 +251,21 @@
 .income-date {
     font-size: 0.8rem;
     color: var(--gray);
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
 }
 
 .expense-category, .income-source {
     background: var(--light-gray);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: 16px;
-    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
     color: var(--gray);
-    margin-top: var(--space-xs);
-    
-    /* CHANGE THESE LINES */
-    display: block;        /* Changed from inline-block */
-    margin-left: auto;     /* This is the magic line that pushes it right */
-    width: fit-content;    /* Ensures the background only covers the text */
-    text-align: right;     /* Keeps text aligned inside the badge */
-    margin-right: 0px;    /* Matches the alignment of .expense-amount */
+    display: inline-block;
+    width: fit-content;
+    white-space: nowrap;
+    margin-top: 2px;
 }
 
 /* Action Buttons */
@@ -217,7 +287,6 @@
     align-items: center;
     justify-content: center;
     font-size: 1rem;
-    /* Better touch targets */
     min-width: 44px;
     min-height: 44px;
 }
@@ -253,17 +322,50 @@
     }
 }
 
-/* Category Components */
+/* Category Components - All buttons on the right */
+.category-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--gray-light);
+    min-height: 60px;
+    gap: var(--space-sm);
+}
+
+.category-item:last-child {
+    border-bottom: none;
+}
+
+.category-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .subcategory-item {
-    padding-left: var(--space-lg);
+    padding-left: var(--space-xl);
     color: var(--gray);
     border-left: 2px solid var(--gray-light);
     margin-left: var(--space-md);
 }
 
+/* Category button container - keep everything on the right */
+.category-button-group {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+    flex-shrink: 0;
+}
+
 .category-actions {
     display: flex;
     gap: var(--space-xs);
+    align-items: center;
+    flex-shrink: 0;
 }
 
 .add-subcategory-btn {
@@ -276,9 +378,15 @@
     font-size: 0.8rem;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-xs);
-    min-height: 36px;
+    min-height: 44px;
     transition: all var(--transition-normal);
+    white-space: nowrap;
+}
+
+.add-subcategory-btn:hover {
+    background: var(--success-dark);
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -286,43 +394,6 @@
         transform: scale(0.96);
         background: var(--success-dark);
     }
-}
-
-/* Wallet Selector */
-.wallet-selector-container {
-    display: flex;
-    align-items: center;
-    background: white;
-    padding: var(--space-sm) var(--space-md);
-    border-radius: 10px;
-    border: 1.5px solid var(--gray-light);
-    box-shadow: var(--shadow);
-    gap: var(--space-xs);
-    flex-wrap: wrap;
-    margin-top:var(--space-sm);
-}
-
-.wallet-selector-container label {
-    font-size: 0.8rem;
-    color: var(--gray);
-    margin-bottom: 0;
-    white-space: nowrap;
-}
-
-.wallet-selector-container select {
-    border: none;
-    background: transparent;
-    font-weight: 600;
-    color: var(--text);
-    cursor: pointer;
-    font-size: 0.85rem;
-    flex: 1;
-    min-width: 120px;
-}
-
-.wallet-selector-container select:focus {
-    outline: none;
-    box-shadow: none;
 }
 
 /* Insufficient Balance Modal */
@@ -441,7 +512,6 @@
     background: white;
     border-radius: 14px;
     padding: var(--space-lg);
-    /*margin-bottom: var(--space-xs);*/
     box-shadow: var(--shadow);
     border: 1px solid rgba(147, 51, 234, 0.05);
 }
@@ -457,12 +527,11 @@
 
 /* Active Tab Content Styling */
 .tab-content.active {
-    display: flex !important;
+    display: flex;
     flex-direction: column;
     gap: var(--space-lg);
 }
 
-/* Specific styling for tabs */
 #expensesTab.active,
 #historicalTab.active,
 #incomeTab.active,
@@ -473,15 +542,143 @@
     gap: var(--space-lg);
 }
 
-/* Make sure lists take available space */
 .expense-list, .income-list, .wallet-list, .category-list {
     flex: 1;
 }
 
-/* Mobile optimizations */
+/* Day Grouping Styles */
+.day-group {
+    margin-bottom: var(--space-xs);
+}
+
+.day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    margin-bottom: 0;
+    border-bottom: 2px solid var(--gray-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(147, 51, 234, 0.02);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.day-header:hover {
+    background: rgba(147, 51, 234, 0.05);
+}
+
+.day-header i.fa-calendar {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.day-header-text {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.95rem;
+    flex: 1;
+}
+
+.toggle-icon {
+    color: var(--gray);
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.day-header.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.day-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.day-content.expanded {
+    max-height: 5000px;
+}
+
+.day-content .expense-item,
+.day-content .income-item {
+    padding: 8px 0;
+    min-height: auto;
+    border-bottom: 1px solid rgba(147, 51, 234, 0.05);
+}
+
+.day-content .expense-item:last-of-type,
+.day-content .income-item:last-of-type {
+    border-bottom: none;
+}
+
+.day-total {
+    margin-top: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    text-align: right;
+    font-size: 0.9rem;
+    color: var(--gray);
+    font-weight: 600;
+    border-top: 1px solid var(--gray-light);
+    background: rgba(147, 51, 234, 0.02);
+}
+
+.day-total-amount {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.day-total-amount.income {
+    color: var(--success);
+}
+
+.transaction-time {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-left: var(--space-xs);
+}
+
+.empty-day-message {
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+    color: var(--gray);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.empty-day-message i {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: var(--space-md);
+    opacity: 0.3;
+}
+
+/* ==========================================================================
+   MOBILE OPTIMIZATIONS - 768px and below
+   ========================================================================== */
+
 @media (max-width: 768px) {
+    .dashboard-header {
+        gap: var(--space-sm);
+    }
+    
     .dashboard-title {
         font-size: 1.5rem;
+    }
+    
+    .wallet-selector-container {
+        padding: 6px 10px;
+        gap: 6px;
+    }
+    
+    .wallet-selector-container label {
+        font-size: 0.75rem;
+    }
+    
+    .wallet-selector-container select {
+        font-size: 0.6rem;
+        max-width: 120px;
     }
     
     .section-title {
@@ -516,22 +713,72 @@
     
     .expense-item, 
     .wallet-item, 
-    .income-item, 
-    .category-item {
-        flex-direction: column;
+    .income-item {
         align-items: flex-start;
-        gap: var(--space-md);
-        padding: var(--space-lg) 0;
+        padding: var(--space-sm) var(--space-sm);
+        min-height: 50px;
+        flex-wrap: wrap;
+    }
+    
+    .expense-item > *,
+    .income-item > * {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .expense-details,
+    .wallet-details,
+    .income-details {
+        width: 100%;
+        gap: 3px;
     }
     
     .expense-item > div:last-child, 
     .income-item > div:last-child, 
-    .wallet-item > div:last-child,
-    .category-item > div:last-child {
+    .wallet-item > div:last-child {
         width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-top: 6px;
+        flex-wrap: nowrap;
+    }
+    
+    /* Keep category items horizontal on mobile - buttons stay on right */
+    .category-item {
+        flex-direction: row;
+        align-items: center;
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+    }
+    
+    .category-details {
+        flex: 1;
+        min-width: 0;
+        gap: 3px;
+    }
+    
+    /* Buttons stay on the right */
+    .category-button-group {
+        flex-shrink: 0;
+        gap: var(--space-xs);
+    }
+    
+    .category-actions {
+        flex-shrink: 0;
+        gap: var(--space-xs);
+    }
+    
+    .add-subcategory-btn {
+        min-height: 42px;
+        font-size: 0.75rem;
+        padding: var(--space-xs) 8px;
+    }
+    
+    .subcategory-item {
+        padding-left: var(--space-lg);
+        margin-left: var(--space-sm);
     }
     
     .month-filter {
@@ -549,10 +796,6 @@
         width: 100%;
     }
     
-    .wallet-selector-container {
-        width: 100%;
-    }
-    
     .form-card,
     .expense-list, 
     .wallet-list, 
@@ -560,12 +803,58 @@
     .income-list {
         padding: var(--space-lg);
     }
+    
+    .day-header {
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .day-header-text {
+        font-size: 0.85rem;
+    }
+    
+    .day-total {
+        font-size: 0.85rem;
+        padding: var(--space-xs) var(--space-md);
+    }
+    
+    .expense-category, .income-source {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+    }
+    
+    .day-content .expense-item,
+    .day-content .income-item {
+        padding: 6px 0;
+    }
 }
 
+/* ==========================================================================
+   MOBILE OPTIMIZATIONS - 480px and below
+   ========================================================================== */
+
 @media (max-width: 480px) {
+    .dashboard-header {
+        gap: 8px;
+    }
+    
     .dashboard-title {
         font-size: 1.3rem;
         line-height: 1.3;
+    }
+    
+    .wallet-selector-container {
+        padding: 5px 8px;
+        gap: 6px;
+    }
+    
+    .wallet-selector-container label {
+        font-size: 0.7rem;
+    }
+    
+    .wallet-selector-container select {
+        font-size: 0.8rem !important;
+        max-width: 100px;
     }
     
     .section-title {
@@ -613,6 +902,27 @@
         font-size: 0.95rem;
     }
     
+    .expense-item, 
+    .wallet-item, 
+    .income-item,
+    .category-item {
+        padding: var(--space-xs) var(--space-xs);
+        min-height: 45px;
+    }
+    
+    .expense-details,
+    .wallet-details,
+    .income-details,
+    .category-details {
+        gap: 2px;
+    }
+    
+    .expense-item > div:last-child, 
+    .income-item > div:last-child, 
+    .wallet-item > div:last-child {
+        margin-top: 4px;
+    }
+    
     .form-card,
     .expense-list, 
     .wallet-list, 
@@ -631,9 +941,50 @@
         min-height: 42px;
         padding: var(--space-xs);
     }
+    
+    .expense-category, .income-source {
+        font-size: 0.6rem;
+        padding: 2px 5px;
+        border-radius: 8px;
+    }
+    
+    .day-content .expense-item,
+    .day-content .income-item {
+        padding: var(--space-xs) var(--space-xs);
+    }
+    
+    .add-subcategory-btn {
+        min-height: 40px;
+        font-size: 0.7rem;
+        padding: var(--space-xs) 6px;
+    }
 }
 
-/* Landscape mode optimizations */
+/* ==========================================================================
+   VERY SMALL SCREENS - 360px and below
+   ========================================================================== */
+
+@media (max-width: 360px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+    
+    .wallet-selector-container {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .wallet-selector-container select {
+        max-width: none;
+    }
+}
+
+/* ==========================================================================
+   LANDSCAPE MODE OPTIMIZATIONS
+   ========================================================================== */
+
 @media (max-width: 896px) and (orientation: landscape) {
     .stat-card {
         padding: var(--space-md);

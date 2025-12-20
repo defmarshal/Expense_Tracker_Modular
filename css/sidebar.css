@@ -1,0 +1,353 @@
+/* ==========================================================================
+   SIDEBAR NAVIGATION SYSTEM
+   - Desktop: Left sidebar with icons + labels
+   - Mobile: Bottom navigation bar
+   ========================================================================== */
+
+/* Desktop Sidebar Container */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 70px; /* Below header */
+    bottom: 0;
+    width: 240px;
+    background: white;
+    border-right: 1px solid var(--gray-light);
+    padding: var(--space-lg) 0;
+    z-index: 100;
+    display: none; /* Hidden by default, shown on desktop */
+    flex-direction: column;
+    overflow-y: auto;
+    transition: transform var(--transition-normal);
+}
+
+/* Sidebar Navigation Items */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: 0 var(--space-md);
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    user-select: none;
+    min-height: 48px;
+}
+
+.sidebar-nav-item i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    color: var(--gray);
+    transition: color var(--transition-normal);
+}
+
+.sidebar-nav-item span {
+    flex: 1;
+}
+
+.sidebar-nav-item:hover {
+    background: rgba(147, 51, 234, 0.08);
+    color: var(--primary);
+}
+
+.sidebar-nav-item:hover i {
+    color: var(--primary);
+}
+
+.sidebar-nav-item.active {
+    background: var(--gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
+}
+
+.sidebar-nav-item.active i {
+    color: white;
+}
+
+/* Dashboard content with sidebar */
+.dashboard-with-sidebar {
+    margin-left: 240px;
+    transition: margin-left var(--transition-normal);
+}
+
+/* Mobile Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--gray-light);
+    padding: var(--space-xs) 0;
+    padding-bottom: max(var(--space-xs), env(safe-area-inset-bottom));
+    z-index: var(--z-fixed);
+    display: none; /* Hidden by default, shown on mobile */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.bottom-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: var(--space-xs) var(--space-sm);
+    color: var(--gray);
+    text-decoration: none;
+    font-size: 0.7rem;
+    font-weight: 500;
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+    max-width: 80px;
+    border-radius: var(--radius-sm);
+}
+
+.bottom-nav-item i {
+    font-size: 1.3rem;
+    transition: transform var(--transition-normal);
+}
+
+.bottom-nav-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+}
+
+.bottom-nav-item.active {
+    color: var(--primary);
+}
+
+.bottom-nav-item.active i {
+    transform: scale(1.15);
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .bottom-nav-item:active {
+        background: rgba(147, 51, 234, 0.1);
+    }
+}
+
+/* Hide original tabs on all screens */
+.dashboard-tabs {
+    display: none !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+
+/* Desktop: Show sidebar, hide bottom nav */
+@media (min-width: 769px) {
+    .sidebar {
+        display: flex;
+    }
+    
+    .dashboard-with-sidebar {
+        margin-left: 240px;
+    }
+    
+    .bottom-nav {
+        display: none;
+    }
+    
+    /* Adjust dashboard container for sidebar */
+    .dashboard-container {
+        padding-bottom: var(--space-xl);
+    }
+}
+
+/* Tablet & Mobile: Hide sidebar, show bottom nav */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
+    .dashboard-with-sidebar {
+        margin-left: 0;
+    }
+    
+    .bottom-nav {
+        display: block;
+    }
+    
+    /* Add padding for bottom nav */
+    .dashboard-container {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom));
+    }
+    
+    /* Adjust FAB position */
+    .fab-container {
+        bottom: calc(70px + var(--space-md) + env(safe-area-inset-bottom));
+    }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 480px) {
+    .bottom-nav-item {
+        font-size: 0.65rem;
+        padding: var(--space-xs);
+    }
+    
+    .bottom-nav-item i {
+        font-size: 1.2rem;
+    }
+}
+
+/* Landscape mode on mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+    .bottom-nav {
+        padding: 4px 0;
+        padding-bottom: max(4px, env(safe-area-inset-bottom));
+    }
+    
+    .bottom-nav-item {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+        gap: 2px;
+    }
+    
+    .bottom-nav-item i {
+        font-size: 1.1rem;
+    }
+    
+    .dashboard-container {
+        padding-bottom: calc(56px + env(safe-area-inset-bottom));
+    }
+    
+    .fab-container {
+        bottom: calc(56px + var(--space-sm) + env(safe-area-inset-bottom));
+    }
+}
+
+/* ==========================================================================
+   SIDEBAR STATES & ANIMATIONS
+   ========================================================================== */
+
+/* Smooth scrolling for sidebar */
+.sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gray-light) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--gray-light);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--gray);
+}
+
+/* Active state indicator animation */
+@keyframes slideIn {
+    from {
+        transform: translateX(-8px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.sidebar-nav-item.active {
+    animation: slideIn 0.3s ease;
+}
+
+/* Ripple effect for touch feedback */
+.sidebar-nav-item::before,
+.bottom-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(147, 51, 234, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.sidebar-nav-item:active::before,
+.bottom-nav-item:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+/* Prevent text selection during interactions */
+.sidebar-nav-item,
+.bottom-nav-item {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY
+   ========================================================================== */
+
+/* Focus styles for keyboard navigation */
+.sidebar-nav-item:focus,
+.bottom-nav-item:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .dashboard-with-sidebar,
+    .sidebar-nav-item,
+    .bottom-nav-item {
+        transition: none;
+    }
+    
+    .sidebar-nav-item.active {
+        animation: none;
+    }
+}
+
+/* ==========================================================================
+   UTILITY CLASSES
+   ========================================================================== */
+
+/* Hide sidebar on print */
+@media print {
+    .sidebar,
+    .bottom-nav {
+        display: none !important;
+    }
+    
+    .dashboard-with-sidebar {
+        margin-left: 0 !important;
+    }
+}

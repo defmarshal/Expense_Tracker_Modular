@@ -1,0 +1,182 @@
+/* Floating Action Button (FAB) Styles */
+
+.fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: none; /* Hidden on landing page */
+}
+
+/* Show FAB only when dashboard is visible */
+.dashboard-container:not(.hidden) ~ .fab-container,
+body:has(.dashboard-container:not(.hidden)) .fab-container {
+    display: block;
+}
+
+.fab-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gradient);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.fab-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.fab-button:active {
+    transform: scale(0.95);
+}
+
+.fab-button i {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab-button.active i {
+    transform: rotate(45deg);
+}
+
+/* FAB Menu */
+.fab-menu {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.fab-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    border: none;
+    border-radius: 28px;
+    padding: 12px 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    transform: scale(0.8);
+    opacity: 0;
+}
+
+.fab-menu.active .fab-menu-item {
+    animation: fabMenuItemAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.fab-menu.active .fab-menu-item:nth-child(1) { animation-delay: 0.05s; }
+.fab-menu.active .fab-menu-item:nth-child(2) { animation-delay: 0.1s; }
+.fab-menu.active .fab-menu-item:nth-child(3) { animation-delay: 0.15s; }
+.fab-menu.active .fab-menu-item:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes fabMenuItemAppear {
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.fab-menu-item:hover {
+    background: var(--light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateX(-4px);
+}
+
+.fab-menu-item i {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.fab-menu-item span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+/* Icon colors */
+.fab-menu-item.expense i { color: var(--danger); }
+.fab-menu-item.income i { color: var(--success); }
+.fab-menu-item.wallet i { color: var(--primary); }
+.fab-menu-item.category i { color: var(--warning); }
+
+/* Backdrop */
+.fab-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.fab-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .fab-container {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .fab-button {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .fab-menu {
+        bottom: 70px;
+    }
+}
+
+/* Pulse animation for attention */
+@keyframes fabPulse {
+    0% {
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.6), 0 0 0 8px rgba(99, 102, 241, 0.1);
+    }
+    100% {
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+}
+
+.fab-button.pulse {
+    animation: fabPulse 2s infinite;
+}
