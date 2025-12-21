@@ -124,6 +124,13 @@ header {
     background: linear-gradient(180deg, #F9F5FF 0%, #FFFFFF 100%);
 }
 
+/* Add extra padding on mobile for bottom nav */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding-bottom: max(100px, env(safe-area-inset-bottom));
+    }
+}
+
 .dashboard-header {
     display: flex;
     justify-content: space-between;

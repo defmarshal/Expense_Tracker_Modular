@@ -180,3 +180,20 @@ body:has(.dashboard-container:not(.hidden)) .fab-container {
 .fab-button.pulse {
     animation: fabPulse 2s infinite;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .fab-container {
+        bottom: 80px; /* Raised above bottom nav */
+        right: 20px;
+    }
+    
+    .fab-button {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .fab-menu {
+        bottom: 70px;
+    }
+}
