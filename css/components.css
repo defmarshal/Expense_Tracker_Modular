@@ -708,3 +708,115 @@ input:focus, select:focus, textarea:focus {
     font-weight: 600;
     letter-spacing: 0.5px;
 }
+
+/* v5.2 */
+/* Budget Components */
+.budget-list {
+    margin-bottom: 2rem;
+}
+
+.budget-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.budget-details {
+    flex: 1;
+}
+
+/* Checkbox styling */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    color: var(--dark);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    min-height: 18px !important;
+    cursor: pointer;
+    accent-color: var(--primary);
+    padding: 0 !important;
+    
+    /* Force checkbox appearance */
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    appearance: checkbox !important;
+    
+    /* Ensure it's visible */
+    opacity: 1 !important;
+    position: relative !important;
+}
+
+/* Style the checked state explicitly */
+.checkbox-label input[type="checkbox"]:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.checkbox-label:hover {
+    color: var(--primary);
+}
+
+/* Reimbursable expense indicator */
+.reimbursable-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #059669;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-left: 6px;
+    box-shadow: 0 1px 3px rgba(5, 150, 105, 0.2);
+}
+
+/* Budget progress bar */
+.budget-progress {
+    background: #E5E7EB;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.budget-progress-bar {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 4px;
+}
+
+.budget-progress-bar.ok {
+    background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+}
+
+.budget-progress-bar.warning {
+    background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
+}
+
+.budget-progress-bar.exceeded {
+    background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
+}
+
+/* Budget status text */
+.budget-status {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-top: 4px;
+}
+
+.budget-status.exceeded {
+    color: #EF4444;
+    font-weight: 600;
+}

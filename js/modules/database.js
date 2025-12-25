@@ -141,16 +141,76 @@ class DatabaseService {
     }
   }
 
-  // Expense-specific operations
+  //5.2
   async createExpense(expenseData) {
-    return await this.create('expenses', {
-      description: expenseData.description,
-      amount: expenseData.amount,
-      date: expenseData.date,
-      category: expenseData.category,
-      subcategory: expenseData.subcategory,
-      wallet_id: expenseData.walletId
-    });
+      try {
+          // Use this.user instead of supabase.auth.getUser()
+          if (!this.user) throw new Error('Not authenticated');
+          
+          console.log('createExpense - Input:', expenseData);
+          console.log('createExpense - User ID:', this.user.id);
+          
+          const expenseRecord = {
+              user_id: this.user.id,
+              wallet_id: expenseData.walletId,
+              description: expenseData.description,
+              amount: expenseData.amount,
+              date: expenseData.date,
+              category: expenseData.category,
+              subcategory: expenseData.subcategory || null,
+              is_reimbursable: expenseData.isReimbursable || false,
+              reimbursed: false
+          };
+          
+          console.log('createExpense - Record to save:', expenseRecord);
+          
+          if (expenseData.id) {
+              // Update existing expense
+              console.log('createExpense - Updating expense:', expenseData.id);
+              const { data, error } = await this.supabase
+                  .from('expenses')
+                  .update({
+                      description: expenseRecord.description,
+                      amount: expenseRecord.amount,
+                      date: expenseRecord.date,
+                      category: expenseRecord.category,
+                      subcategory: expenseRecord.subcategory,
+                      is_reimbursable: expenseRecord.is_reimbursable,
+                      wallet_id: expenseRecord.wallet_id
+                  })
+                  .eq('id', expenseData.id)
+                  .eq('user_id', this.user.id)
+                  .select()
+                  .single();
+              
+              if (error) {
+                  console.error('createExpense - Update error:', error);
+                  throw error;
+              }
+              
+              console.log('createExpense - Updated successfully:', data);
+              return this.toCamelCase(data);
+          } else {
+              // Insert new expense
+              console.log('createExpense - Inserting new expense');
+              const { data, error } = await this.supabase
+                  .from('expenses')
+                  .insert(expenseRecord)
+                  .select()
+                  .single();
+              
+              if (error) {
+                  console.error('createExpense - Insert error:', error);
+                  throw error;
+              }
+              
+              console.log('createExpense - Inserted successfully:', data);
+              return this.toCamelCase(data);
+          }
+      } catch (error) {
+          console.error('createExpense - Fatal error:', error);
+          throw error;
+      }
   }
 
   async getExpenses(filters = {}) {
@@ -388,6 +448,155 @@ class DatabaseService {
       throw error;
     }
   }
+
+  // v5.2
+  async createBudget(budgetData) {
+      try {
+          // Use the stored user instead of calling getUser()
+          if (!this.user) throw new Error('Not authenticated');
+          
+          console.log('createBudget - Input:', budgetData);
+          console.log('createBudget - User ID:', this.user.id);
+          
+          // Check for existing budget first
+          const { data: existingBudget, error: checkError } = await this.supabase
+              .from('budgets')
+              .select('id')
+              .eq('user_id', this.user.id)
+              .eq('wallet_id', budgetData.walletId)
+              .eq('category_id', budgetData.categoryId)
+              .maybeSingle(); // Use maybeSingle() instead of single() to avoid error if not found
+          
+          console.log('createBudget - Existing budget:', existingBudget);
+          
+          if (checkError && checkError.code !== 'PGRST116') {
+              console.error('createBudget - Check error:', checkError);
+              throw checkError;
+          }
+          
+          const budgetRecord = {
+              user_id: this.user.id,
+              wallet_id: budgetData.walletId,
+              category_id: budgetData.categoryId,
+              amount: budgetData.amount,
+              period: budgetData.period || 'monthly',
+              start_date: budgetData.startDate || new Date().toISOString().split('T')[0],
+              updated_at: new Date().toISOString()
+          };
+          
+          console.log('createBudget - Record to save:', budgetRecord);
+          
+          let result;
+          
+          if (existingBudget) {
+              // Update existing budget
+              console.log('createBudget - Updating existing budget:', existingBudget.id);
+              const { data, error } = await this.supabase
+                  .from('budgets')
+                  .update({
+                      amount: budgetRecord.amount,
+                      period: budgetRecord.period,
+                      start_date: budgetRecord.start_date,
+                      updated_at: budgetRecord.updated_at
+                  })
+                  .eq('id', existingBudget.id)
+                  .select('*, categories(name, type)')
+                  .single();
+              
+              if (error) {
+                  console.error('createBudget - Update error:', error);
+                  throw error;
+              }
+              result = data;
+          } else {
+              // Insert new budget
+              console.log('createBudget - Inserting new budget');
+              const { data, error } = await this.supabase
+                  .from('budgets')
+                  .insert(budgetRecord)
+                  .select('*, categories(name, type)')
+                  .single();
+              
+              if (error) {
+                  console.error('createBudget - Insert error:', error);
+                  throw error;
+              }
+              result = data;
+          }
+          
+          console.log('createBudget - Success:', result);
+          return result;
+          
+      } catch (error) {
+          console.error('createBudget - Fatal error:', error);
+          throw error;
+      }
+  }
+
+  // Also update getBudgets to use this.user instead of getUser():
+  async getBudgets() {
+      try {
+          if (!this.user) return [];
+          
+          const { data, error } = await this.supabase
+              .from('budgets')
+              .select('*, categories(name, type)')
+              .eq('user_id', this.user.id);
+          
+          if (error) {
+              console.error('getBudgets - Error:', error);
+              throw error;
+          }
+          
+          console.log('getBudgets - Success:', data);
+          return data || [];
+      } catch (error) {
+          console.error('getBudgets - Fatal error:', error);
+          return [];
+      }
+  }
+
+  // Also update deleteBudget to be consistent:
+  async deleteBudget(id) {
+      try {
+          if (!this.user) throw new Error('Not authenticated');
+          
+          const { error } = await this.supabase
+              .from('budgets')
+              .delete()
+              .eq('id', id)
+              .eq('user_id', this.user.id); // Add user_id check for security
+          
+          if (error) {
+              console.error('deleteBudget - Error:', error);
+              throw error;
+          }
+          
+          console.log('deleteBudget - Success');
+          return true;
+      } catch (error) {
+          console.error('deleteBudget - Fatal error:', error);
+          throw error;
+      }
+  }
+
+
+
+  // Mark expense as reimbursed
+  async markExpenseReimbursed(expenseId, reimbursed = true) {
+      const { data, error } = await this.supabase
+          .from('expenses')
+          .update({
+              reimbursed: reimbursed,
+              reimbursed_date: reimbursed ? new Date().toISOString().split('T')[0] : null
+          })
+          .eq('id', expenseId)
+          .select()
+          .single();
+      
+      if (error) throw error;
+      return this.toCamelCase(data);
+  }  
 }
 
 // Create singleton instance

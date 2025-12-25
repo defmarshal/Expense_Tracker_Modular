@@ -269,26 +269,30 @@ class AuthService {
             const userId = this.state.getUser().id;
             console.log('Auth: Loading data for user:', this.state.getUser().email);
             
-            // Load all user data in parallel
-            const [wallets, categories, expenses, incomes] = await Promise.all([
+            //v5.2
+            const [wallets, categories, expenses, incomes, budgets] = await Promise.all([
                 this.database.getWallets(),
                 this.database.getCategories(),
                 this.database.getExpenses(),
-                this.database.getIncomes()
+                this.database.getIncomes(),
+                this.database.getBudgets()
             ]);
             
+            //v5.2
             console.log('Auth: Data loaded:', {
                 wallets: wallets.length,
                 categories: categories.length,
                 expenses: expenses.length,
-                incomes: incomes.length
+                incomes: incomes.length,
+                budgets: budgets.length
             });
             
-            // Update state
+            //v5.2
             this.state.setWallets(wallets);
             this.state.setCategories(categories);
             this.state.setExpenses(expenses);
             this.state.setIncomes(incomes);
+            this.state.setBudgets(budgets);
             
             // Load and set default wallet using persistence
             if (this.walletPersistence && wallets.length > 0) {
@@ -309,7 +313,9 @@ class AuthService {
             }
             
             console.log('Auth: State updated, emitting dataLoaded event');
-            this.emitAuthEvent('dataLoaded', { wallets, categories, expenses, incomes });
+
+            //v5.2
+            this.emitAuthEvent('dataLoaded', { wallets, categories, expenses, incomes, budgets });
             
         } catch (error) {
             console.error('Auth: Error loading user data:', error);

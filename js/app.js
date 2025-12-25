@@ -315,6 +315,13 @@ class FinTrackApp {
                 const date = document.getElementById('editDate').value;
                 const categoryValue = document.getElementById('editCategory').value;
                 const subcategoryValue = document.getElementById('editSubcategory').value || '';
+                
+                // Get reimbursable status
+                const isReimbursable = document.getElementById('editIsReimbursable')?.checked || false;
+                
+                console.log('=== EDIT TRANSACTION ===');
+                console.log('Type:', type);
+                console.log('New isReimbursable value:', isReimbursable);
 
                 const updateData = {
                     description: description,
@@ -327,10 +334,50 @@ class FinTrackApp {
                     updateData.category = categoryValue;
                     updateData.subcategory = subcategoryValue || null;
                     updateData.wallet_id = this.state.getState().currentWalletId;
+                    updateData.is_reimbursable = isReimbursable;
                 } else {
                     updateData.source = categoryValue;
                     updateData.wallet_id = this.state.getState().currentWalletId;
                 }
+
+                // 👇 ADD BUDGET CHECK HERE FOR EXPENSES
+                if (type === 'expense') {
+                    // Get the original expense to check if reimbursable status changed
+                    const originalExpense = this.state.getExpenses().find(e => e.id === id);
+                    console.log('Original expense:', originalExpense);
+                    console.log('Original isReimbursable:', originalExpense?.isReimbursable);
+                    
+                    // Check if we're changing FROM reimbursable TO non-reimbursable
+                    const wasReimbursable = originalExpense?.isReimbursable || false;
+                    const isNowReimbursable = isReimbursable;
+                    
+                    console.log('Was reimbursable:', wasReimbursable);
+                    console.log('Is now reimbursable:', isNowReimbursable);
+                    
+                    // If changing from reimbursable to non-reimbursable, check budget
+                    if (wasReimbursable && !isNowReimbursable) {
+                        console.log('Changed from reimbursable to non-reimbursable - checking budget...');
+                        
+                        const budgetStatus = this.checkBudgetBeforeExpense(categoryValue, amount);
+                        console.log('Budget status:', budgetStatus);
+                        
+                        if (budgetStatus && budgetStatus.willExceed) {
+                            const confirmed = await this.showBudgetWarning(categoryValue, {
+                                budget: budgetStatus.budget,
+                                spent: budgetStatus.spent,
+                                newExpense: amount
+                            });
+                            
+                            if (!confirmed) {
+                                console.log('User cancelled due to budget warning');
+                                return;
+                            }
+                        }
+                    }
+                }
+                // 👆 END OF BUDGET CHECK
+                
+                console.log('Update data being sent:', updateData);
 
                 try {
                     // Show loading
@@ -340,6 +387,7 @@ class FinTrackApp {
 
                     if (type === 'expense') {
                         const updated = await this.db.updateExpense(id, updateData);
+                        console.log('Updated expense from DB:', updated);
                         this.state.updateExpense(updated);
                     } else {
                         const updated = await this.db.updateIncome(id, updateData);
@@ -427,8 +475,97 @@ class FinTrackApp {
                 }
             });
         }
+
+        //v5.2
+        document.getElementById('budgetForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleAddBudget(e);
+        });        
     }   
+
+    //v5.2
+    async handleAddBudget(e) {
+        const categoryId = document.getElementById('budgetCategory').value;
+        const amount = currencyUtils.parseCurrency(document.getElementById('budgetAmount').value);
+        const walletId = this.state.getState().currentWalletId;
         
+        console.log('=== handleAddBudget START ===');
+        console.log('Budget data:', { categoryId, amount, walletId });
+        
+        if (!walletId) {
+            console.log('Error: No wallet selected');
+            this.showAlert('Select a wallet first', 'error');
+            return;
+        }
+        
+        if (amount <= 0) {
+            console.log('Error: Invalid amount');
+            this.showAlert('Enter a valid amount', 'error');
+            return;
+        }
+        
+        try {
+            const budgetData = { 
+                categoryId: categoryId, 
+                amount: amount, 
+                walletId: walletId 
+            };
+            
+            console.log('Calling createBudget with data:', budgetData);
+            const savedBudget = await this.db.createBudget(budgetData);
+            console.log('Budget saved successfully:', savedBudget);
+            
+            // ✅ Check if it's an update or new budget
+            const existingBudgetIndex = this.state.getBudgets().findIndex(
+                b => b.id === savedBudget.id
+            );
+            
+            if (existingBudgetIndex >= 0) {
+                console.log('Updating existing budget in state');
+                this.state.updateBudget(savedBudget);
+            } else {
+                console.log('Adding new budget to state');
+                this.state.addBudget(savedBudget);
+            }
+            
+            this.showAlert('Budget saved', 'success');
+            
+            document.getElementById('budgetModal').classList.remove('active');
+            document.getElementById('budgetForm').reset();
+            console.log('=== handleAddBudget END (success) ===');
+        } catch (error) {
+            console.error('=== handleAddBudget ERROR ===');
+            console.error('Error object:', error);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+            this.showAlert('Error saving budget: ' + error.message, 'error');
+        }
+    }
+
+    //v5.2
+    showBudgetWarning(category, budgetData) {
+        return new Promise((resolve) => {
+            // Populate modal data
+            document.getElementById('budgetWarningCategory').textContent = category;
+            document.getElementById('budgetWarningBudget').textContent = 
+                currencyUtils.formatDisplayCurrency(budgetData.budget);
+            document.getElementById('budgetWarningSpent').textContent = 
+                currencyUtils.formatDisplayCurrency(budgetData.spent);
+            document.getElementById('budgetWarningNew').textContent = 
+                currencyUtils.formatDisplayCurrency(budgetData.newExpense);
+            document.getElementById('budgetWarningTotal').textContent = 
+                currencyUtils.formatDisplayCurrency(budgetData.spent + budgetData.newExpense);
+            document.getElementById('budgetWarningOver').textContent = 
+                currencyUtils.formatDisplayCurrency(budgetData.spent + budgetData.newExpense - budgetData.budget);
+            
+            // Store callback
+            window.finTrack.budgetWarningCallback = resolve;
+            
+            // Show modal
+            document.getElementById('budgetWarningModal').classList.add('active');
+        });
+    }    
+            
     setupDeleteModalHandlers() {
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
@@ -465,6 +602,32 @@ class FinTrackApp {
         document.getElementById('closeInsufficientBalanceModal')?.addEventListener('click', () => {
             document.getElementById('insufficientBalanceModal').classList.remove('active');
         });
+
+        // Close budget modal
+        document.getElementById('closeBudgetModal')?.addEventListener('click', () => {
+            document.getElementById('budgetModal').classList.remove('active');
+        });   
+        
+        document.getElementById('closeBudgetWarning')?.addEventListener('click', () => {
+            document.getElementById('budgetWarningModal').classList.remove('active');
+            if (window.finTrack.budgetWarningCallback) {
+                window.finTrack.budgetWarningCallback(false);
+            }
+        });
+
+        document.getElementById('cancelBudgetWarning')?.addEventListener('click', () => {
+            document.getElementById('budgetWarningModal').classList.remove('active');
+            if (window.finTrack.budgetWarningCallback) {
+                window.finTrack.budgetWarningCallback(false);
+            }
+        });
+
+        document.getElementById('confirmBudgetWarning')?.addEventListener('click', () => {
+            document.getElementById('budgetWarningModal').classList.remove('active');
+            if (window.finTrack.budgetWarningCallback) {
+                window.finTrack.budgetWarningCallback(true);
+            }
+        });        
     }
 
     // Add this method inside the FinTrackApp class in app.js
@@ -542,12 +705,17 @@ class FinTrackApp {
         });
     }
 
+    //v5.2
     async handleFABAddExpense(e) {
         const description = document.getElementById('fabExpenseDescription').value;
         const amount = currencyUtils.parseCurrency(document.getElementById('fabExpenseAmount').value);
         const date = document.getElementById('fabExpenseDate').value;
         const category = document.getElementById('fabExpenseCategory').value;
         const subcategory = document.getElementById('fabExpenseSubcategory').value;
+        
+        const checkboxElement = document.getElementById('fabExpenseIsReimbursable');
+        const isReimbursable = checkboxElement?.checked || false;
+        
         const walletId = this.state.getState().currentWalletId;
         
         if (!walletId) {
@@ -560,18 +728,46 @@ class FinTrackApp {
             return;
         }
         
+        // 👇 ADD THIS BUDGET CHECK SECTION HERE
+        // Check budget only if NOT reimbursable
+        if (!isReimbursable) {
+            console.log('FAB: Checking budget for category:', category);
+            const budgetStatus = this.checkBudgetBeforeExpense(category, amount);
+            console.log('FAB: Budget status:', budgetStatus);
+            
+            if (budgetStatus && budgetStatus.willExceed) {
+                const confirmed = await this.showBudgetWarning(category, {
+                budget: budgetStatus.budget,
+                spent: budgetStatus.spent,
+                newExpense: amount
+            });
+                
+                if (!confirmed) {
+                    console.log('FAB: User cancelled due to budget warning');
+                    return;
+                }
+            }
+        }
+        // 👆 END OF BUDGET CHECK
+        
         try {
-            const expenseData = { description, amount, date, category, subcategory, walletId };
+            const expenseData = { 
+                description, amount, date, category, subcategory, 
+                walletId, isReimbursable 
+            };
+            console.log('FAB: Expense data being sent:', expenseData);
+            
             const savedExpense = await this.db.createExpense(expenseData);
+            console.log('FAB: Saved expense from DB:', savedExpense);
             
             this.state.addExpense(savedExpense);
             this.showAlert('Expense added', 'success');
             
-            // Close modal and reset form
             document.getElementById('fabQuickAddModal').classList.remove('active');
             document.getElementById('fabExpenseForm').reset();
         } catch (error) {
-            this.showAlert('Error saving expense', 'error');
+            console.error('Error saving expense:', error);
+            this.showAlert('Error saving expense: ' + error.message, 'error');
         }
     }
 
@@ -756,7 +952,8 @@ async checkInitialAuthState() {
             this.showAlert(errorMessage, 'error');
         }
     }
-        
+    
+    //v5.2    
     async handleAddExpense(e) {
         const form = e.target;
         const id = document.getElementById('expenseId').value;
@@ -765,7 +962,14 @@ async checkInitialAuthState() {
         const date = document.getElementById('expenseDate').value;
         const category = document.getElementById('expenseCategory').value;
         const subcategory = document.getElementById('expenseSubcategory').value;
+        const isReimbursable = document.getElementById('expenseIsReimbursable')?.checked || false;
         const walletId = this.state.getState().currentWalletId;
+        
+        console.log('=== handleAddExpense DEBUG ===');
+        console.log('1. Category:', category);
+        console.log('2. Amount:', amount);
+        console.log('3. isReimbursable:', isReimbursable);
+        console.log('4. WalletId:', walletId);
         
         if (!walletId) {
             this.showAlert('Select a wallet first', 'error');
@@ -777,9 +981,55 @@ async checkInitialAuthState() {
             return;
         }
         
+        // Check budget only if NOT reimbursable
+        if (!isReimbursable) {
+            console.log('5. Checking budget (not reimbursable)...');
+            const budgetStatus = this.checkBudgetBeforeExpense(category, amount);
+            console.log('6. Budget status returned:', budgetStatus);
+            
+            if (budgetStatus) {
+                console.log('7. Budget found!');
+                console.log('   - Budget amount:', budgetStatus.budget);
+                console.log('   - Already spent:', budgetStatus.spent);
+                console.log('   - This expense:', amount);
+                console.log('   - Total after:', budgetStatus.spent + amount);
+                console.log('   - Will exceed?', budgetStatus.willExceed);
+                
+                if (budgetStatus.willExceed) {
+                    console.log('8. SHOULD SHOW WARNING NOW!');
+                    const confirmed = confirm(
+                        `This expense will exceed your ${category} budget!\n\n` +
+                        `Budget: ${currencyUtils.formatDisplayCurrency(budgetStatus.budget)}\n` +
+                        `Already spent: ${currencyUtils.formatDisplayCurrency(budgetStatus.spent)}\n` +
+                        `This expense: ${currencyUtils.formatDisplayCurrency(amount)}\n` +
+                        `Total: ${currencyUtils.formatDisplayCurrency(budgetStatus.spent + amount)}\n\n` +
+                        `Continue anyway?`
+                    );
+                    
+                    if (!confirmed) {
+                        console.log('9. User cancelled');
+                        return;
+                    }
+                    console.log('9. User confirmed, continuing...');
+                } else {
+                    console.log('8. Will NOT exceed, safe to add');
+                }
+            } else {
+                console.log('7. No budget found for this category');
+            }
+        } else {
+            console.log('5. Skipping budget check (reimbursable expense)');
+        }
+        
         try {
-            const expenseData = { id, description, amount, date, category, subcategory, walletId };
+            const expenseData = { 
+                id, description, amount, date, category, subcategory, 
+                walletId, isReimbursable 
+            };
+            
+            console.log('Calling createExpense with data:', expenseData);
             const savedExpense = await this.db.createExpense(expenseData);
+            console.log('Expense saved successfully:', savedExpense);
             
             if (id) {
                 this.state.updateExpense(savedExpense);
@@ -790,10 +1040,36 @@ async checkInitialAuthState() {
             }
             
             this.ui.resetExpenseForm();
+            this.ui.updateAllUI();
+            console.log('=== handleAddExpense END (success) ===');
         } catch (error) {
-            this.showAlert('Error saving expense', 'error');
+            console.error('=== handleAddExpense ERROR ===');
+            console.error('Error object:', error);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+            this.showAlert('Error saving expense: ' + error.message, 'error');
         }
     }
+
+    //v5.2
+    checkBudgetBeforeExpense(categoryName, amount) {
+        const categories = this.state.getCategories();
+        const category = categories.find(c => c.name === categoryName);
+        
+        if (!category) return null;
+        
+        const walletId = this.state.getState().currentWalletId;
+        const budgetStatus = this.state.getCategoryBudgetStatus(category.id, walletId);
+        
+        if (!budgetStatus) return null;
+        
+        const willExceed = (budgetStatus.spent + amount) > budgetStatus.budget;
+        
+        return {
+            ...budgetStatus,
+            willExceed
+        };
+    }    
     
     async handleAddIncome(e) {
         const form = e.target;
@@ -957,6 +1233,11 @@ async checkInitialAuthState() {
                     success = await this.db.delete('categories', id);
                     if (success) this.state.deleteCategory(id);
                     break;
+                //v5.2    
+                case 'budget':
+                    success = await this.db.deleteBudget(id);
+                    if (success) this.state.deleteBudget(id);
+                    break;                    
             }
             
             if (success) {
@@ -1075,11 +1356,15 @@ class UIController {
     }
     
     setupStateListeners() {
+        console.log('Setting up state listeners...');
         // Listen for state changes and update UI
         this.state.subscribe('expenses', () => {
+            console.log('=== expenses changed event fired ===');
             this.updateExpensesUI();
             this.updateOverviewUI();
             this.updateStats();
+            this.updateBudgetsUI();
+            console.log('=== finished updating UI ===');
         });
         this.state.subscribe('incomes', () => {
             this.updateIncomesUI();
@@ -1091,6 +1376,12 @@ class UIController {
             this.updateStats();
         });
         this.state.subscribe('categories', () => this.updateCategoriesUI());
+
+        this.state.subscribe('budgets', () => {
+            console.log('=== budgets changed event fired ===');
+            this.updateBudgetsUI();
+        });
+
         this.state.subscribe('currentWalletId', () => this.updateWalletDependentUI());
         this.state.subscribe('activeTab', () => this.updateActiveTab());
     }
@@ -1247,6 +1538,7 @@ class UIController {
             case 'more':
                 this.updateWalletsUI();
                 this.updateCategoriesUI();
+                this.updateBudgetsUI();
                 break;
         }
     }
@@ -1442,12 +1734,13 @@ class UIController {
                         categoryText += ` › ${transaction.subcategory}`;
                     }
                     
-                    // UPDATED: Category on same line as description, right-aligned
+                    // v5.2
                     item.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
                             <div style="flex: 1; min-width: 0; margin-right: 12px;">
                                 <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
                                     ${transaction.description}
+                                    ${transaction.isReimbursable ? '<span class="reimbursable-badge">💰 Reimbursable</span>' : ''}
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
@@ -1758,11 +2051,13 @@ class UIController {
                 
                 const item = document.createElement('div');
                 item.className = 'expense-item';
+                //v5.2
                 item.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
                         <div style="flex: 1; min-width: 0; margin-right: 12px;">
                             <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
                                 ${expense.description}
+                                ${expense.isReimbursable ? '<span class="reimbursable-badge">💰 Reimbursable</span>' : ''}
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
@@ -2269,6 +2564,69 @@ class UIController {
             container.appendChild(incomeItem);
         });
     }
+
+    //v5.2
+     updateBudgetsUI() {
+        const budgetsList = document.getElementById('budgetsList');
+        if (!budgetsList) return;
+        
+        const budgets = this.state.getBudgets();
+        const walletId = this.state.getState().currentWalletId;
+        
+        if (!walletId || budgets.length === 0) {
+            budgetsList.innerHTML = `
+                <div class="budget-item">
+                    <div class="budget-details">No budgets set</div>
+                </div>
+            `;
+            return;
+        }
+        
+        const walletBudgets = budgets.filter(b => b.wallet_id === walletId);
+        
+        budgetsList.innerHTML = '';
+        
+        walletBudgets.forEach(budget => {
+            const status = this.state.getCategoryBudgetStatus(budget.category_id, walletId);
+            
+            if (!status) return;
+            
+            const budgetItem = document.createElement('div');
+            budgetItem.className = 'budget-item';
+            
+            const progressColor = status.status === 'exceeded' ? '#EF4444' : 
+                                 status.status === 'warning' ? '#F59E0B' : '#10B981';
+            
+            budgetItem.innerHTML = `
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>${budget.categories?.name || 'Category'}</strong>
+                        <span style="color: ${progressColor}; font-weight: 600;">
+                            ${currencyUtils.formatDisplayCurrency(status.spent)} / 
+                            ${currencyUtils.formatDisplayCurrency(status.budget)}
+                        </span>
+                    </div>
+                    <div style="background: #E5E7EB; height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div style="
+                            width: ${Math.min(status.percentage, 100)}%; 
+                            height: 100%; 
+                            background: ${progressColor};
+                            transition: width 0.3s ease;
+                        "></div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--gray); margin-top: 4px;">
+                        ${currencyUtils.formatDisplayCurrency(status.remaining)} remaining
+                        ${status.status === 'exceeded' ? '(over budget)' : ''}
+                    </div>
+                </div>
+                <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('budget', '${budget.id}', '${budget.categories?.name}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            budgetsList.appendChild(budgetItem);
+        });
+    }   
         
     // ==================== WALLET UI ====================
     
@@ -2571,6 +2929,13 @@ class UIController {
     editExpense(id) {
         const expense = this.state.getExpenses().find(e => e.id === id);
         if (!expense) return;
+        
+        console.log('=== editExpense ===');
+        console.log('Full expense object:', expense);
+        console.log('Keys in expense:', Object.keys(expense));
+        console.log('isReimbursable:', expense.isReimbursable);
+        console.log('isReimbursable:', expense.isReimbursable);
+        
         this.openEditModal('expense', expense);
     }
     
@@ -2581,6 +2946,10 @@ class UIController {
     }
 
 openEditModal(type, item) {
+    console.log('=== openEditModal ===');
+    console.log('Type:', type);
+    console.log('Item:', item);
+    console.log('Item keys:', Object.keys(item));    
     const modal = document.getElementById('editTransactionModal');
     const title = document.getElementById('editModalTitle');
     const subtitle = document.getElementById('editModalSubtitle');
@@ -2657,6 +3026,18 @@ openEditModal(type, item) {
     
     document.getElementById('editDate').value = item.date;
     document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
+
+    //v5.2
+    if (type === 'expense') {
+        const checkbox = document.getElementById('editIsReimbursable');
+        console.log('Checkbox element found:', !!checkbox);
+        console.log('Setting checkbox to:', item.isReimbursable, 'or', item.isReimbursable);
+        
+        if (checkbox) {
+            checkbox.checked = item.isReimbursable || item.isReimbursable || false;
+            console.log('Checkbox checked value after setting:', checkbox.checked);
+        }
+    }  
     
     // ✅ Add live formatting for edit amount input
     const editAmountInput = document.getElementById('editAmount');
@@ -2760,7 +3141,29 @@ openEditModal(type, item) {
         
         const deleteMessage = document.getElementById('deleteMessage');
         if (deleteMessage) {
-            deleteMessage.textContent = `Delete "${name}"? This can't be undone.`;
+            let message = '';
+            
+            switch(type) {
+                case 'budget':
+                    message = `Delete the budget limit for "${name}"? This will NOT delete the category itself, only the spending limit.`;
+                    break;
+                case 'category':
+                    message = `Delete category "${name}"? This will also delete all its subcategories. Expenses won't be deleted but will lose their category.`;
+                    break;
+                case 'wallet':
+                    message = `Delete wallet "${name}"? All expenses and income in this wallet will also be deleted.`;
+                    break;
+                case 'expense':
+                    message = `Delete expense "${name}"? This can't be undone.`;
+                    break;
+                case 'income':
+                    message = `Delete income "${name}"? This can't be undone.`;
+                    break;
+                default:
+                    message = `Delete "${name}"? This can't be undone.`;
+            }
+            
+            deleteMessage.textContent = message;
         }
         
         document.getElementById('deleteModal').classList.add('active');
@@ -2844,6 +3247,31 @@ openEditModal(type, item) {
         const incomes = this.state.getIncomes().filter(i => i.walletId === currentWalletId);
         
         return { expenses, incomes };
+    }    
+
+    //v5.2
+    openBudgetModal() {
+        const modal = document.getElementById('budgetModal');
+        const categorySelect = document.getElementById('budgetCategory');
+        
+        // Populate categories
+        categorySelect.innerHTML = '<option value="">Select category</option>';
+        const mainCategories = this.state.getMainCategories();
+        
+        mainCategories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categorySelect.appendChild(option);
+        });
+        
+        // Setup currency formatting
+        const amountInput = document.getElementById('budgetAmount');
+        amountInput.addEventListener('input', function() {
+            this.value = currencyUtils.formatCurrency(this.value);
+        });
+        
+        modal.classList.add('active');
     }    
 }
 

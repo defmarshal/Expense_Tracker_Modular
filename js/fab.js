@@ -94,7 +94,7 @@ export function initFAB() {
             form.style.display = 'none';
         });
 
-        // Show the appropriate form and update modal title
+        // Show the appropriate form and update modal title (v5.2)
         let formId = '';
         switch (action) {
             case 'expense':
@@ -117,6 +117,11 @@ export function initFAB() {
                 modalTitle.textContent = 'Add Category';
                 modalSubtitle.textContent = 'Create new category';
                 break;
+            case 'budget':
+                if (window.finTrack && window.finTrack.ui) {
+                    window.finTrack.ui.openBudgetModal();
+                }
+                return;
         }
 
         const form = document.getElementById(formId);

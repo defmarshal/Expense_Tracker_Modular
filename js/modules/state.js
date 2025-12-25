@@ -17,6 +17,7 @@ class FinTrackState {
       incomes: [],
       wallets: [],
       categories: [],
+      budgets: [],
       
       // UI state
       currentWalletId: null,
@@ -37,9 +38,22 @@ class FinTrackState {
       editingItem: null
     };
     
+    this.subscribers = {};
     this.listeners = new Map();
     this.transactionId = 0;
   }
+
+  notifySubscribers(key) {
+    if (this.subscribers[key]) {
+        this.subscribers[key].forEach(callback => {
+            try {
+                callback(this.state[key]);
+            } catch (error) {
+                console.error(`Error in subscriber callback for ${key}:`, error);
+            }
+        });
+    }
+}
 
   // Getters
   getState() {
@@ -93,7 +107,10 @@ class FinTrackState {
   }
 
   setExpenses(expenses) {
-    return this.setState({ expenses });
+      console.log('setExpenses called with', expenses.length, 'expenses');
+      const result = this.setState({ expenses });
+      console.log('After setState, notifying subscribers...');
+      return result;
   }
 
   setIncomes(incomes) {
@@ -141,8 +158,18 @@ class FinTrackState {
 
   // Data manipulation
   addExpense(expense) {
-    const expenses = [...this.state.expenses, expense];
-    return this.setExpenses(expenses);
+      console.log('=== addExpense called ===');
+      console.log('Adding expense:', expense);
+      console.log('Current expenses count:', this.state.expenses.length);
+      
+      const expenses = [...this.state.expenses, expense];
+      console.log('New expenses count:', expenses.length);
+      console.log('Calling setExpenses...');
+      
+      const result = this.setExpenses(expenses);
+      
+      console.log('After setExpenses, expenses in state:', this.state.expenses.length);
+      return result;
   }
 
   updateExpense(updatedExpense) {
@@ -260,6 +287,92 @@ class FinTrackState {
     return this.state.categories.filter(c => c.type === 'sub' && c.parentId === parentId);
   }
 
+  //V5.2
+  // Add budget methods
+  getBudgets() {
+      return [...this.state.budgets]; // Return copy for immutability
+  }
+
+  setBudgets(budgets) {
+      return this.setState({ budgets }); // Use setState to trigger listeners properly
+  }
+
+  addBudget(budget) {
+      const budgets = [...this.state.budgets, budget];
+      return this.setBudgets(budgets);
+  }
+
+  updateBudget(budget) {
+      const budgets = this.state.budgets.map(b => 
+          b.id === budget.id ? budget : b
+      );
+      return this.setBudgets(budgets);
+  }
+
+  deleteBudget(id) {
+      const budgets = this.state.budgets.filter(b => b.id !== id);
+      return this.setBudgets(budgets);
+  }
+
+  // Calculate budget usage (excluding reimbursable expenses)
+  getCategoryBudgetStatus(categoryId, walletId) {
+      const budget = this.state.budgets.find(
+          b => b.category_id === categoryId && b.wallet_id === walletId
+      );
+      
+      if (!budget) return null;
+      
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      console.log('getCategoryBudgetStatus - Looking for:', {
+          categoryId,
+          walletId,
+          categoryName: this.getCategoryName(categoryId)
+      });
+      
+      // Get expenses for this category (exclude reimbursable ones)
+      const expenses = this.state.expenses.filter(e => {
+          const expenseDate = new Date(e.date);
+          const matches = e.walletId === walletId &&  // ✅ Changed from e.wallet_id
+                e.category === this.getCategoryName(categoryId) &&
+                expenseDate >= startOfMonth &&
+                !e.isReimbursable;  // ✅ Changed from e.is_reimbursable
+          
+          if (matches) {
+              console.log('Found matching expense:', e);
+          }
+          
+          return matches;
+      });
+      
+      console.log('getCategoryBudgetStatus - Found expenses:', expenses.length);
+      
+      const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
+      const remaining = budget.amount - spent;
+      const percentage = (spent / budget.amount) * 100;
+      
+      console.log('getCategoryBudgetStatus - Result:', {
+          budget: budget.amount,
+          spent,
+          remaining,
+          percentage
+      });
+      
+      return {
+          budget: budget.amount,
+          spent,
+          remaining,
+          percentage,
+          status: percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'ok'
+      };
+  }
+
+  getCategoryName(categoryId) {
+      const category = this.state.categories.find(c => c.id === categoryId);
+      return category ? category.name : '';
+  }
+
   // Event system
   subscribe(key, callback) {
     if (!this.listeners.has(key)) {
@@ -328,6 +441,8 @@ class FinTrackState {
       incomes: [],
       wallets: [],
       categories: [],
+      //v5.2
+      budgets: [],
       currentWalletId: null,
       activeTab: 'overview',
       activeModal: null,
@@ -354,3 +469,4 @@ export const getState = () => {
   }
   return stateInstance;
 };
+

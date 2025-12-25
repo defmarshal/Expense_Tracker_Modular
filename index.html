@@ -292,8 +292,9 @@
                     </div>
                 </div>
 
-                <!-- More Tab (Wallets & Categories) -->
+                <!-- v5.2 -->
                 <div id="moreTab" class="tab-content">
+                    <!-- Existing Wallets section -->
                     <div class="wallet-list">
                         <h2 class="form-title">My Wallets</h2>
                         <div id="walletsList">
@@ -303,11 +304,27 @@
                         </div>
                     </div>
 
+                    <!-- Existing Categories section -->
                     <div class="category-list">
                         <h2 class="form-title">Categories</h2>
                         <div id="categoriesList">
                             <div class="category-item">
                                 <div class="category-details">No categories yet</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NEW: Budget Management Section -->
+                    <div class="budget-list">
+                        <h2 class="form-title" style="display: flex; align-items: center; justify-content: space-between;">
+                            <span>Category Budgets</span>
+                            <button class="btn btn-sm btn-primary" onclick="openBudgetModal()">
+                                <i class="fas fa-plus"></i> Add Budget
+                            </button>
+                        </h2>
+                        <div id="budgetsList">
+                            <div class="budget-item">
+                                <div class="budget-details">No budgets set</div>
                             </div>
                         </div>
                     </div>
@@ -558,6 +575,14 @@
                         <input type="date" id="editDate" required style="padding: 10px 12px; font-size: 0.95rem;">
                     </div>
                     
+                    <!-- v5.2 -->
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="editIsReimbursable">
+                            <span>💰 This expense will be reimbursed</span>
+                        </label>
+                    </div>                    
+                    
                     <div class="form-row" style="gap: 0.8rem; margin-top: 1rem;">
                         <button type="button" class="btn btn-outline" onclick="document.getElementById('editTransactionModal').classList.remove('active')" style="padding: 10px; font-size: 0.9rem; flex: 1;">
                             <i class="fas fa-times"></i> Cancel
@@ -593,6 +618,10 @@
                 <i class="fas fa-tags"></i>
                 <span>Add Category</span>
             </button>
+            <button class="fab-menu-item budget" data-action="budget">
+                <i class="fas fa-chart-line"></i>
+                <span>Set Budget</span>
+            </button>            
         </div>
         <button class="fab-button" id="fabButton">
             <i class="fas fa-plus"></i>
@@ -645,6 +674,13 @@
                             </select>
                         </div>
                     </div>
+                    <!-- v5.2 -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="fabExpenseIsReimbursable">
+                            <span>💰 This expense will be reimbursed</span>
+                        </label>
+                    </div>                    
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
                         <i class="fas fa-plus"></i> Add Expense
                     </button>
@@ -815,7 +851,139 @@
                 </form>
             </div>
         </div>
-    </div>      
+    </div>  
+    
+    <div class="modal-overlay" id="budgetModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                <button class="modal-close" id="closeBudgetModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Set Category Budget</h2>
+                <p class="modal-subtitle">Monthly spending limit</p>
+            </div>
+            <div class="modal-body">
+                <form id="budgetForm">
+                    <input type="hidden" id="budgetId">
+                    
+                    <div class="form-group">
+                        <label for="budgetCategory">Category</label>
+                        <select id="budgetCategory" required>
+                            <option value="">Select category</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="budgetAmount">Monthly Limit</label>
+                        <div class="currency-input">
+                            <span class="currency-symbol">Rp</span>
+                            <input type="text" id="budgetAmount" placeholder="0" required>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('budgetModal').classList.remove('active')" style="flex: 1;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
+                            <i class="fas fa-save"></i> Save Budget
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>    
+
+    <div class="modal-overlay" id="budgetWarningModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float 3s ease-in-out infinite;"></div>
+                <button class="modal-close" id="closeBudgetWarning">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px;">
+                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.25); border-radius: 16px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.8rem; color: white;"></i>
+                    </div>
+                </div>
+                <h2 class="modal-title" style="margin: 0; color: white; font-size: 1.5rem;">Budget Exceeded!</h2>
+                <p class="modal-subtitle" style="margin-top: 8px;">This expense will go over your spending limit</p>
+            </div>
+            
+            <div class="modal-body" style="padding: 1.5rem;">
+                <!-- Category Name -->
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="display: inline-block; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); padding: 8px 16px; border-radius: 20px; border: 2px solid #F59E0B;">
+                        <i class="fas fa-tag" style="color: #D97706; margin-right: 6px;"></i>
+                        <span id="budgetWarningCategory" style="font-weight: 700; color: #92400E; font-size: 1rem;"></span>
+                    </div>
+                </div>
+                
+                <!-- Budget Details -->
+                <div style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; border: 2px solid #F59E0B;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="color: #78350F; font-weight: 600; font-size: 0.9rem;">
+                            <i class="fas fa-chart-line" style="margin-right: 6px;"></i>Budget Limit
+                        </span>
+                        <span id="budgetWarningBudget" style="font-weight: 700; color: #92400E; font-size: 1rem;"></span>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="color: #78350F; font-weight: 600; font-size: 0.9rem;">
+                            <i class="fas fa-minus-circle" style="margin-right: 6px;"></i>Already Spent
+                        </span>
+                        <span id="budgetWarningSpent" style="font-weight: 700; color: #D97706; font-size: 1rem;"></span>
+                    </div>
+                    
+                    <div style="height: 1px; background: #F59E0B; margin: 12px 0; opacity: 0.3;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="color: #78350F; font-weight: 600; font-size: 0.9rem;">
+                            <i class="fas fa-plus-circle" style="margin-right: 6px;"></i>This Expense
+                        </span>
+                        <span id="budgetWarningNew" style="font-weight: 700; color: #DC2626; font-size: 1rem;"></span>
+                    </div>
+                    
+                    <div style="height: 2px; background: linear-gradient(90deg, #F59E0B 0%, #EF4444 100%); margin: 12px 0;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #78350F; font-weight: 700; font-size: 1rem;">
+                            <i class="fas fa-equals" style="margin-right: 6px;"></i>Total After
+                        </span>
+                        <span id="budgetWarningTotal" style="font-weight: 800; color: #DC2626; font-size: 1.2rem;"></span>
+                    </div>
+                </div>
+                
+                <!-- Warning Message -->
+                <div style="background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%); border-left: 4px solid #EF4444; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <i class="fas fa-info-circle" style="color: #DC2626; margin-top: 2px; font-size: 1.1rem;"></i>
+                        <div>
+                            <p style="margin: 0; color: #7F1D1D; font-weight: 600; font-size: 0.95rem; line-height: 1.5;">
+                                You'll be <span id="budgetWarningOver" style="font-weight: 800; color: #DC2626;"></span> over budget for this month.
+                            </p>
+                            <p style="margin: 6px 0 0 0; color: #991B1B; font-size: 0.85rem; line-height: 1.4;">
+                                💡 <strong>Tip:</strong> Check the "💰 Reimbursable" box if this expense will be reimbursed!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 12px; margin-top: 1.5rem;">
+                    <button class="btn btn-outline" id="cancelBudgetWarning" style="flex: 1; padding: 14px; font-size: 0.95rem;">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button class="btn" id="confirmBudgetWarning" style="flex: 1; padding: 14px; font-size: 0.95rem; background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%); color: white;">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Add Anyway</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
 
@@ -942,9 +1110,16 @@
                     window.finTrack.ui.editCategory(id);
                 }
             };
+            
+            // v5.2
+            window.openBudgetModal = function() {
+                if (window.finTrack && window.finTrack.ui) {
+                    window.finTrack.ui.openBudgetModal();
+                }
+            };
+
         });  
     </script>
-
 
 </body>
 
