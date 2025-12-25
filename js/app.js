@@ -707,50 +707,55 @@ class FinTrackApp {
 
     //v5.2
     async handleFABAddExpense(e) {
-        const description = document.getElementById('fabExpenseDescription').value;
-        const amount = currencyUtils.parseCurrency(document.getElementById('fabExpenseAmount').value);
-        const date = document.getElementById('fabExpenseDate').value;
-        const category = document.getElementById('fabExpenseCategory').value;
-        const subcategory = document.getElementById('fabExpenseSubcategory').value;
+        // Prevent duplicate submissions
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        if (submitBtn.disabled) return;
         
-        const checkboxElement = document.getElementById('fabExpenseIsReimbursable');
-        const isReimbursable = checkboxElement?.checked || false;
-        
-        const walletId = this.state.getState().currentWalletId;
-        
-        if (!walletId) {
-            this.showAlert('Select a wallet first', 'error');
-            return;
-        }
-        
-        if (amount <= 0) {
-            this.showAlert('Enter a valid amount', 'error');
-            return;
-        }
-        
-        // 👇 ADD THIS BUDGET CHECK SECTION HERE
-        // Check budget only if NOT reimbursable
-        if (!isReimbursable) {
-            console.log('FAB: Checking budget for category:', category);
-            const budgetStatus = this.checkBudgetBeforeExpense(category, amount);
-            console.log('FAB: Budget status:', budgetStatus);
-            
-            if (budgetStatus && budgetStatus.willExceed) {
-                const confirmed = await this.showBudgetWarning(category, {
-                budget: budgetStatus.budget,
-                spent: budgetStatus.spent,
-                newExpense: amount
-            });
-                
-                if (!confirmed) {
-                    console.log('FAB: User cancelled due to budget warning');
-                    return;
-                }
-            }
-        }
-        // 👆 END OF BUDGET CHECK
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
         
         try {
+            const description = document.getElementById('fabExpenseDescription').value;
+            const amount = currencyUtils.parseCurrency(document.getElementById('fabExpenseAmount').value);
+            const date = document.getElementById('fabExpenseDate').value;
+            const category = document.getElementById('fabExpenseCategory').value;
+            const subcategory = document.getElementById('fabExpenseSubcategory').value;
+            
+            const checkboxElement = document.getElementById('fabExpenseIsReimbursable');
+            const isReimbursable = checkboxElement?.checked || false;
+            
+            const walletId = this.state.getState().currentWalletId;
+            
+            if (!walletId) {
+                this.showAlert('Select a wallet first', 'error');
+                return;
+            }
+            
+            if (amount <= 0) {
+                this.showAlert('Enter a valid amount', 'error');
+                return;
+            }
+            
+            // Check budget only if NOT reimbursable
+            if (!isReimbursable) {
+                console.log('FAB: Checking budget for category:', category);
+                const budgetStatus = this.checkBudgetBeforeExpense(category, amount);
+                console.log('FAB: Budget status:', budgetStatus);
+                
+                if (budgetStatus && budgetStatus.willExceed) {
+                    const confirmed = await this.showBudgetWarning(category, {
+                        budget: budgetStatus.budget,
+                        spent: budgetStatus.spent,
+                        newExpense: amount
+                    });
+                    
+                    if (!confirmed) {
+                        console.log('FAB: User cancelled due to budget warning');
+                        return;
+                    }
+                }
+            }
+            
             const expenseData = { 
                 description, amount, date, category, subcategory, 
                 walletId, isReimbursable 
@@ -768,6 +773,10 @@ class FinTrackApp {
         } catch (error) {
             console.error('Error saving expense:', error);
             this.showAlert('Error saving expense: ' + error.message, 'error');
+        } finally {
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Expense';
         }
     }
 
@@ -1694,13 +1703,18 @@ class UIController {
             const dayHeader = document.createElement('div');
             dayHeader.className = 'day-header';
             dayHeader.innerHTML = `
-                <i class="fas fa-calendar"></i>
-                <span class="day-header-text">${dayGroup.label}</span>
-                <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
-                    ${dayIncome > 0 ? `<span style="color: var(--success); font-size: 0.85rem; font-weight: 600;">+${currencyUtils.formatDisplayCurrency(dayIncome)}</span>` : ''}
-                    ${dayExpenses > 0 ? `<span style="color: var(--danger); font-size: 0.85rem; font-weight: 600;">-${currencyUtils.formatDisplayCurrency(dayExpenses)}</span>` : ''}
-                    <i class="fas fa-chevron-down toggle-icon"></i>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-calendar"></i>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span class="day-header-text" style="font-weight: 600; font-size: 0.9rem;">${dayGroup.label}</span>
+                        ${dayGroup.weekday ? `<span style="font-size: 0.75rem; color: var(--gray); opacity: 0.8;">${dayGroup.weekday}</span>` : ''}
+                    </div>
                 </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-left: auto; margin-right: 8px;">
+                    ${dayIncome > 0 ? `<span style="color: var(--success); font-size: 0.8rem; font-weight: 600;">+${currencyUtils.formatDisplayCurrency(dayIncome)}</span>` : ''}
+                    ${dayExpenses > 0 ? `<span style="color: var(--danger); font-size: 0.8rem; font-weight: 600;">-${currencyUtils.formatDisplayCurrency(dayExpenses)}</span>` : ''}
+                </div>
+                <i class="fas fa-chevron-down toggle-icon"></i>
             `;
             
             // Create content container
@@ -2013,8 +2027,16 @@ class UIController {
             dayHeader.className = 'day-header';
             const dayTotal = dayGroup.transactions.reduce((sum, t) => sum + t.amount, 0);
             dayHeader.innerHTML = `
-                <i class="fas fa-calendar"></i>
-                <span class="day-header-text">${dayGroup.label} • ${currencyUtils.formatDisplayCurrency(dayTotal)}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-calendar"></i>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span class="day-header-text" style="font-weight: 600; font-size: 0.9rem;">${dayGroup.label}</span>
+                        ${dayGroup.weekday ? `<span style="font-size: 0.75rem; color: var(--gray); opacity: 0.8;">${dayGroup.weekday}</span>` : ''}
+                    </div>
+                </div>
+                <span style="color: var(--danger); font-size: 0.85rem; font-weight: 600; margin-left: auto; margin-right: 8px;">
+                    ${currencyUtils.formatDisplayCurrency(dayTotal)}
+                </span>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             `;
             
@@ -2123,21 +2145,23 @@ class UIController {
             .map(group => {
                 const groupDate = new Date(group.date.getFullYear(), group.date.getMonth(), group.date.getDate());
                 let label;
+                let weekday = null;
                 
                 if (groupDate.getTime() === today.getTime()) {
                     label = 'Today';
                 } else if (groupDate.getTime() === yesterday.getTime()) {
                     label = 'Yesterday';
-                } else if (now - groupDate < 7 * 24 * 60 * 60 * 1000) {
-                    // Within last 7 days
-                    label = group.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
                 } else {
+                    // Format: Dec 17, 2025
                     label = group.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    // Add weekday separately
+                    weekday = group.date.toLocaleDateString('en-US', { weekday: 'long' });
                 }
                 
                 return {
                     ...group,
-                    label
+                    label,
+                    weekday
                 };
             });
     }    
@@ -2438,8 +2462,16 @@ class UIController {
             dayHeader.className = 'day-header';
             const dayTotal = dayGroup.transactions.reduce((sum, t) => sum + t.amount, 0);
             dayHeader.innerHTML = `
-                <i class="fas fa-calendar"></i>
-                <span class="day-header-text">${dayGroup.label} • ${currencyUtils.formatDisplayCurrency(dayTotal)}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-calendar"></i>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span class="day-header-text" style="font-weight: 600; font-size: 0.9rem;">${dayGroup.label}</span>
+                        ${dayGroup.weekday ? `<span style="font-size: 0.75rem; color: var(--gray); opacity: 0.8;">${dayGroup.weekday}</span>` : ''}
+                    </div>
+                </div>
+                <span style="color: var(--success); font-size: 0.85rem; font-weight: 600; margin-left: auto; margin-right: 8px;">
+                    ${currencyUtils.formatDisplayCurrency(dayTotal)}
+                </span>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             `;
             
