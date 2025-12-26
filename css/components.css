@@ -820,3 +820,282 @@ input:focus, select:focus, textarea:focus {
     color: #EF4444;
     font-weight: 600;
 }
+
+@media (max-width: 768px) {
+    #editTransactionModal .modal {
+        max-width: calc(100% - 1.5rem);
+        max-height: 90vh;
+    }
+    
+    #editTransactionModal .modal-header {
+        padding: 0.8rem !important;
+    }
+    
+    /* Hide decorative floating element */
+    #editTransactionModal .modal-header > div:first-of-type {
+        display: none !important;
+    }
+    
+    /* Smaller icon container */
+    #editTransactionModal .modal-header > div:nth-of-type(2) > div:first-child {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    #editTransactionModal .modal-header > div:nth-of-type(2) > div:first-child i {
+        font-size: 1rem !important;
+    }
+    
+    #editTransactionModal h2.modal-title {
+        font-size: 1.1rem !important;
+    }
+    
+    #editTransactionModal .modal-subtitle {
+        font-size: 0.8rem !important;
+        margin-bottom: 0 !important;
+    }
+    
+    #editTransactionModal .modal-body {
+        padding: 0.8rem !important;
+        max-height: calc(90vh - 100px);
+        overflow-y: auto;
+    }
+    
+    .compact-form .form-group {
+        margin-bottom: 0.6rem !important;
+    }
+    
+    .compact-form label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .compact-form input,
+    .compact-form select {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.9rem !important;
+        min-height: 38px !important;
+    }
+    
+    .compact-form .form-row {
+        flex-direction: column;
+        gap: 0.6rem !important;
+    }
+    
+    #editTransactionModal .btn {
+        padding: 0.6rem !important;
+        min-height: 42px;
+        font-size: 0.85rem !important;
+    }
+    
+    .compact-form .checkbox-label {
+        font-size: 0.85rem !important;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+    #editTransactionModal .modal {
+        max-width: 100%;
+        max-height: 95vh;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    #editTransactionModal .modal-header {
+        padding: 0.7rem !important;
+    }
+    
+    #editTransactionModal .modal-body {
+        max-height: calc(95vh - 90px);
+        padding: 0.7rem !important;
+    }
+    
+    .compact-form .form-group {
+        margin-bottom: 0.5rem !important;
+    }
+}
+
+/* Budget Warning Modal - Compact for Mobile */
+@media (max-width: 768px) {
+    #budgetWarningModal .modal {
+        max-width: calc(100% - 1.5rem);
+        max-height: 90vh;
+    }
+    
+    #budgetWarningModal .modal-header {
+        padding: 0.8rem !important;
+    }
+    
+    /* Hide decorative floating element */
+    #budgetWarningModal .modal-header > div:first-of-type {
+        display: none !important;
+    }
+    
+    /* Smaller icon container */
+    #budgetWarningModal .modal-header > div:nth-of-type(2) > div:first-child {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    #budgetWarningModal .modal-header > div:nth-of-type(2) > div:first-child i {
+        font-size: 1.2rem !important;
+    }
+    
+    #budgetWarningModal h2.modal-title {
+        font-size: 1.15rem !important;
+    }
+    
+    #budgetWarningModal .modal-subtitle {
+        font-size: 0.8rem !important;
+        margin-top: 0.25rem !important;
+    }
+    
+    #budgetWarningModal .modal-body {
+        padding: 0.8rem !important;
+        max-height: calc(90vh - 100px);
+        overflow-y: auto;
+    }
+    
+    /* Compact all content inside */
+    #budgetWarningModal .modal-body > div {
+        margin-bottom: 0.8rem !important;
+    }
+    
+    #budgetWarningModal .modal-body > div:last-child {
+        margin-bottom: 0 !important;
+        gap: 0.6rem !important;
+    }
+    
+    /* Compact category badge */
+    #budgetWarningModal .modal-body > div:first-child > div {
+        padding: 4px 10px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* Compact budget details */
+    #budgetWarningModal .modal-body > div:nth-child(2) {
+        padding: 0.8rem !important;
+    }
+    
+    #budgetWarningModal .modal-body > div:nth-child(2) > div {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    #budgetWarningModal .modal-body > div:nth-child(2) span,
+    #budgetWarningModal .modal-body > div:nth-child(2) strong {
+        font-size: 0.85rem !important;
+    }
+    
+    /* Compact warning message */
+    #budgetWarningModal .modal-body > div:nth-child(3) {
+        padding: 0.7rem !important;
+    }
+    
+    #budgetWarningModal .modal-body > div:nth-child(3) p {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
+    }
+    
+    #budgetWarningModal .modal-body > div:nth-child(3) p:last-child {
+        margin-top: 0.3rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Compact buttons */
+    #budgetWarningModal .btn {
+        padding: 0.6rem !important;
+        min-height: 42px !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #budgetWarningModal .modal {
+        max-width: 100%;
+        max-height: 95vh;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    #budgetWarningModal .modal-header {
+        padding: 0.7rem !important;
+    }
+    
+    #budgetWarningModal .modal-body {
+        max-height: calc(95vh - 85px);
+        padding: 0.7rem !important;
+    }
+}
+
+/* Edit Wallet & Category Modals - Compact for Mobile */
+@media (max-width: 768px) {
+    #editWalletModal .modal,
+    #editCategoryModal .modal {
+        max-width: calc(100% - 1.5rem);
+        max-height: 90vh;
+    }
+    
+    #editWalletModal .modal-header,
+    #editCategoryModal .modal-header {
+        padding: 0.8rem !important;
+    }
+    
+    #editWalletModal .modal-header > div:first-of-type,
+    #editCategoryModal .modal-header > div:first-of-type {
+        display: none !important;
+    }
+    
+    #editWalletModal h2.modal-title,
+    #editCategoryModal h2.modal-title {
+        font-size: 1.1rem !important;
+    }
+    
+    #editWalletModal .modal-subtitle,
+    #editCategoryModal .modal-subtitle {
+        font-size: 0.8rem !important;
+    }
+    
+    #editWalletModal .modal-body,
+    #editCategoryModal .modal-body {
+        padding: 0.8rem !important;
+    }
+    
+    #editWalletModal .form-group,
+    #editCategoryModal .form-group {
+        margin-bottom: 0.8rem !important;
+    }
+    
+    #editWalletModal label,
+    #editCategoryModal label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    #editWalletModal input,
+    #editWalletModal select,
+    #editCategoryModal input,
+    #editCategoryModal select {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.9rem !important;
+        min-height: 38px !important;
+    }
+    
+    #editWalletModal .btn,
+    #editCategoryModal .btn {
+        padding: 0.6rem !important;
+        min-height: 42px;
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #editWalletModal .modal,
+    #editCategoryModal .modal {
+        max-width: 100%;
+        max-height: 95vh;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+    }
+}

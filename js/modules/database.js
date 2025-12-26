@@ -146,10 +146,7 @@ class DatabaseService {
       try {
           // Use this.user instead of supabase.auth.getUser()
           if (!this.user) throw new Error('Not authenticated');
-          
-          console.log('createExpense - Input:', expenseData);
-          console.log('createExpense - User ID:', this.user.id);
-          
+
           const expenseRecord = {
               user_id: this.user.id,
               wallet_id: expenseData.walletId,
@@ -162,11 +159,8 @@ class DatabaseService {
               reimbursed: false
           };
           
-          console.log('createExpense - Record to save:', expenseRecord);
-          
           if (expenseData.id) {
               // Update existing expense
-              console.log('createExpense - Updating expense:', expenseData.id);
               const { data, error } = await this.supabase
                   .from('expenses')
                   .update({
@@ -187,12 +181,9 @@ class DatabaseService {
                   console.error('createExpense - Update error:', error);
                   throw error;
               }
-              
-              console.log('createExpense - Updated successfully:', data);
               return this.toCamelCase(data);
           } else {
               // Insert new expense
-              console.log('createExpense - Inserting new expense');
               const { data, error } = await this.supabase
                   .from('expenses')
                   .insert(expenseRecord)
@@ -203,8 +194,6 @@ class DatabaseService {
                   console.error('createExpense - Insert error:', error);
                   throw error;
               }
-              
-              console.log('createExpense - Inserted successfully:', data);
               return this.toCamelCase(data);
           }
       } catch (error) {
@@ -455,9 +444,6 @@ class DatabaseService {
           // Use the stored user instead of calling getUser()
           if (!this.user) throw new Error('Not authenticated');
           
-          console.log('createBudget - Input:', budgetData);
-          console.log('createBudget - User ID:', this.user.id);
-          
           // Check for existing budget first
           const { data: existingBudget, error: checkError } = await this.supabase
               .from('budgets')
@@ -466,8 +452,6 @@ class DatabaseService {
               .eq('wallet_id', budgetData.walletId)
               .eq('category_id', budgetData.categoryId)
               .maybeSingle(); // Use maybeSingle() instead of single() to avoid error if not found
-          
-          console.log('createBudget - Existing budget:', existingBudget);
           
           if (checkError && checkError.code !== 'PGRST116') {
               console.error('createBudget - Check error:', checkError);
@@ -484,13 +468,9 @@ class DatabaseService {
               updated_at: new Date().toISOString()
           };
           
-          console.log('createBudget - Record to save:', budgetRecord);
-          
           let result;
           
           if (existingBudget) {
-              // Update existing budget
-              console.log('createBudget - Updating existing budget:', existingBudget.id);
               const { data, error } = await this.supabase
                   .from('budgets')
                   .update({
@@ -509,8 +489,6 @@ class DatabaseService {
               }
               result = data;
           } else {
-              // Insert new budget
-              console.log('createBudget - Inserting new budget');
               const { data, error } = await this.supabase
                   .from('budgets')
                   .insert(budgetRecord)
@@ -523,8 +501,6 @@ class DatabaseService {
               }
               result = data;
           }
-          
-          console.log('createBudget - Success:', result);
           return result;
           
       } catch (error) {
@@ -547,8 +523,6 @@ class DatabaseService {
               console.error('getBudgets - Error:', error);
               throw error;
           }
-          
-          console.log('getBudgets - Success:', data);
           return data || [];
       } catch (error) {
           console.error('getBudgets - Fatal error:', error);
@@ -571,8 +545,6 @@ class DatabaseService {
               console.error('deleteBudget - Error:', error);
               throw error;
           }
-          
-          console.log('deleteBudget - Success');
           return true;
       } catch (error) {
           console.error('deleteBudget - Fatal error:', error);

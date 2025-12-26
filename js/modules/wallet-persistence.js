@@ -20,14 +20,12 @@ class WalletPersistence {
             // 1. Check localStorage first
             const storedWalletId = this.getStoredWalletId();
             if (storedWalletId && wallets.some(w => w.id === storedWalletId)) {
-                console.log('Using wallet from localStorage:', storedWalletId);
                 return storedWalletId;
             }
 
             // 2. Check for default wallet in the wallets array (is_default field)
             const defaultWallet = wallets.find(w => w.isDefault === true);
             if (defaultWallet) {
-                console.log('Using default wallet from database:', defaultWallet.id);
                 // Sync to localStorage
                 this.saveWalletId(defaultWallet.id);
                 return defaultWallet.id;
@@ -36,7 +34,6 @@ class WalletPersistence {
             // 3. Fallback to first wallet
             if (wallets.length > 0) {
                 const firstWalletId = wallets[0].id;
-                console.log('Using first wallet as fallback:', firstWalletId);
                 this.saveWalletId(firstWalletId);
                 return firstWalletId;
             }
@@ -69,7 +66,6 @@ class WalletPersistence {
         try {
             if (walletId) {
                 localStorage.setItem(this.STORAGE_KEY, walletId);
-                console.log('Saved wallet to localStorage:', walletId);
             } else {
                 localStorage.removeItem(this.STORAGE_KEY);
             }
@@ -114,7 +110,6 @@ class WalletPersistence {
 
             // Also update localStorage
             this.saveWalletId(walletId);
-            console.log('Updated default wallet in database and localStorage:', walletId);
             return true;
         } catch (error) {
             console.error('Error in setDatabaseDefaultWallet:', error);
@@ -128,7 +123,6 @@ class WalletPersistence {
     clearStoredWallet() {
         try {
             localStorage.removeItem(this.STORAGE_KEY);
-            console.log('Cleared stored wallet from localStorage');
         } catch (error) {
             console.error('Error clearing localStorage:', error);
         }
@@ -140,7 +134,6 @@ class WalletPersistence {
     setupCrossTabSync(callback) {
         window.addEventListener('storage', (e) => {
             if (e.key === this.STORAGE_KEY && e.newValue !== e.oldValue) {
-                console.log('Wallet changed in another tab:', e.newValue);
                 callback(e.newValue);
             }
         });

@@ -1,6 +1,5 @@
 // FAB (Floating Action Button) Module
 export function initFAB() {
-    console.log('Initializing FAB...');
     
     const fabButton = document.getElementById('fabButton');
     const fabMenu = document.getElementById('fabMenu');
@@ -15,8 +14,6 @@ export function initFAB() {
         });
         return;
     }
-    
-    console.log('FAB elements found, setting up listeners...');
 
     // Toggle FAB menu
     function toggleFAB(show) {
@@ -44,7 +41,6 @@ export function initFAB() {
 
     // FAB button click
     fabButton.addEventListener('click', (e) => {
-        console.log('FAB button clicked');
         e.stopPropagation();
         toggleFAB();
     });
@@ -57,7 +53,6 @@ export function initFAB() {
         item.addEventListener('click', (e) => {
             e.stopPropagation();
             const action = item.dataset.action;
-            console.log('FAB menu item clicked:', action);
             
             // Close FAB menu
             closeFAB();
@@ -78,7 +73,6 @@ export function initFAB() {
 
     // Handle FAB actions - Open modal instead
     function handleFABAction(action) {
-        console.log('Handling FAB action:', action);
         
         const modal = document.getElementById('fabQuickAddModal');
         const modalTitle = document.getElementById('fabModalTitle');
@@ -205,14 +199,9 @@ export function initFAB() {
             }, 4000);
         }
     }, 2000);
-
-    console.log('FAB initialized successfully');
 }
 
-// Auto-initialize if DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initFAB);
 } else {
-    // DOM already loaded, but don't auto-init since we're using module import
-    console.log('FAB module loaded, waiting for manual init');
 }

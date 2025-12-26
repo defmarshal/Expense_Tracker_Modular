@@ -90,10 +90,8 @@ class FinTrackState {
 
   // Setters with immutability
   setState(updates) {
-      console.log('State: setState called with updates:', updates);
       const oldState = { ...this.state };
       this.state = { ...this.state, ...updates };
-      console.log('State: calling notifyListeners');
       this.notifyListeners(oldState, this.state);
       return this.state;
   }
@@ -107,9 +105,7 @@ class FinTrackState {
   }
 
   setExpenses(expenses) {
-      console.log('setExpenses called with', expenses.length, 'expenses');
       const result = this.setState({ expenses });
-      console.log('After setState, notifying subscribers...');
       return result;
   }
 
@@ -137,9 +133,7 @@ class FinTrackState {
   }
 
   setActiveTab(tab) {
-      console.log('State: setActiveTab called, changing from', this.state.activeTab, 'to', tab);
       const result = this.setState({ activeTab: tab });
-      console.log('State: activeTab is now', this.state.activeTab);
       return result;
   }
 
@@ -158,17 +152,11 @@ class FinTrackState {
 
   // Data manipulation
   addExpense(expense) {
-      console.log('=== addExpense called ===');
-      console.log('Adding expense:', expense);
-      console.log('Current expenses count:', this.state.expenses.length);
       
       const expenses = [...this.state.expenses, expense];
-      console.log('New expenses count:', expenses.length);
-      console.log('Calling setExpenses...');
       
       const result = this.setExpenses(expenses);
       
-      console.log('After setExpenses, expenses in state:', this.state.expenses.length);
       return result;
   }
 
@@ -314,7 +302,7 @@ class FinTrackState {
       return this.setBudgets(budgets);
   }
 
-  // Calculate budget usage (excluding reimbursable expenses)
+  // Budget period: 26th of previous month to 25th of current month
   getCategoryBudgetStatus(categoryId, walletId) {
       const budget = this.state.budgets.find(
           b => b.category_id === categoryId && b.wallet_id === walletId
@@ -323,42 +311,36 @@ class FinTrackState {
       if (!budget) return null;
       
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentDay = now.getDate();
       
-      console.log('getCategoryBudgetStatus - Looking for:', {
-          categoryId,
-          walletId,
-          categoryName: this.getCategoryName(categoryId)
-      });
+      // Calculate budget period: 26th prev month to 25th current month
+      let startDate, endDate;
       
+      if (currentDay >= 26) {
+          // We're in the period that started on the 26th of this month
+          startDate = new Date(now.getFullYear(), now.getMonth(), 26, 0, 0, 0, 0);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 25, 23, 59, 59, 999);
+      } else {
+          // We're in the period that started on the 26th of last month
+          startDate = new Date(now.getFullYear(), now.getMonth() - 1, 26, 0, 0, 0, 0);
+          endDate = new Date(now.getFullYear(), now.getMonth(), 25, 23, 59, 59, 999);
+      }
+       
       // Get expenses for this category (exclude reimbursable ones)
       const expenses = this.state.expenses.filter(e => {
           const expenseDate = new Date(e.date);
-          const matches = e.walletId === walletId &&  // ✅ Changed from e.wallet_id
+          const matches = e.walletId === walletId &&
                 e.category === this.getCategoryName(categoryId) &&
-                expenseDate >= startOfMonth &&
-                !e.isReimbursable;  // ✅ Changed from e.is_reimbursable
-          
-          if (matches) {
-              console.log('Found matching expense:', e);
-          }
-          
+                expenseDate >= startDate &&
+                expenseDate <= endDate &&
+                !e.isReimbursable;
           return matches;
       });
-      
-      console.log('getCategoryBudgetStatus - Found expenses:', expenses.length);
       
       const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
       const remaining = budget.amount - spent;
       const percentage = (spent / budget.amount) * 100;
-      
-      console.log('getCategoryBudgetStatus - Result:', {
-          budget: budget.amount,
-          spent,
-          remaining,
-          percentage
-      });
-      
+
       return {
           budget: budget.amount,
           spent,
@@ -393,18 +375,13 @@ class FinTrackState {
   }
 
   notifyListeners(oldState, newState) {
-      console.log('State: notifyListeners called');
       // Notify all listeners
       this.listeners.forEach((callbacks, key) => {
         const oldValue = oldState[key];
         const newValue = newState[key];
-        
-        console.log(`Checking key: ${key}, old:`, oldValue, 'new:', newValue, 'changed:', oldValue !== newValue);
-        
+
         if (oldValue !== newValue) {
-          console.log(`Notifying ${callbacks.size} listeners for key: ${key}`);
           callbacks.forEach(callback => {
-            console.log('Calling callback for', key);
             callback(newValue, oldValue);
           });
         }

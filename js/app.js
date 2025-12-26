@@ -46,8 +46,6 @@ class FinTrackApp {
     
     async init() {
         try {
-            console.log('Initializing FinTrack App...');
-            
             // Initialize core services
             this.state = getState();
             this.db = getDatabase(this.supabase);
@@ -89,7 +87,6 @@ class FinTrackApp {
             // Check current auth state
             await this.checkInitialAuthState();
             
-            console.log('FinTrack App initialized successfully');
         } catch (error) {
             console.error('Error initializing app:', error);
             this.showAlert('Failed to initialize app. Please refresh.', 'error');
@@ -100,7 +97,6 @@ class FinTrackApp {
         if (!this.walletPersistence) return;
         
         this.walletPersistence.setupCrossTabSync((newWalletId) => {
-            console.log('Wallet changed in another tab:', newWalletId);
             
             // Update state
             this.state.setCurrentWallet(newWalletId);
@@ -228,22 +224,18 @@ class FinTrackApp {
     setupAuthListeners() {
         // Subscribe to auth events
         this.auth.subscribe('signedIn', () => {
-            console.log('App: User signed in');
             this.showDashboard();
             this.showAlert('Welcome!', 'success');
         });
         
         this.auth.subscribe('signedOut', () => {
-            console.log('App: User signed out');
             this.showLandingPage();
         });
         
         this.auth.subscribe('dataLoaded', (data) => {
-            console.log('App: Data loaded event received:', data);
             
             // Force update all UI
             if (this.ui) {
-                console.log('App: Calling updateAllUI');
                 this.ui.updateAllUI();
             }
         });
@@ -318,10 +310,6 @@ class FinTrackApp {
                 
                 // Get reimbursable status
                 const isReimbursable = document.getElementById('editIsReimbursable')?.checked || false;
-                
-                console.log('=== EDIT TRANSACTION ===');
-                console.log('Type:', type);
-                console.log('New isReimbursable value:', isReimbursable);
 
                 const updateData = {
                     description: description,
@@ -344,22 +332,15 @@ class FinTrackApp {
                 if (type === 'expense') {
                     // Get the original expense to check if reimbursable status changed
                     const originalExpense = this.state.getExpenses().find(e => e.id === id);
-                    console.log('Original expense:', originalExpense);
-                    console.log('Original isReimbursable:', originalExpense?.isReimbursable);
                     
                     // Check if we're changing FROM reimbursable TO non-reimbursable
                     const wasReimbursable = originalExpense?.isReimbursable || false;
                     const isNowReimbursable = isReimbursable;
                     
-                    console.log('Was reimbursable:', wasReimbursable);
-                    console.log('Is now reimbursable:', isNowReimbursable);
-                    
                     // If changing from reimbursable to non-reimbursable, check budget
                     if (wasReimbursable && !isNowReimbursable) {
-                        console.log('Changed from reimbursable to non-reimbursable - checking budget...');
                         
                         const budgetStatus = this.checkBudgetBeforeExpense(categoryValue, amount);
-                        console.log('Budget status:', budgetStatus);
                         
                         if (budgetStatus && budgetStatus.willExceed) {
                             const confirmed = await this.showBudgetWarning(categoryValue, {
@@ -369,15 +350,12 @@ class FinTrackApp {
                             });
                             
                             if (!confirmed) {
-                                console.log('User cancelled due to budget warning');
                                 return;
                             }
                         }
                     }
                 }
                 // 👆 END OF BUDGET CHECK
-                
-                console.log('Update data being sent:', updateData);
 
                 try {
                     // Show loading
@@ -387,7 +365,6 @@ class FinTrackApp {
 
                     if (type === 'expense') {
                         const updated = await this.db.updateExpense(id, updateData);
-                        console.log('Updated expense from DB:', updated);
                         this.state.updateExpense(updated);
                     } else {
                         const updated = await this.db.updateIncome(id, updateData);
@@ -489,17 +466,12 @@ class FinTrackApp {
         const amount = currencyUtils.parseCurrency(document.getElementById('budgetAmount').value);
         const walletId = this.state.getState().currentWalletId;
         
-        console.log('=== handleAddBudget START ===');
-        console.log('Budget data:', { categoryId, amount, walletId });
-        
         if (!walletId) {
-            console.log('Error: No wallet selected');
             this.showAlert('Select a wallet first', 'error');
             return;
         }
         
         if (amount <= 0) {
-            console.log('Error: Invalid amount');
             this.showAlert('Enter a valid amount', 'error');
             return;
         }
@@ -510,21 +482,15 @@ class FinTrackApp {
                 amount: amount, 
                 walletId: walletId 
             };
-            
-            console.log('Calling createBudget with data:', budgetData);
             const savedBudget = await this.db.createBudget(budgetData);
-            console.log('Budget saved successfully:', savedBudget);
-            
             // ✅ Check if it's an update or new budget
             const existingBudgetIndex = this.state.getBudgets().findIndex(
                 b => b.id === savedBudget.id
             );
             
             if (existingBudgetIndex >= 0) {
-                console.log('Updating existing budget in state');
                 this.state.updateBudget(savedBudget);
             } else {
-                console.log('Adding new budget to state');
                 this.state.addBudget(savedBudget);
             }
             
@@ -532,7 +498,6 @@ class FinTrackApp {
             
             document.getElementById('budgetModal').classList.remove('active');
             document.getElementById('budgetForm').reset();
-            console.log('=== handleAddBudget END (success) ===');
         } catch (error) {
             console.error('=== handleAddBudget ERROR ===');
             console.error('Error object:', error);
@@ -738,9 +703,7 @@ class FinTrackApp {
             
             // Check budget only if NOT reimbursable
             if (!isReimbursable) {
-                console.log('FAB: Checking budget for category:', category);
                 const budgetStatus = this.checkBudgetBeforeExpense(category, amount);
-                console.log('FAB: Budget status:', budgetStatus);
                 
                 if (budgetStatus && budgetStatus.willExceed) {
                     const confirmed = await this.showBudgetWarning(category, {
@@ -750,7 +713,6 @@ class FinTrackApp {
                     });
                     
                     if (!confirmed) {
-                        console.log('FAB: User cancelled due to budget warning');
                         return;
                     }
                 }
@@ -760,10 +722,8 @@ class FinTrackApp {
                 description, amount, date, category, subcategory, 
                 walletId, isReimbursable 
             };
-            console.log('FAB: Expense data being sent:', expenseData);
             
             const savedExpense = await this.db.createExpense(expenseData);
-            console.log('FAB: Saved expense from DB:', savedExpense);
             
             this.state.addExpense(savedExpense);
             this.showAlert('Expense added', 'success');
@@ -861,7 +821,6 @@ class FinTrackApp {
     
 async checkInitialAuthState() {
     const authState = await this.auth.checkAuth();
-    console.log('Initial auth state:', authState);
     
     if (authState.isAuthenticated) {
         this.showDashboard();
@@ -973,13 +932,7 @@ async checkInitialAuthState() {
         const subcategory = document.getElementById('expenseSubcategory').value;
         const isReimbursable = document.getElementById('expenseIsReimbursable')?.checked || false;
         const walletId = this.state.getState().currentWalletId;
-        
-        console.log('=== handleAddExpense DEBUG ===');
-        console.log('1. Category:', category);
-        console.log('2. Amount:', amount);
-        console.log('3. isReimbursable:', isReimbursable);
-        console.log('4. WalletId:', walletId);
-        
+
         if (!walletId) {
             this.showAlert('Select a wallet first', 'error');
             return;
@@ -992,20 +945,11 @@ async checkInitialAuthState() {
         
         // Check budget only if NOT reimbursable
         if (!isReimbursable) {
-            console.log('5. Checking budget (not reimbursable)...');
             const budgetStatus = this.checkBudgetBeforeExpense(category, amount);
-            console.log('6. Budget status returned:', budgetStatus);
             
             if (budgetStatus) {
-                console.log('7. Budget found!');
-                console.log('   - Budget amount:', budgetStatus.budget);
-                console.log('   - Already spent:', budgetStatus.spent);
-                console.log('   - This expense:', amount);
-                console.log('   - Total after:', budgetStatus.spent + amount);
-                console.log('   - Will exceed?', budgetStatus.willExceed);
-                
+          
                 if (budgetStatus.willExceed) {
-                    console.log('8. SHOULD SHOW WARNING NOW!');
                     const confirmed = confirm(
                         `This expense will exceed your ${category} budget!\n\n` +
                         `Budget: ${currencyUtils.formatDisplayCurrency(budgetStatus.budget)}\n` +
@@ -1016,18 +960,13 @@ async checkInitialAuthState() {
                     );
                     
                     if (!confirmed) {
-                        console.log('9. User cancelled');
                         return;
                     }
-                    console.log('9. User confirmed, continuing...');
                 } else {
-                    console.log('8. Will NOT exceed, safe to add');
                 }
             } else {
-                console.log('7. No budget found for this category');
             }
         } else {
-            console.log('5. Skipping budget check (reimbursable expense)');
         }
         
         try {
@@ -1036,9 +975,7 @@ async checkInitialAuthState() {
                 walletId, isReimbursable 
             };
             
-            console.log('Calling createExpense with data:', expenseData);
             const savedExpense = await this.db.createExpense(expenseData);
-            console.log('Expense saved successfully:', savedExpense);
             
             if (id) {
                 this.state.updateExpense(savedExpense);
@@ -1050,7 +987,6 @@ async checkInitialAuthState() {
             
             this.ui.resetExpenseForm();
             this.ui.updateAllUI();
-            console.log('=== handleAddExpense END (success) ===');
         } catch (error) {
             console.error('=== handleAddExpense ERROR ===');
             console.error('Error object:', error);
@@ -1313,7 +1249,6 @@ async checkInitialAuthState() {
     showAlert(message, type = 'info') {
         const container = this.domElements.alertContainer;
         if (!container) {
-            console.log(`[${type.toUpperCase()}] ${message}`);
             return;
         }
         
@@ -1365,15 +1300,12 @@ class UIController {
     }
     
     setupStateListeners() {
-        console.log('Setting up state listeners...');
         // Listen for state changes and update UI
         this.state.subscribe('expenses', () => {
-            console.log('=== expenses changed event fired ===');
             this.updateExpensesUI();
             this.updateOverviewUI();
             this.updateStats();
             this.updateBudgetsUI();
-            console.log('=== finished updating UI ===');
         });
         this.state.subscribe('incomes', () => {
             this.updateIncomesUI();
@@ -1387,7 +1319,6 @@ class UIController {
         this.state.subscribe('categories', () => this.updateCategoriesUI());
 
         this.state.subscribe('budgets', () => {
-            console.log('=== budgets changed event fired ===');
             this.updateBudgetsUI();
         });
 
@@ -1474,16 +1405,10 @@ class UIController {
     setupTabs() {
         const tabs = document.querySelectorAll('.tab');
         
-        console.log('setupTabs: Found', tabs.length, 'tabs');
-        
         tabs.forEach(tab => {
             const tabId = tab.getAttribute('data-tab');
-            console.log('Setting up tab:', tabId);
             
             tab.addEventListener('click', () => {
-                console.log('Tab clicked:', tabId);
-                console.log('this.state is:', this.state);
-                console.log('typeof this.state.setActiveTab:', typeof this.state.setActiveTab);
                 this.state.setActiveTab(tabId);
             });
         });
@@ -1491,18 +1416,14 @@ class UIController {
         
     updateActiveTab() {
         const activeTab = this.state.getActiveTab();
-        console.log('=== updateActiveTab called, activeTab:', activeTab);
         
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
-        
-        console.log('Found tabs:', tabs.length, 'Found tab contents:', tabContents.length);
         
         // Update tab buttons
         tabs.forEach(tab => {
             if (tab.getAttribute('data-tab') === activeTab) {
                 tab.classList.add('active');
-                console.log('Activated tab button:', activeTab);
             } else {
                 tab.classList.remove('active');
             }
@@ -1515,30 +1436,23 @@ class UIController {
             
             if (shouldBeActive) {
                 content.classList.add('active');
-                console.log('Activated tab content:', contentId);
             } else {
                 content.classList.remove('active');
             }
         });
         
         // Load data for active tab
-        console.log('Loading tab data for:', activeTab);
         this.loadTabData(activeTab);
     }
     
     loadTabData(tabId) {
-        console.log('loadTabData called for:', tabId);
         switch (tabId) {
             case 'overview':
                 this.updateOverviewUI();
                 break;
             case 'expenses':
-                console.log('Loading expenses tab...');
-                // Force a fresh initialization
                 const monthSelect = document.getElementById('expenseMonthSelect');
                 const yearSelect = document.getElementById('expenseYearSelect');
-                if (monthSelect) console.log('Month select options:', monthSelect.options.length);
-                if (yearSelect) console.log('Year select options:', yearSelect.options.length);
                 this.updateExpensesTabUI();
                 break;
             case 'income':
@@ -1574,13 +1488,11 @@ class UIController {
         // 👇 FIX: Set the value AFTER adding all options
         if (currentWalletId && wallets.some(w => w.id === currentWalletId)) {
             selector.value = currentWalletId;
-            console.log('Set wallet selector to:', currentWalletId);
         } else if (wallets.length > 0) {
             // Fallback to first wallet
             const firstWalletId = wallets[0].id;
             this.state.setCurrentWallet(firstWalletId);
             selector.value = firstWalletId;
-            console.log('Set wallet selector to first wallet:', firstWalletId);
         }
         
         // Remove old event listener by cloning
@@ -1625,7 +1537,6 @@ class UIController {
         const currentWalletId = this.state.getState().currentWalletId;
         if (currentWalletId && selector.value !== currentWalletId) {
             selector.value = currentWalletId;
-            console.log('Synced wallet selector to:', currentWalletId);
         }
     }    
     
@@ -1827,7 +1738,6 @@ class UIController {
     }
 
     updateExpensesTabUI() {
-        console.log('updateExpensesTabUI called');
         const monthSelect = document.getElementById('expenseMonthSelect');
         const yearSelect = document.getElementById('expenseYearSelect');
         
@@ -1837,9 +1747,7 @@ class UIController {
             return;
         }
         
-        console.log('Before init - Month options:', monthSelect.options.length, 'Year options:', yearSelect.options.length);
         this.initializeExpenseFilters();
-        console.log('After init - Month options:', monthSelect.options.length, 'Year options:', yearSelect.options.length);
     }
 
     initializeExpenseFilters() {
@@ -1851,18 +1759,13 @@ class UIController {
             return;
         }
         
-        console.log('initializeExpenseFilters - Current options:', monthSelect.options.length, yearSelect.options.length);
-        
         // Check if already initialized
         const isInitialized = monthSelect.options.length > 0 && yearSelect.options.length > 0;
         
         if (isInitialized) {
-            console.log('Filters already initialized, just updating view');
             this.updateExpensesByDay();
             return;
         }
-        
-        console.log('Initializing filters for the first time...');
         
         // Get unique years from expenses
         const expenses = this.state.getExpenses();
@@ -1889,8 +1792,6 @@ class UIController {
             monthSelect.appendChild(option);
         });
         
-        console.log('Added month options:', monthSelect.options.length);
-        
         // Populate year dropdown
         years.forEach(year => {
             const option = document.createElement('option');
@@ -1899,47 +1800,27 @@ class UIController {
             yearSelect.appendChild(option);
         });
         
-        console.log('Added year options:', yearSelect.options.length);
-        
         // Set current month/year
         const now = new Date();
         monthSelect.value = now.getMonth();
         yearSelect.value = now.getFullYear();
-        
-        console.log('Set values - Month:', monthSelect.value, 'Year:', yearSelect.value);
-        
-        // Add change listeners (only once during initialization)
         monthSelect.addEventListener('change', () => {
-            console.log('Month changed to:', monthSelect.value);
             this.updateExpensesByDay();
         });
         yearSelect.addEventListener('change', () => {
-            console.log('Year changed to:', yearSelect.value);
             this.updateExpensesByDay();
         });
         
-        // FIXED: Call immediately instead of using requestAnimationFrame
-        // The wallet will load shortly and trigger updateAllUI anyway
-        console.log('Calling updateExpensesByDay immediately');
         this.updateExpensesByDay();
     }
 
     updateExpensesByDay() {
-        console.log('=== updateExpensesByDay START ===');
         const monthSelect = document.getElementById('expenseMonthSelect');
         const yearSelect = document.getElementById('expenseYearSelect');
         const listContainer = document.getElementById('expensesByDayList');
         const totalElement = document.getElementById('expenseMonthlyTotal');
         const monthYearLabel = document.getElementById('expenseSelectedMonthYear');
-        
-        console.log('Elements found:', {
-            monthSelect: !!monthSelect,
-            yearSelect: !!yearSelect,
-            listContainer: !!listContainer,
-            totalElement: !!totalElement,
-            monthYearLabel: !!monthYearLabel
-        });
-        
+                
         if (!monthSelect || !yearSelect || !listContainer) {
             console.error('Missing required elements for updateExpensesByDay');
             return;
@@ -1949,14 +1830,7 @@ class UIController {
         const selectedYear = parseInt(yearSelect.value);
         const currentWalletId = this.state.getState().currentWalletId;
         
-        console.log('Current state:', {
-            selectedMonth,
-            selectedYear,
-            currentWalletId
-        });
-        
         if (!currentWalletId) {
-            console.log('No wallet selected, showing message');
             listContainer.innerHTML = `
                 <div class="expense-item">
                     <div class="expense-details">Select a wallet first</div>
@@ -1975,38 +1849,29 @@ class UIController {
                    expenseDate.getFullYear() === selectedYear;
         });
         
-        console.log(`Found ${expenses.length} expenses for month ${selectedMonth}, year ${selectedYear}, wallet ${currentWalletId}`);
-        
         // Update total
         const monthlyTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
         if (totalElement) {
             totalElement.textContent = currencyUtils.formatDisplayCurrency(monthlyTotal);
-            console.log('Updated total:', totalElement.textContent);
         }
         
         // Update month/year label
         if (monthYearLabel) {
             const monthName = dateUtils.getMonthName(selectedMonth);
             monthYearLabel.textContent = `${monthName} ${selectedYear}`;
-            console.log('Updated label:', monthYearLabel.textContent);
         }
         
         // Render expenses grouped by day
         if (expenses.length === 0) {
-            console.log('No expenses, showing empty message');
             listContainer.innerHTML = `
                 <div class="empty-day-message">
                     <i class="fas fa-receipt"></i>
                     No expenses for this period
                 </div>
             `;
-            console.log('=== updateExpensesByDay END (no expenses) ===');
             return;
         }
-        
-        console.log('Rendering expenses by day...');
         this.renderExpensesByDay(expenses, listContainer);
-        console.log('=== updateExpensesByDay END (rendered) ===');
     }
 
     renderExpensesByDay(expenses, container) {
@@ -2961,13 +2826,7 @@ class UIController {
     editExpense(id) {
         const expense = this.state.getExpenses().find(e => e.id === id);
         if (!expense) return;
-        
-        console.log('=== editExpense ===');
-        console.log('Full expense object:', expense);
-        console.log('Keys in expense:', Object.keys(expense));
-        console.log('isReimbursable:', expense.isReimbursable);
-        console.log('isReimbursable:', expense.isReimbursable);
-        
+    
         this.openEditModal('expense', expense);
     }
     
@@ -2977,11 +2836,7 @@ class UIController {
         this.openEditModal('income', income);
     }
 
-openEditModal(type, item) {
-    console.log('=== openEditModal ===');
-    console.log('Type:', type);
-    console.log('Item:', item);
-    console.log('Item keys:', Object.keys(item));    
+openEditModal(type, item) {   
     const modal = document.getElementById('editTransactionModal');
     const title = document.getElementById('editModalTitle');
     const subtitle = document.getElementById('editModalSubtitle');
@@ -3062,12 +2917,9 @@ openEditModal(type, item) {
     //v5.2
     if (type === 'expense') {
         const checkbox = document.getElementById('editIsReimbursable');
-        console.log('Checkbox element found:', !!checkbox);
-        console.log('Setting checkbox to:', item.isReimbursable, 'or', item.isReimbursable);
         
         if (checkbox) {
             checkbox.checked = item.isReimbursable || item.isReimbursable || false;
-            console.log('Checkbox checked value after setting:', checkbox.checked);
         }
     }  
     
@@ -3254,7 +3106,6 @@ openEditModal(type, item) {
     // ==================== UTILITY UI METHODS ====================
     
     updateAllUI() {
-        console.log('UIController: updateAllUI called');
         this.updateOverviewUI();
         this.updateExpensesTabUI();
         this.updateIncomesTabUI();

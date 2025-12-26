@@ -32,7 +32,6 @@ class AuthService {
         
         // Then set up listener for future changes
         this.supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth state changed:', event);
             
             switch (event) {
                 case 'SIGNED_IN':
@@ -48,8 +47,6 @@ class AuthService {
                     this.handleTokenRefreshed(session);
                     break;
                 case 'INITIAL_SESSION':
-                    // This is normal - just ignore or handle gracefully
-                    console.log('Initial session check complete');
                     break;
             }
         });
@@ -83,8 +80,6 @@ class AuthService {
     async handleSignedIn(session) {
         try {
             if (!session?.user) return;
-            
-            console.log('User signed in:', session.user.email);
             this.state.setUser(session.user);
             this.database.setUser(session.user);
             
@@ -103,7 +98,6 @@ class AuthService {
     }
 
     handleSignedOut() {
-        console.log('User signed out');
         this.state.reset();
         
         // Hide navigation links
@@ -120,7 +114,6 @@ class AuthService {
     }
 
     handleTokenRefreshed() {
-        console.log('Token refreshed');
     }
 
     // Auth methods
@@ -259,15 +252,12 @@ class AuthService {
     // Helper methods
     async loadUserData() {
         try {
-            console.log('Auth: Starting to load user data...');
             
             if (!this.state.getUser()) {
-                console.log('Auth: No user found, skipping data load');
                 return;
             }
             
             const userId = this.state.getUser().id;
-            console.log('Auth: Loading data for user:', this.state.getUser().email);
             
             //v5.2
             const [wallets, categories, expenses, incomes, budgets] = await Promise.all([
@@ -277,16 +267,7 @@ class AuthService {
                 this.database.getIncomes(),
                 this.database.getBudgets()
             ]);
-            
-            //v5.2
-            console.log('Auth: Data loaded:', {
-                wallets: wallets.length,
-                categories: categories.length,
-                expenses: expenses.length,
-                incomes: incomes.length,
-                budgets: budgets.length
-            });
-            
+
             //v5.2
             this.state.setWallets(wallets);
             this.state.setCategories(categories);
@@ -301,18 +282,12 @@ class AuthService {
                     wallets,
                     userId,
                     (walletId) => {
-                        console.log('Auth: Setting current wallet to:', walletId); // 👈 ADD LOG
                         this.state.setCurrentWallet(walletId);
                     }
                 );
-                console.log('Auth: Default wallet loaded:', selectedWalletId); // 👈 ADD LOG
             } else if (wallets.length > 0) {
-                // Fallback if wallet persistence not available
-                console.log('Auth: Using fallback - first wallet'); // 👈 ADD LOG
                 this.state.setCurrentWallet(wallets[0].id);
             }
-            
-            console.log('Auth: State updated, emitting dataLoaded event');
 
             //v5.2
             this.emitAuthEvent('dataLoaded', { wallets, categories, expenses, incomes, budgets });

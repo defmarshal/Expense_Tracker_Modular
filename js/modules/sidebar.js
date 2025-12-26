@@ -6,7 +6,6 @@
  */
 
 export function initializeSidebar(state) {
-    console.log('Initializing sidebar navigation...');
     
     // Setup navigation event listeners
     setupSidebarNavigation(state);
@@ -27,7 +26,6 @@ function setupSidebarNavigation(state) {
         
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('Sidebar tab clicked:', tabId);
             state.setActiveTab(tabId);
             updateNavigationUI(tabId);
         });
@@ -45,7 +43,6 @@ function setupBottomNavigation(state) {
         
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('Bottom nav tab clicked:', tabId);
             state.setActiveTab(tabId);
             updateNavigationUI(tabId);
         });
@@ -56,7 +53,6 @@ function setupBottomNavigation(state) {
  * Update both sidebar and bottom nav UI
  */
 function updateNavigationUI(activeTab) {
-    console.log('Updating navigation UI for tab:', activeTab);
     
     // Update sidebar items
     const sidebarItems = document.querySelectorAll('.sidebar-nav-item');

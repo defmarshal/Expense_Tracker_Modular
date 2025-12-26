@@ -1590,23 +1590,20 @@
     <script type="module">
         import { initializeAnalyticsApp } from './js/analytics-app.js';
 
-        const SUPABASE_URL = 'https://slgzgaojmgzjhtuaptod.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZ3pnYW9qbWd6amh0dWFwdG9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyNzQyMzMsImV4cCI6MjA3ODg1MDIzM30.aD9cjbekiufRaatuNaAEP2uD2uU7ggpPor6jtSGM-F4';
-
         // Initialize Supabase
         async function initSupabase() {
             try {
-                // const response = await fetch('/api/config');
-                // if (!response.ok) {
-                //     throw new Error('Failed to fetch config');
-                // }
+                const response = await fetch('/api/config');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch config');
+                }
                 
-                // const config = await response.json();
+                const config = await response.json();
                 window.supabaseClient = window.supabase.createClient(
-                    // config.supabaseUrl,
-                    // config.supabaseAnonKey
-                    SUPABASE_URL, 
-                    SUPABASE_ANON_KEY
+                    config.supabaseUrl,
+                    config.supabaseAnonKey
+                    // SUPABASE_URL, 
+                    // SUPABASE_ANON_KEY
                 );
                 
                 return true;
