@@ -1675,7 +1675,7 @@ class UIController {
                             </div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
+                            <div class="expense-amount">
                                 ${currencyUtils.formatDisplayCurrency(transaction.amount)}
                             </div>
                             <div class="action-buttons">
@@ -1704,7 +1704,7 @@ class UIController {
                             </div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
-                            <div class="income-amount" style="font-weight: 600; color: var(--success);">
+                            <div class="income-amount">
                                 ${currencyUtils.formatDisplayCurrency(transaction.amount)}
                             </div>
                             <div class="action-buttons">
@@ -1954,7 +1954,7 @@ class UIController {
                         </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
-                        <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
+                        <div class="expense-amount">
                             ${currencyUtils.formatDisplayCurrency(expense.amount)}
                         </div>
                         <div class="action-buttons">
@@ -2165,7 +2165,7 @@ class UIController {
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
+                        <div class="expense-amount">
                             ${currencyUtils.formatDisplayCurrency(expense.amount)}
                         </div>
                         <div style="font-size: 0.75rem; color: var(--gray);">
@@ -2382,7 +2382,7 @@ class UIController {
                         </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
-                        <div class="income-amount" style="font-weight: 600; color: var(--success);">
+                        <div class="income-amount">
                             ${currencyUtils.formatDisplayCurrency(income.amount)}
                         </div>
                         <div class="action-buttons">
@@ -2441,7 +2441,7 @@ class UIController {
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="income-amount" style="font-weight: 600; color: var(--success);">
+                        <div class="income-amount">
                             ${currencyUtils.formatDisplayCurrency(income.amount)}
                         </div>
                         <div style="font-size: 0.75rem; color: var(--gray);">
