@@ -238,13 +238,34 @@
 
 .expense-amount {
     color: var(--primary);
-    text-align: left;
+    text-align: right;
     margin-right: 20px;
     flex: 1;
 }
 
+@media (max-width: 768px) {
+    .expense-amount {
+        color: var(--primary);
+        text-align: left;
+        margin-right: 20px;
+        flex: 1;
+    }
+}
+
 .income-amount {
     color: var(--success);
+    text-align: right;
+    margin-right: 20px;
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .income-amount {
+        color: var(--success);
+        text-align: left;
+        margin-right: 20px;
+        flex: 1;
+    }
 }
 
 .expense-date,
