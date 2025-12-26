@@ -209,9 +209,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Mobile: Stack form rows */
 @media (max-width: 768px) {
-    .form-row {
-        flex-direction: column;
-        gap: 0;
+    .fab-form .form-row {
+        flex-direction: row !important;
     }
     
     input, select, textarea {
@@ -348,6 +347,7 @@ input:focus, select:focus, textarea:focus {
 .modal-subtitle {
     font-size: 0.95rem;
     opacity: 0.9;
+    margin-bottom: var(--space-xs);
 }
 
 .modal-body {
@@ -1097,5 +1097,175 @@ input:focus, select:focus, textarea:focus {
         max-height: 95vh;
         margin: 0;
         border-radius: 12px 12px 0 0;
+    }
+}
+
+/* Add this to your CSS file (e.g., components.css or dashboard.css) */
+
+/* Compact Budget Overview for Overview Tab */
+.budget-overview-compact {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.budget-overview-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.budget-overview-item:last-child {
+    border-bottom: none;
+}
+
+.budget-overview-category {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--dark);
+    flex-shrink: 0;
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.budget-overview-bar-container {
+    flex: 1;
+    margin-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.budget-overview-bar {
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.budget-overview-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.budget-overview-text {
+    font-size: 0.7rem;
+    color: var(--gray);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Budget Management Tab */
+.budget-management {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.budget-category-item {
+    background: white;
+    border: 1px solid var(--light-gray);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.budget-category-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.budget-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.budget-category-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--dark);
+}
+
+.budget-category-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.budget-status-bar {
+    background: #E5E7EB;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.budget-status-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.budget-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--gray);
+}
+
+.budget-info-spent {
+    font-weight: 600;
+}
+
+.budget-info-limit {
+    font-weight: 500;
+}
+
+.budget-not-set {
+    padding: 0.75rem;
+    background: var(--light-gray);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--gray);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Status Colors */
+.budget-status-ok { background: #10B981; }
+.budget-status-warning { background: #F59E0B; }
+.budget-status-exceeded { background: #EF4444; }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .budget-overview-category {
+        min-width: 80px;
+        max-width: 100px;
+        font-size: 0.85rem;
+    }
+    
+    .budget-overview-bar-container {
+        margin-left: 0.75rem;
+    }
+    
+    .budget-overview-text {
+        font-size: 0.65rem;
+    }
+    
+    .budget-category-item {
+        padding: 0.875rem;
+    }
+    
+    .budget-category-name {
+        font-size: 0.9rem;
     }
 }

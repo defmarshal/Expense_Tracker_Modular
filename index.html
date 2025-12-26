@@ -197,6 +197,10 @@
                     <i class="fas fa-coins"></i>
                     <span>Income</span>
                 </a>
+                <a href="#" class="sidebar-nav-item" data-tab="budget">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Budget</span>
+                </a>
                 <a href="#" class="sidebar-nav-item" data-tab="more">
                     <i class="fas fa-ellipsis-h"></i>
                     <span>More</span>
@@ -233,18 +237,45 @@
                     </div>
                 </div>
 
-                <!-- Your existing tab content sections remain the same -->
-                <!-- Overview Tab -->
                 <div id="overviewTab" class="tab-content active">
+                    <!-- Compact Budget Overview -->
+                    <div class="budget-overview-compact">
+                        <h2 class="form-title">Budget Status</h2>
+                        <div id="budgetOverviewList">
+                            <div class="budget-overview-item">
+                                <div class="budget-details">No budgets set</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Recent Activity -->
                     <div class="expense-list">
-                        <h2 class="form-title">Recent Activity</h2>
-                        <div id="recentActivityList">
-                            <div class="expense-item">
-                                <div class="expense-details">No transactions yet</div>
+                        <h2 class="form-title" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleRecentActivity()">
+                            <span>Recent Activity</span>
+                            <i class="fas fa-chevron-down" id="recentActivityChevron" style="transition: transform 0.3s ease;"></i>
+                        </h2>
+                        <div id="recentActivityContainer" style="display: none; transition: all 0.3s ease;">
+                            <div id="recentActivityList">
+                                <div class="expense-item">
+                                    <div class="expense-details">No transactions yet</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <div id="budgetTab" class="tab-content">
+                    <div class="budget-management">
+                        <!-- Removed the top "Set Budget" button -->
+                        <h2 class="form-title" style="margin-bottom: 1.5rem;">Category Budgets</h2>
+                        
+                        <div id="budgetCategoriesList">
+                            <div class="budget-item">
+                                <div class="budget-details">Loading categories...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>               
 
                 <!-- Expenses Tab -->
                 <div id="expensesTab" class="tab-content">
@@ -313,21 +344,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- NEW: Budget Management Section -->
-                    <div class="budget-list">
-                        <h2 class="form-title" style="display: flex; align-items: center; justify-content: space-between;">
-                            <span>Category Budgets</span>
-                            <button class="btn btn-sm btn-primary" onclick="openBudgetModal()">
-                                <i class="fas fa-plus"></i> Add Budget
-                            </button>
-                        </h2>
-                        <div id="budgetsList">
-                            <div class="budget-item">
-                                <div class="budget-details">No budgets set</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -346,6 +362,10 @@
                 <a href="#" class="bottom-nav-item" data-tab="income">
                     <i class="fas fa-coins"></i>
                     <span>Income</span>
+                </a>
+                <a href="#" class="bottom-nav-item" data-tab="budget">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Budget</span>
                 </a>
                 <a href="#" class="bottom-nav-item" data-tab="more">
                     <i class="fas fa-ellipsis-h"></i>
@@ -1004,6 +1024,8 @@
                     // SUPABASE_ANON_KEY                    
                 );
                 
+                console.log('Supabase client created');
+                
                 // Import and initialize the app
                 const { createApp } = await import('./js/app.js');
                 
@@ -1108,6 +1130,19 @@
                     window.finTrack.ui.openBudgetModal();
                 }
             };
+
+            window.toggleRecentActivity = function() {
+                const container = document.getElementById('recentActivityContainer');
+                const chevron = document.getElementById('recentActivityChevron');
+                
+                if (container.style.display === 'none') {
+                    container.style.display = 'block';
+                    chevron.style.transform = 'rotate(180deg)';
+                } else {
+                    container.style.display = 'none';
+                    chevron.style.transform = 'rotate(0deg)';
+                }
+            };            
 
         });  
     </script>

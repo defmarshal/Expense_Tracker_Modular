@@ -1306,6 +1306,7 @@ class UIController {
             this.updateOverviewUI();
             this.updateStats();
             this.updateBudgetsUI();
+            this.updateCompactBudgetView(); // ADD THIS
         });
         this.state.subscribe('incomes', () => {
             this.updateIncomesUI();
@@ -1316,10 +1317,15 @@ class UIController {
             this.updateWalletsUI();
             this.updateStats();
         });
-        this.state.subscribe('categories', () => this.updateCategoriesUI());
+        this.state.subscribe('categories', () => {
+            this.updateCategoriesUI();
+            this.updateBudgetTabUI(); // ADD THIS
+        });
 
         this.state.subscribe('budgets', () => {
             this.updateBudgetsUI();
+            this.updateCompactBudgetView(); // ADD THIS
+            this.updateBudgetTabUI(); // ADD THIS
         });
 
         this.state.subscribe('currentWalletId', () => this.updateWalletDependentUI());
@@ -1449,6 +1455,7 @@ class UIController {
         switch (tabId) {
             case 'overview':
                 this.updateOverviewUI();
+                this.updateCompactBudgetView(); // NEW: Compact view for overview
                 break;
             case 'expenses':
                 const monthSelect = document.getElementById('expenseMonthSelect');
@@ -1458,13 +1465,222 @@ class UIController {
             case 'income':
                 this.updateIncomesTabUI();
                 break;
+            case 'budget':
+                this.updateBudgetTabUI(); // NEW: Full budget management view
+                break;
             case 'more':
                 this.updateWalletsUI();
                 this.updateCategoriesUI();
-                this.updateBudgetsUI();
                 break;
         }
     }
+
+    updateCompactBudgetView() {
+        const container = document.getElementById('budgetOverviewList');
+        if (!container) return;
+        
+        const walletId = this.state.getState().currentWalletId;
+        const categories = this.state.getMainCategories();
+        const budgets = this.state.getBudgets();
+        
+        if (!walletId || categories.length === 0) {
+            container.innerHTML = `
+                <div class="budget-overview-item">
+                    <div class="budget-details">No categories yet</div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Filter categories that have budgets set
+        const categoriesWithBudgets = categories.filter(cat => {
+            return budgets.some(b => b.category_id === cat.id && b.wallet_id === walletId);
+        });
+        
+        if (categoriesWithBudgets.length === 0) {
+            container.innerHTML = `
+                <div class="budget-overview-item">
+                    <div class="budget-details" style="text-align: center; color: var(--gray);">
+                        <i class="fas fa-chart-line"></i> No budgets set yet
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        categoriesWithBudgets.forEach(category => {
+            const status = this.state.getCategoryBudgetStatus(category.id, walletId);
+            if (!status) return;
+            
+            const progressColor = status.status === 'exceeded' ? '#EF4444' : 
+                                status.status === 'warning' ? '#F59E0B' : '#10B981';
+            
+            const item = document.createElement('div');
+            item.className = 'budget-overview-item';
+            item.innerHTML = `
+                <div class="budget-overview-category">${category.name}</div>
+                <div class="budget-overview-bar-container">
+                    <div class="budget-overview-bar">
+                        <div class="budget-overview-bar-fill" style="width: ${Math.min(status.percentage, 100)}%; background: ${progressColor};"></div>
+                    </div>
+                    <div class="budget-overview-text">
+                        <span style="color: ${progressColor}; font-weight: 600;">${Math.round(status.percentage)}%</span>
+                        <span>${currencyUtils.formatDisplayCurrency(status.spent)} / ${currencyUtils.formatDisplayCurrency(status.budget)}</span>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(item);
+        });
+    }
+
+    // 3. Add new method for full budget management tab
+    updateBudgetTabUI() {
+        const container = document.getElementById('budgetCategoriesList');
+        if (!container) return;
+        
+        const walletId = this.state.getState().currentWalletId;
+        const categories = this.state.getMainCategories();
+        const budgets = this.state.getBudgets();
+        
+        if (!walletId) {
+            container.innerHTML = `
+                <div class="budget-item">
+                    <div class="budget-details">Select a wallet first</div>
+                </div>
+            `;
+            return;
+        }
+        
+        if (categories.length === 0) {
+            container.innerHTML = `
+                <div class="budget-item">
+                    <div class="budget-details">No categories yet. Add categories first.</div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        categories.forEach(category => {
+            const budget = budgets.find(b => b.category_id === category.id && b.wallet_id === walletId);
+            const status = budget ? this.state.getCategoryBudgetStatus(category.id, walletId) : null;
+            
+            const item = document.createElement('div');
+            item.className = 'budget-category-item';
+            
+            if (budget && status) {
+                const progressColor = status.status === 'exceeded' ? '#EF4444' : 
+                                    status.status === 'warning' ? '#F59E0B' : '#10B981';
+                
+                item.innerHTML = `
+                    <div class="budget-category-header">
+                        <div class="budget-category-name">${category.name}</div>
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="window.finTrack.ui.editBudget('${budget.id}', '${category.id}', ${budget.amount})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('budget', '${budget.id}', '${category.name}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="budget-status-bar">
+                        <div class="budget-status-fill budget-status-${status.status}" 
+                            style="width: ${Math.min(status.percentage, 100)}%; background: ${progressColor};"></div>
+                    </div>
+                    <div class="budget-info" style="font-size: 0.7rem;">
+                        <span class="budget-info-spent" style="color: ${progressColor};">
+                            Spent: ${currencyUtils.formatDisplayCurrency(status.spent)} (${Math.round(status.percentage)}%)
+                        </span>
+                        <span class="budget-info-limit">
+                            Limit: ${currencyUtils.formatDisplayCurrency(status.budget)}
+                        </span>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: ${status.remaining >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                        ${status.remaining >= 0 
+                            ? `✓ ${currencyUtils.formatDisplayCurrency(status.remaining)} remaining` 
+                            : `⚠ Over by ${currencyUtils.formatDisplayCurrency(Math.abs(status.remaining))}`}
+                    </div>
+                `;
+            } else {
+                // No budget set for this category
+                item.innerHTML = `
+                    <div class="budget-category-header">
+                        <div class="budget-category-name">${category.name}</div>
+                        <div class="budget-category-actions">
+                            <button class="btn btn-sm btn-primary" onclick="window.finTrack.ui.setBudgetForCategory('${category.id}')"
+                                    style="padding: 6px 12px; font-size: 0.8rem;">
+                                <i class="fas fa-plus"></i> Set Budget
+                            </button>
+                        </div>
+                    </div>
+                    <div class="budget-not-set">
+                        <i class="fas fa-info-circle"></i> No budget limit set
+                    </div>
+                `;
+            }
+            
+            container.appendChild(item);
+        });
+    }
+
+    // 4. Add helper method to set budget for specific category
+    setBudgetForCategory(categoryId) {
+        const modal = document.getElementById('budgetModal');
+        const categorySelect = document.getElementById('budgetCategory');
+        
+        // Populate categories
+        categorySelect.innerHTML = '<option value="">Select category</option>';
+        const mainCategories = this.state.getMainCategories();
+        
+        mainCategories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            if (category.id === categoryId) {
+                option.selected = true;
+            }
+            categorySelect.appendChild(option);
+        });
+        
+        // Clear amount and show modal
+        document.getElementById('budgetAmount').value = '';
+        document.getElementById('budgetId').value = '';
+        
+        modal.classList.add('active');
+    }
+
+    // 5. Add method to edit existing budget
+    editBudget(budgetId, categoryId, currentAmount) {
+        const modal = document.getElementById('budgetModal');
+        const categorySelect = document.getElementById('budgetCategory');
+        const amountInput = document.getElementById('budgetAmount');
+        const budgetIdInput = document.getElementById('budgetId');
+        
+        // Populate categories
+        categorySelect.innerHTML = '<option value="">Select category</option>';
+        const mainCategories = this.state.getMainCategories();
+        
+        mainCategories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            if (category.id === categoryId) {
+                option.selected = true;
+            }
+            categorySelect.appendChild(option);
+        });
+        
+        // Set current values
+        budgetIdInput.value = budgetId;
+        amountInput.value = currencyUtils.formatCurrency(currentAmount.toString());
+        
+        modal.classList.add('active');
+    }    
     
     // ==================== WALLET UI ====================
     
@@ -1954,7 +2170,7 @@ class UIController {
                         </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
-                        <div class="expense-amount">
+                        <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
                             ${currencyUtils.formatDisplayCurrency(expense.amount)}
                         </div>
                         <div class="action-buttons">
@@ -2165,7 +2381,7 @@ class UIController {
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="expense-amount">
+                        <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
                             ${currencyUtils.formatDisplayCurrency(expense.amount)}
                         </div>
                         <div style="font-size: 0.75rem; color: var(--gray);">
@@ -2382,7 +2598,7 @@ class UIController {
                         </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
-                        <div class="income-amount">
+                        <div class="income-amount" style="font-weight: 600; color: var(--success);">
                             ${currencyUtils.formatDisplayCurrency(income.amount)}
                         </div>
                         <div class="action-buttons">
@@ -2441,7 +2657,7 @@ class UIController {
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="income-amount">
+                        <div class="income-amount" style="font-weight: 600; color: var(--success);">
                             ${currencyUtils.formatDisplayCurrency(income.amount)}
                         </div>
                         <div style="font-size: 0.75rem; color: var(--gray);">
@@ -3107,6 +3323,8 @@ openEditModal(type, item) {
     
     updateAllUI() {
         this.updateOverviewUI();
+        this.updateCompactBudgetView(); // ADD THIS
+        this.updateBudgetTabUI(); // ADD THIS
         this.updateExpensesTabUI();
         this.updateIncomesTabUI();
         this.updateWalletsUI();
