@@ -528,6 +528,7 @@
                     </div>
                     <h2 class="modal-title" id="editModalTitle" style="margin: 0; color: white;">Edit Transaction</h2>
                 </div>
+                <p class="modal-subtitle" id="editModalSubtitle">Make changes and save</p>
             </div>
 
             <style>
@@ -541,12 +542,12 @@
                     <input type="hidden" id="editItemId">
                     <input type="hidden" id="editItemType">
                     
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom: 0.8rem;">
                         <label for="editDescription" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Description</label>
                         <input type="text" id="editDescription" placeholder="What was this for?" style="padding: 10px 12px; font-size: 0.95rem;">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom: 0.8rem;">
                         <label for="editAmount" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Amount</label>
                         <div class="currency-input">
                             <span class="currency-symbol">Rp</span>
@@ -555,13 +556,13 @@
                     </div>
                     
                     <div class="form-row" style="gap: 0.8rem; margin-bottom: 0.8rem;">
-                        <div class="form-group">
+                        <div class="form-group" style="margin-bottom: 0;">
                             <label for="editCategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Category</label>
                             <select id="editCategory" required style="padding: 10px 12px; font-size: 0.95rem;">
                                 <option value="">Select category</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="margin-bottom: 0;">
                             <label for="editSubcategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Subcategory</label>
                             <select id="editSubcategory" style="padding: 10px 12px; font-size: 0.95rem;">
                                 <option value="">Optional</option>
@@ -569,20 +570,20 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom: 1rem;">
                         <label for="editDate" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Date</label>
                         <input type="date" id="editDate" required style="padding: 10px 12px; font-size: 0.95rem;">
                     </div>
                     
                     <!-- v5.2 -->
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom: 1rem;">
                         <label class="checkbox-label">
                             <input type="checkbox" id="editIsReimbursable">
                             <span>💰 This expense will be reimbursed</span>
                         </label>
                     </div>                    
                     
-                    <div class="form-row" style="gap: 0.8rem">
+                    <div class="form-row" style="gap: 0.8rem; margin-top: 1rem;">
                         <button type="button" class="btn btn-outline" onclick="document.getElementById('editTransactionModal').classList.remove('active')" style="padding: 10px; font-size: 0.9rem; flex: 1;">
                             <i class="fas fa-times"></i> Cancel
                         </button>
