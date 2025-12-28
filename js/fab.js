@@ -88,7 +88,7 @@ export function initFAB() {
             form.style.display = 'none';
         });
 
-        // Show the appropriate form and update modal title (v5.2)
+        // Show the appropriate form and update modal title
         let formId = '';
         switch (action) {
             case 'expense':
@@ -149,17 +149,22 @@ export function initFAB() {
         if (!categorySelect || !window.finTrack) return;
 
         const categories = window.finTrack.state.getMainCategories();
-        categorySelect.innerHTML = '<option value="">Select category</option>';
         
+        // Remove old listeners by cloning
+        const newCategorySelect = categorySelect.cloneNode(true);
+        categorySelect.parentNode.replaceChild(newCategorySelect, categorySelect);
+
+        // Populate options
+        newCategorySelect.innerHTML = '<option value="">Select category</option>';
         categories.forEach(category => {
             const option = document.createElement('option');
             option.value = category.name;
             option.textContent = category.name;
-            categorySelect.appendChild(option);
+            newCategorySelect.appendChild(option);
         });
 
-        // Update subcategories when category changes
-        categorySelect.addEventListener('change', function() {
+        // Add change listener once
+        newCategorySelect.addEventListener('change', function() {
             const subcategorySelect = document.getElementById('fabExpenseSubcategory');
             if (!subcategorySelect) return;
 
@@ -180,11 +185,78 @@ export function initFAB() {
         });
     }
 
+    // Reset FAB forms
+    function resetFabForms() {
+        // Reset expense form
+        const expenseForm = document.getElementById('fabExpenseForm');
+        if (expenseForm) {
+            expenseForm.reset();
+            const subcategorySelect = document.getElementById('fabExpenseSubcategory');
+            if (subcategorySelect) {
+                subcategorySelect.innerHTML = '<option value="">Optional</option>';
+            }
+        }
+        
+        // Reset income form
+        const incomeForm = document.getElementById('fabIncomeForm');
+        if (incomeForm) {
+            incomeForm.reset();
+            // Reset reimbursement toggle
+            const reimbursementToggle = document.getElementById('fabIncomeIsReimbursement');
+            if (reimbursementToggle) {
+                reimbursementToggle.checked = false;
+            }
+            const expenseSelector = document.getElementById('fabIncomeExpenseSelector');
+            if (expenseSelector) {
+                expenseSelector.classList.add('hidden');
+            }
+            // Reset selected expenses
+            if (window.finTrack && window.finTrack.app) {
+                window.finTrack.app.selectedExpensesForReimbursement = [];
+                window.finTrack.app.updateSelectedExpensesDisplay();
+            }
+        }
+        
+        // Reset wallet form
+        const walletForm = document.getElementById('fabWalletForm');
+        if (walletForm) {
+            walletForm.reset();
+        }
+        
+        // Reset category form
+        const categoryForm = document.getElementById('fabCategoryForm');
+        if (categoryForm) {
+            categoryForm.reset();
+            const parentCategoryGroup = document.getElementById('fabParentCategoryGroup');
+            if (parentCategoryGroup) {
+                parentCategoryGroup.classList.add('hidden');
+            }
+        }
+    }
+
     // Setup modal close button
     const closeModalBtn = document.getElementById('closeFabQuickAddModal');
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', () => {
-            document.getElementById('fabQuickAddModal').classList.remove('active');
+            const modal = document.getElementById('fabQuickAddModal');
+            modal.classList.remove('active');
+            // Reset forms when closing
+            setTimeout(() => {
+                resetFabForms();
+            }, 300); // Wait for modal close animation
+        });
+    }
+
+    // Also close modal when clicking backdrop
+    const fabModal = document.getElementById('fabQuickAddModal');
+    if (fabModal) {
+        fabModal.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                fabModal.classList.remove('active');
+                setTimeout(() => {
+                    resetFabForms();
+                }, 300);
+            }
         });
     }
 
@@ -204,4 +276,5 @@ export function initFAB() {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initFAB);
 } else {
+    // Already loaded, but don't auto-init since it's imported as module
 }

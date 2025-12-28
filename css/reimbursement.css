@@ -1,0 +1,599 @@
+/* ============================================
+   REIMBURSEMENT BADGES
+   ============================================ */
+
+.reimbursement-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 6px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.reimbursement-badge.pending {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #92400E;
+    border: 1px solid #F59E0B;
+}
+
+.reimbursement-badge.reimbursed {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #065F46;
+    border: 1px solid #10B981;
+}
+
+.reimbursement-badge.is-reimbursement {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: #1E40AF;
+    border: 1px solid #3B82F6;
+}
+
+.reimbursement-badge i {
+    font-size: 0.65rem;
+}
+
+.reimbursement-badge.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reimbursement-badge.clickable:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   PENDING REIMBURSEMENT STAT CARD
+   ============================================ */
+
+.stat-card.reimbursement {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    border: 2px solid #F59E0B;
+}
+
+.stat-card.reimbursement .stat-label {
+    color: #92400E;
+}
+
+.stat-card.reimbursement .stat-value {
+    color: #B45309;
+}
+
+/* ============================================
+   EXPENSE SELECTOR MODAL (for linking)
+   ============================================ */
+
+.expense-selector-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.expense-selector-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: var(--light-gray);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.expense-selector-item:hover {
+    background: #F3F4F6;
+    border-color: var(--primary);
+}
+
+.expense-selector-item.selected {
+    background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+    border-color: var(--primary);
+}
+
+.expense-selector-item input[type="checkbox"] {
+    margin-top: 2px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    /* Remove default appearance to ensure custom styling works */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    
+    /* Add visible border and background */
+    border: 2px solid var(--primary);
+    border-radius: 4px;
+    background-color: white;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.expense-selector-item input[type="checkbox"]:hover {
+    border-color: var(--primary);
+    background-color: #F3F4F6;
+}
+
+.expense-selector-item input[type="checkbox"]:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Add checkmark icon when checked */
+.expense-selector-item input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.expense-selector-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.expense-selector-details .expense-description {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.expense-selector-details .expense-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--gray);
+    flex-wrap: wrap;
+}
+
+.expense-selector-details .expense-amount {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+
+.expense-selector-summary {
+    background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 1rem;
+    border: 2px solid var(--primary);
+}
+
+.expense-selector-summary .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.expense-selector-summary .summary-row:last-child {
+    margin-bottom: 0;
+    padding-top: 8px;
+    border-top: 2px solid var(--primary);
+}
+
+.expense-selector-summary .summary-label {
+    font-weight: 600;
+    color: #5B21B6;
+}
+
+.expense-selector-summary .summary-value {
+    font-weight: 700;
+    color: #6D28D9;
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   REIMBURSEMENT TOGGLE IN INCOME FORM
+   ============================================ */
+
+.reimbursement-toggle {
+    background: linear-gradient(135deg, #FEFCE8 0%, #FEF9C3 100%);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 1rem;
+    border: 2px solid #EAB308;
+}
+
+.reimbursement-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #854D0E;
+}
+
+.reimbursement-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    /* Remove default appearance to ensure custom styling works */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    
+    /* Add visible border and background */
+    border: 2px solid #D97706;
+    border-radius: 4px;
+    background-color: white;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.reimbursement-toggle input[type="checkbox"]:hover {
+    border-color: #B45309;
+    background-color: #FEF3C7;
+}
+
+.reimbursement-toggle input[type="checkbox"]:checked {
+    background-color: #F59E0B;
+    border-color: #F59E0B;
+}
+
+/* Add checkmark icon when checked */
+.reimbursement-toggle input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.reimbursement-toggle .toggle-hint {
+    font-size: 0.8rem;
+    color: #A16207;
+    margin-top: 8px;
+    margin-left: 30px;
+}
+
+/* ============================================
+   EMPTY STATE FOR EXPENSE SELECTOR
+   ============================================ */
+
+.expense-selector-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--gray);
+}
+
+.expense-selector-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.expense-selector-empty p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* ============================================
+   UNLINK BUTTON
+   ============================================ */
+
+.unlink-reimbursement-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #DC2626;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.unlink-reimbursement-btn:hover {
+    background: #FECACA;
+    transform: translateY(-1px);
+}
+
+.unlink-reimbursement-btn i {
+    font-size: 0.75rem;
+}
+
+/* ============================================
+   EXPENSE SUB-TABS
+   ============================================ */
+
+.expense-sub-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--light-gray);
+    padding: 0 0 0.5rem 0;
+}
+
+.expense-sub-tab {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: var(--gray);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    top: 2px;
+}
+
+.expense-sub-tab:hover {
+    color: var(--primary);
+}
+
+.expense-sub-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.expense-sub-tab i {
+    margin-right: 6px;
+}
+
+/* ============================================
+   REIMBURSEMENT DASHBOARD
+   ============================================ */
+
+.reimbursement-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.reimbursement-stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.reimbursement-stat-card.pending {
+    border-left: 4px solid #F59E0B;
+}
+
+.reimbursement-stat-card.reimbursed {
+    border-left: 4px solid #10B981;
+}
+
+.reimbursement-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 8px;
+}
+
+.reimbursement-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.reimbursement-stat-count {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-top: 4px;
+}
+
+/* ============================================
+   REIMBURSEMENT SECTIONS
+   ============================================ */
+
+.reimbursement-section {
+    margin-bottom: 2rem;
+}
+
+.reimbursement-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.reimbursement-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.reimbursement-section-title i {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.reimbursement-section-title.pending i {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #F59E0B;
+}
+
+.reimbursement-section-title.reimbursed i {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #10B981;
+}
+
+.reimbursement-section-count {
+    background: var(--light-gray);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--gray);
+    font-weight: 600;
+}
+
+/* ============================================
+   LINKED INCOME BADGE
+   ============================================ */
+
+.linked-income-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #065F46;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #10B981;
+}
+
+/* ============================================
+   STYLED EXPENSE ITEMS IN REIMBURSEMENT VIEWS
+   ============================================ */
+
+#pendingReimbursementList .expense-item {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%) !important;
+    border: 2px solid #F59E0B !important;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 8px;
+}
+
+#pendingReimbursementList .expense-item .expense-amount {
+    color: #D97706 !important;
+}
+
+/* Target expense items that are nested inside reimbursed list */
+#reimbursedList .expense-item {
+    background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%) !important;
+    border: 2px solid #9333EA !important;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 8px;
+}
+
+#reimbursedList .expense-item .expense-amount {
+    color: #7C3AED !important;
+}
+
+/* Hide badges and unlink buttons in nested expense items */
+#reimbursedList .expense-item .reimbursement-badge {
+    display: none !important;
+}
+
+#reimbursedList .expense-item .unlink-reimbursement-btn {
+    display: none !important;
+}
+
+/* Rounded edges for income items in reimbursed section */
+#reimbursedList .income-item {
+    border-radius: 12px;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.reimbursement-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--gray);
+}
+
+.reimbursement-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.reimbursement-empty h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.reimbursement-empty p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .expense-sub-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    
+    .expense-sub-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .expense-sub-tab {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .reimbursement-dashboard {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .reimbursement-stat-card {
+        padding: 1rem;
+    }
+    
+    .reimbursement-stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .reimbursement-stat-value {
+        font-size: 1.4rem;
+    }
+    
+    .reimbursement-stat-count {
+        font-size: 0.75rem;
+    }
+    
+    .expense-selector-list {
+        max-height: 300px;
+    }
+    
+    .expense-selector-item {
+        padding: 10px;
+    }
+    
+    .expense-selector-summary {
+        padding: 12px;
+    }
+    
+    .reimbursement-toggle {
+        padding: 10px 12px;
+    }
+}

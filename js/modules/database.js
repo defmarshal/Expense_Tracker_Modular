@@ -144,7 +144,6 @@ class DatabaseService {
   //5.2
   async createExpense(expenseData) {
       try {
-          // Use this.user instead of supabase.auth.getUser()
           if (!this.user) throw new Error('Not authenticated');
 
           const expenseRecord = {
@@ -156,7 +155,8 @@ class DatabaseService {
               category: expenseData.category,
               subcategory: expenseData.subcategory || null,
               is_reimbursable: expenseData.isReimbursable || false,
-              reimbursed: false
+              // NEW: Set reimbursement_status based on is_reimbursable
+              reimbursement_status: expenseData.isReimbursable ? 'pending' : 'not_applicable'
           };
           
           if (expenseData.id) {
@@ -170,6 +170,7 @@ class DatabaseService {
                       category: expenseRecord.category,
                       subcategory: expenseRecord.subcategory,
                       is_reimbursable: expenseRecord.is_reimbursable,
+                      reimbursement_status: expenseRecord.reimbursement_status,
                       wallet_id: expenseRecord.wallet_id
                   })
                   .eq('id', expenseData.id)
@@ -207,7 +208,46 @@ class DatabaseService {
   }
 
   async updateExpense(id, updates) {
-    return await this.update('expenses', id, updates);
+      try {
+          if (!this.user) throw new Error('Not authenticated');
+          
+          // Build the update object with proper snake_case conversion
+          const updateData = {};
+          
+          if (updates.description !== undefined) updateData.description = updates.description;
+          if (updates.amount !== undefined) updateData.amount = updates.amount;
+          if (updates.date !== undefined) updateData.date = updates.date;
+          if (updates.category !== undefined) updateData.category = updates.category;
+          if (updates.subcategory !== undefined) updateData.subcategory = updates.subcategory;
+          if (updates.wallet_id !== undefined) updateData.wallet_id = updates.wallet_id;
+          
+          // ⭐ CRITICAL: Handle is_reimbursable field
+          if (updates.is_reimbursable !== undefined) {
+              updateData.is_reimbursable = updates.is_reimbursable;
+              // Update reimbursement_status based on is_reimbursable
+              updateData.reimbursement_status = updates.is_reimbursable ? 'pending' : 'not_applicable';
+              console.log('🔧 DATABASE: Updating is_reimbursable to:', updates.is_reimbursable);
+          }
+          
+          const { data, error } = await this.supabase
+              .from('expenses')
+              .update(updateData)
+              .eq('id', id)
+              .eq('user_id', this.user.id)
+              .select()
+              .single();
+          
+          if (error) {
+              console.error('updateExpense - Error:', error);
+              throw error;
+          }
+          
+          console.log('✅ DATABASE: Expense updated successfully:', data);
+          return this.toCamelCase(data);
+      } catch (error) {
+          console.error('updateExpense - Fatal error:', error);
+          throw error;
+      }
   }
 
   async deleteExpense(id) {
@@ -216,13 +256,54 @@ class DatabaseService {
 
   // Income-specific operations
   async createIncome(incomeData) {
-    return await this.create('incomes', {
-      description: incomeData.description,
-      amount: incomeData.amount,
-      date: incomeData.date,
-      source: incomeData.source,
-      wallet_id: incomeData.walletId
-    });
+      try {
+          if (!this.user) throw new Error('Not authenticated');
+          
+          const incomeRecord = {
+              user_id: this.user.id,
+              description: incomeData.description,
+              amount: incomeData.amount,
+              date: incomeData.date,
+              source: incomeData.source,
+              wallet_id: incomeData.walletId,
+              // NEW: Add reimbursement fields
+              is_reimbursement: incomeData.isReimbursement || false,
+              linked_expense_ids: incomeData.linkedExpenseIds || []
+          };
+          
+          if (incomeData.id) {
+              // Update existing
+              const { data, error } = await this.supabase
+                  .from('incomes')
+                  .update(incomeRecord)
+                  .eq('id', incomeData.id)
+                  .eq('user_id', this.user.id)
+                  .select()
+                  .single();
+              
+              if (error) throw error;
+              return this.toCamelCase(data);
+          } else {
+              // Insert new
+              const { data, error } = await this.supabase
+                  .from('incomes')
+                  .insert(incomeRecord)
+                  .select()
+                  .single();
+              
+              if (error) throw error;
+              
+              // If this is a reimbursement, link the expenses
+              if (incomeData.isReimbursement && incomeData.linkedExpenseIds?.length > 0) {
+                  await this.linkReimbursement(data.id, incomeData.linkedExpenseIds);
+              }
+              
+              return this.toCamelCase(data);
+          }
+      } catch (error) {
+          console.error('createIncome - Error:', error);
+          throw error;
+      }
   }
 
   async getIncomes(filters = {}) {
@@ -230,7 +311,48 @@ class DatabaseService {
   }
 
   async updateIncome(id, updates) {
-    return await this.update('incomes', id, updates);
+      try {
+          if (!this.user) throw new Error('Not authenticated');
+          
+          // Build the update object with proper snake_case conversion
+          const updateData = {};
+          
+          if (updates.description !== undefined) updateData.description = updates.description;
+          if (updates.amount !== undefined) updateData.amount = updates.amount;
+          if (updates.date !== undefined) updateData.date = updates.date;
+          if (updates.source !== undefined) updateData.source = updates.source;
+          if (updates.wallet_id !== undefined) updateData.wallet_id = updates.wallet_id;
+          
+          // ⭐ CRITICAL: Handle is_reimbursement and linked_expense_ids fields
+          if (updates.isReimbursement !== undefined) {
+              updateData.is_reimbursement = updates.isReimbursement;
+              console.log('🔧 DATABASE: Updating income is_reimbursement to:', updates.isReimbursement);
+          }
+          
+          if (updates.linkedExpenseIds !== undefined) {
+              updateData.linked_expense_ids = updates.linkedExpenseIds;
+              console.log('🔧 DATABASE: Updating linked_expense_ids to:', updates.linkedExpenseIds);
+          }
+          
+          const { data, error } = await this.supabase
+              .from('incomes')
+              .update(updateData)
+              .eq('id', id)
+              .eq('user_id', this.user.id)
+              .select()
+              .single();
+          
+          if (error) {
+              console.error('updateIncome - Error:', error);
+              throw error;
+          }
+          
+          console.log('✅ DATABASE: Income updated successfully');
+          return this.toCamelCase(data);
+      } catch (error) {
+          console.error('updateIncome - Fatal error:', error);
+          throw error;
+      }
   }
 
   async deleteIncome(id) {
@@ -337,16 +459,48 @@ class DatabaseService {
 
   // Category-specific operations
   async createCategory(categoryData) {
-    const data = {
-      name: categoryData.name,
-      type: categoryData.type
-    };
-    
-    if (categoryData.parentId && validationUtils.isValidUUID(categoryData.parentId)) {
-      data.parent_id = categoryData.parentId;
+    try {
+      if (!this.user) throw new Error('User not authenticated');
+      
+      const data = {
+        name: categoryData.name,
+        type: categoryData.type || 'main'
+      };
+      
+      if (categoryData.parentId && validationUtils.isValidUUID(categoryData.parentId)) {
+        data.parent_id = categoryData.parentId;
+      } else {
+        data.parent_id = null;
+      }
+      
+      // Check if we're updating an existing category
+      if (categoryData.id && validationUtils.isValidUUID(categoryData.id)) {
+        // UPDATE existing category
+        const { data: result, error } = await this.supabase
+          .from('categories')
+          .update(data)
+          .eq('id', categoryData.id)
+          .eq('user_id', this.user.id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return this.toCamelCase(result);
+      } else {
+        // INSERT new category
+        const { data: result, error } = await this.supabase
+          .from('categories')
+          .insert([{ ...data, user_id: this.user.id }])
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return this.toCamelCase(result);
+      }
+    } catch (error) {
+      console.error('Error in createCategory:', error);
+      throw error;
     }
-    
-    return await this.create('categories', data);
   }
 
   async getCategories() {
@@ -552,23 +706,197 @@ class DatabaseService {
       }
   }
 
+  async getPendingReimbursableExpenses(walletId) {
+      try {
+          const { data, error } = await this.supabase
+              .from('expenses')
+              .select('*')
+              .eq('wallet_id', walletId)
+              .eq('user_id', this.user.id)
+              .eq('is_reimbursable', true)
+              .eq('reimbursement_status', 'pending')
+              .order('date', { ascending: false });
 
+          if (error) throw error;
+          return this.toCamelCase(data) || [];
+      } catch (error) {
+          console.error('Error fetching pending reimbursable expenses:', error);
+          throw error;
+      }
+  }
 
-  // Mark expense as reimbursed
-  async markExpenseReimbursed(expenseId, reimbursed = true) {
-      const { data, error } = await this.supabase
-          .from('expenses')
-          .update({
-              reimbursed: reimbursed,
-              reimbursed_date: reimbursed ? new Date().toISOString().split('T')[0] : null
-          })
-          .eq('id', expenseId)
-          .select()
-          .single();
-      
-      if (error) throw error;
-      return this.toCamelCase(data);
-  }  
+  // Link income with expenses (mark as reimbursed)
+  async linkReimbursement(incomeId, expenseIds) {
+      try {
+          // 1. Update income to mark as reimbursement
+          const { data: incomeData, error: incomeError } = await this.supabase
+              .from('incomes')
+              .update({
+                  is_reimbursement: true,
+                  linked_expense_ids: expenseIds
+              })
+              .eq('id', incomeId)
+              .eq('user_id', this.user.id)
+              .select()
+              .single();
+
+          if (incomeError) throw incomeError;
+
+          // 2. Update each expense to link to this income
+          const { data: expenseData, error: expenseError } = await this.supabase
+              .from('expenses')
+              .update({
+                  reimbursement_status: 'reimbursed',
+                  linked_income_id: incomeId
+              })
+              .in('id', expenseIds)
+              .eq('user_id', this.user.id)
+              .select();
+
+          if (expenseError) throw expenseError;
+
+          return {
+              income: this.toCamelCase(incomeData),
+              expenses: this.toCamelCase(expenseData)
+          };
+      } catch (error) {
+          console.error('Error linking reimbursement:', error);
+          throw error;
+      }
+  }
+
+  // Unlink reimbursement (revert to pending)
+  async unlinkReimbursement(incomeId) {
+      try {
+          // 1. Get the income to find linked expenses
+          const { data: income, error: fetchError } = await this.supabase
+              .from('incomes')
+              .select('linked_expense_ids')
+              .eq('id', incomeId)
+              .eq('user_id', this.user.id)
+              .single();
+
+          if (fetchError) throw fetchError;
+
+          const expenseIds = income.linked_expense_ids || [];
+
+          // 2. Reset expenses to pending
+          if (expenseIds.length > 0) {
+              const { error: expenseError } = await this.supabase
+                  .from('expenses')
+                  .update({
+                      reimbursement_status: 'pending',
+                      linked_income_id: null
+                  })
+                  .in('id', expenseIds)
+                  .eq('user_id', this.user.id);
+
+              if (expenseError) throw expenseError;
+          }
+
+          // 3. Reset income
+          const { data: incomeData, error: incomeError } = await this.supabase
+              .from('incomes')
+              .update({
+                  is_reimbursement: false,
+                  linked_expense_ids: []
+              })
+              .eq('id', incomeId)
+              .eq('user_id', this.user.id)
+              .select()
+              .single();
+
+          if (incomeError) throw incomeError;
+
+          return this.toCamelCase(incomeData);
+      } catch (error) {
+          console.error('Error unlinking reimbursement:', error);
+          throw error;
+      }
+  }
+
+  // Get linked income for an expense
+  async getLinkedIncome(expenseId) {
+      try {
+          const { data: expense, error: expenseError } = await this.supabase
+              .from('expenses')
+              .select('linked_income_id')
+              .eq('id', expenseId)
+              .eq('user_id', this.user.id)
+              .single();
+
+          if (expenseError) throw expenseError;
+
+          if (!expense.linked_income_id) return null;
+
+          const { data: income, error: incomeError } = await this.supabase
+              .from('incomes')
+              .select('*')
+              .eq('id', expense.linked_income_id)
+              .eq('user_id', this.user.id)
+              .single();
+
+          if (incomeError) throw incomeError;
+
+          return this.toCamelCase(income);
+      } catch (error) {
+          console.error('Error fetching linked income:', error);
+          throw error;
+      }
+  }
+
+  // Get linked expenses for an income
+  async getLinkedExpenses(incomeId) {
+      try {
+          const { data: income, error: incomeError } = await this.supabase
+              .from('incomes')
+              .select('linked_expense_ids')
+              .eq('id', incomeId)
+              .eq('user_id', this.user.id)
+              .single();
+
+          if (incomeError) throw incomeError;
+
+          const expenseIds = income.linked_expense_ids || [];
+          if (expenseIds.length === 0) return [];
+
+          const { data: expenses, error: expensesError } = await this.supabase
+              .from('expenses')
+              .select('*')
+              .in('id', expenseIds)
+              .eq('user_id', this.user.id)
+              .order('date', { ascending: false });
+
+          if (expensesError) throw expensesError;
+
+          return this.toCamelCase(expenses);
+      } catch (error) {
+          console.error('Error fetching linked expenses:', error);
+          throw error;
+      }
+  }
+
+  // Get total pending reimbursement amount for a wallet
+  async getPendingReimbursementTotal(walletId) {
+      try {
+          const { data, error } = await this.supabase
+              .from('expenses')
+              .select('amount')
+              .eq('wallet_id', walletId)
+              .eq('user_id', this.user.id)
+              .eq('is_reimbursable', true)
+              .eq('reimbursement_status', 'pending');
+
+          if (error) throw error;
+
+          const total = (data || []).reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+          return total;
+      } catch (error) {
+          console.error('Error calculating pending reimbursement total:', error);
+          throw error;
+      }
+  }
+
 }
 
 // Create singleton instance

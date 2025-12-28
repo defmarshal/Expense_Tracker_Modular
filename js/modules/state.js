@@ -435,6 +435,179 @@ class FinTrackState {
     };
     this.notifyListeners(oldState, this.state);
   }
+
+  // Get all pending reimbursable expenses for current wallet
+  getPendingReimbursableExpenses() {
+      const currentWalletId = this.state.currentWalletId;
+      if (!currentWalletId) return [];
+      
+      return this.state.expenses.filter(expense => 
+          expense.walletId === currentWalletId &&
+          expense.isReimbursable === true &&
+          expense.reimbursementStatus === 'pending'
+      );
+  }
+
+  // Get total amount of pending reimbursements for current wallet
+  getPendingReimbursementTotal() {
+      const pending = this.getPendingReimbursableExpenses();
+      return pending.reduce((sum, expense) => sum + expense.amount, 0);
+  }
+
+  // Check if an expense is reimbursed
+  isExpenseReimbursed(expenseId) {
+      const expense = this.state.expenses.find(e => e.id === expenseId);
+      return expense?.reimbursementStatus === 'reimbursed';
+  }
+
+  // Get linked income for an expense
+  getLinkedIncomeForExpense(expenseId) {
+      const expense = this.state.expenses.find(e => e.id === expenseId);
+      if (!expense || !expense.linkedIncomeId) return null;
+      
+      return this.state.incomes.find(i => i.id === expense.linkedIncomeId);
+  }
+
+  // Get linked expenses for an income
+  getLinkedExpensesForIncome(incomeId) {
+      const income = this.state.incomes.find(i => i.id === incomeId);
+      if (!income || !income.linkedExpenseIds || income.linkedExpenseIds.length === 0) {
+          return [];
+      }
+      
+      return this.state.expenses.filter(e => 
+          income.linkedExpenseIds.includes(e.id)
+      );
+  }
+
+  // Check if an income is a reimbursement
+  isIncomeReimbursement(incomeId) {
+      const income = this.state.incomes.find(i => i.id === incomeId);
+      return income?.isReimbursement === true;
+  }
+
+  // Update expense reimbursement status
+  updateExpenseReimbursementStatus(expenseId, status, linkedIncomeId = null) {
+      const expenseIndex = this.state.expenses.findIndex(e => e.id === expenseId);
+      if (expenseIndex === -1) return;
+      
+      const expenses = [...this.state.expenses];
+      expenses[expenseIndex] = {
+          ...expenses[expenseIndex],
+          reimbursementStatus: status,
+          linkedIncomeId: linkedIncomeId
+      };
+      
+      return this.setExpenses(expenses);
+  }
+
+  // Update income reimbursement data
+  updateIncomeReimbursement(incomeId, linkedExpenseIds) {
+      const incomeIndex = this.state.incomes.findIndex(i => i.id === incomeId);
+      if (incomeIndex === -1) return;
+      
+      const incomes = [...this.state.incomes];
+      incomes[incomeIndex] = {
+          ...incomes[incomeIndex],
+          isReimbursement: true,
+          linkedExpenseIds: linkedExpenseIds
+      };
+      
+      return this.setIncomes(incomes);
+  }
+
+  // Link reimbursement (update both expense and income)
+  linkReimbursement(incomeId, expenseIds) {
+      // Update income
+      const incomes = this.state.incomes.map(income => 
+          income.id === incomeId 
+              ? { ...income, isReimbursement: true, linkedExpenseIds: expenseIds }
+              : income
+      );
+      
+      // Update expenses
+      const expenses = this.state.expenses.map(expense => 
+          expenseIds.includes(expense.id)
+              ? { ...expense, reimbursementStatus: 'reimbursed', linkedIncomeId: incomeId }
+              : expense
+      );
+      
+      // Update both at once
+      this.state = {
+          ...this.state,
+          expenses,
+          incomes
+      };
+      
+      // Notify listeners
+      this.notifyListeners({ ...this.state }, this.state);
+      
+      return this.state;
+  }
+
+  // Unlink reimbursement (revert to pending)
+  unlinkReimbursement(incomeId) {
+      const income = this.state.incomes.find(i => i.id === incomeId);
+      if (!income) return;
+      
+      const linkedExpenseIds = income.linkedExpenseIds || [];
+      
+      // Update income
+      const incomes = this.state.incomes.map(i => 
+          i.id === incomeId
+              ? { ...i, isReimbursement: false, linkedExpenseIds: [] }
+              : i
+      );
+      
+      // Reset expenses to pending
+      const expenses = this.state.expenses.map(expense => 
+          linkedExpenseIds.includes(expense.id)
+              ? { ...expense, reimbursementStatus: 'pending', linkedIncomeId: null }
+              : expense
+      );
+      
+      // Update both at once
+      this.state = {
+          ...this.state,
+          expenses,
+          incomes
+      };
+      
+      // Notify listeners
+      this.notifyListeners({ ...this.state }, this.state);
+      
+      return this.state;
+  }
+
+  // Get reimbursement statistics
+  getReimbursementStats() {
+      const currentWalletId = this.state.currentWalletId;
+      if (!currentWalletId) {
+          return {
+              totalReimbursable: 0,
+              pending: 0,
+              reimbursed: 0,
+              pendingAmount: 0,
+              reimbursedAmount: 0
+          };
+      }
+      
+      const reimbursableExpenses = this.state.expenses.filter(e => 
+          e.walletId === currentWalletId && e.isReimbursable
+      );
+      
+      const pending = reimbursableExpenses.filter(e => e.reimbursementStatus === 'pending');
+      const reimbursed = reimbursableExpenses.filter(e => e.reimbursementStatus === 'reimbursed');
+      
+      return {
+          totalReimbursable: reimbursableExpenses.length,
+          pending: pending.length,
+          reimbursed: reimbursed.length,
+          pendingAmount: pending.reduce((sum, e) => sum + e.amount, 0),
+          reimbursedAmount: reimbursed.reduce((sum, e) => sum + e.amount, 0)
+      };
+  }  
+
 }
 
 // Create singleton instance

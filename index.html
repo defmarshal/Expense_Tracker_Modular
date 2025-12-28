@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/fab.css">
     <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/reimbursement.css">
 </head>
 
 <body>
@@ -235,6 +236,12 @@
                         <div class="stat-label">Balance</div>
                         <div class="stat-value balance" id="currentWalletBalance">Rp 0</div>
                     </div>
+                    <!-- <div class="stat-card reimbursement">
+                        <div class="stat-label">
+                            <i class="fas fa-clock"></i> Pending Reimbursement
+                        </div>
+                        <div class="stat-value" id="pendingReimbursementTotal">Rp 0</div>
+                    </div>                     -->
                 </div>
 
                 <div id="overviewTab" class="tab-content active">
@@ -279,22 +286,90 @@
 
                 <!-- Expenses Tab -->
                 <div id="expensesTab" class="tab-content">
-                    <div class="month-filter">
-                        <label for="expenseMonthSelect">Month:</label>
-                        <select id="expenseMonthSelect"></select>
-                        <label for="expenseYearSelect">Year:</label>
-                        <select id="expenseYearSelect"></select>
+                    <!-- Sub-navigation tabs -->
+                    <div class="expense-sub-tabs">
+                        <button class="expense-sub-tab active" data-subtab="all">
+                            <i class="fas fa-list"></i>
+                            All Expenses
+                        </button>
+                        <button class="expense-sub-tab" data-subtab="reimbursement">
+                            <i class="fas fa-exchange-alt"></i>
+                            Reimbursements
+                        </button>
                     </div>
-                    
-                    <div class="expense-summary">
-                        <h3>Total for <span id="expenseSelectedMonthYear">this month</span></h3>
-                        <div class="expense-summary-amount" id="expenseMonthlyTotal">Rp 0</div>
+
+                    <!-- All Expenses View (existing content) -->
+                    <div id="allExpensesView" class="expense-sub-view">
+                        <div class="month-filter">
+                            <label for="expenseMonthSelect">Month:</label>
+                            <select id="expenseMonthSelect"></select>
+                            <label for="expenseYearSelect">Year:</label>
+                            <select id="expenseYearSelect"></select>
+                        </div>
+                        
+                        <div class="expense-summary">
+                            <h3>Total for <span id="expenseSelectedMonthYear">this month</span></h3>
+                            <div class="expense-summary-amount" id="expenseMonthlyTotal">Rp 0</div>
+                        </div>
+                        
+                        <div class="expense-list">
+                            <div id="expensesByDayList">
+                                <div class="expense-item">
+                                    <div class="expense-details">Select a month</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="expense-list">
-                        <div id="expensesByDayList">
-                            <div class="expense-item">
-                                <div class="expense-details">Select a month</div>
+
+                    <!-- Reimbursement View (new) -->
+                    <div id="reimbursementView" class="expense-sub-view" style="display: none;">
+                        <!-- Reimbursement Dashboard Stats -->
+                        <div class="reimbursement-dashboard">
+                            <div class="reimbursement-stat-card pending">
+                                <div class="reimbursement-stat-label">
+                                    <i class="fas fa-clock"></i>
+                                    <!-- Pending Reimbursement -->
+                                    Pending
+                                </div>
+                                <div class="reimbursement-stat-value" id="reimbPendingTotal">Rp 0</div>
+                                <div class="reimbursement-stat-count" id="reimbPendingCount">0 expenses</div>
+                            </div>
+                            
+                            <div class="reimbursement-stat-card reimbursed">
+                                <div class="reimbursement-stat-label">
+                                    <i class="fas fa-check-circle"></i>
+                                    Reimbursed
+                                </div>
+                                <div class="reimbursement-stat-value" id="reimbReimbursedTotal">Rp 0</div>
+                                <div class="reimbursement-stat-count" id="reimbReimbursedCount">0 expenses</div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Reimbursable Expenses -->
+                        <div class="reimbursement-section">
+                            <div class="reimbursement-section-header">
+                                <div class="reimbursement-section-title pending">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Pending Reimbursement</span>
+                                </div>
+                                <span class="reimbursement-section-count" id="pendingReimbursementCount">0</span>
+                            </div>
+                            <div id="pendingReimbursementList">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Reimbursed Expenses & Linked Income -->
+                        <div class="reimbursement-section">
+                            <div class="reimbursement-section-header">
+                                <div class="reimbursement-section-title reimbursed">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Reimbursed</span>
+                                </div>
+                                <span class="reimbursement-section-count" id="reimbursedCount">0</span>
+                            </div>
+                            <div id="reimbursedList">
+                                <!-- Will be populated by JavaScript -->
                             </div>
                         </div>
                     </div>
@@ -558,51 +633,81 @@
             }
             </style>
             <div class="modal-body" style="padding: 1.25rem;">
-                <form id="editTransactionForm" class="compact-form">
-                    <input type="hidden" id="editItemId">
-                    <input type="hidden" id="editItemType">
-                    
-                    <div class="form-group" style="margin-bottom: 0.8rem;">
-                        <label for="editDescription" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Description</label>
-                        <input type="text" id="editDescription" placeholder="What was this for?" style="padding: 10px 12px; font-size: 0.95rem;">
+            <form id="editTransactionForm" class="compact-form">
+                <input type="hidden" id="editItemId">
+                <input type="hidden" id="editItemType">
+                
+                <div class="form-group" style="margin-bottom: 0.8rem;">
+                    <label for="editDescription" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Description</label>
+                    <input type="text" id="editDescription" placeholder="What was this for?" style="padding: 10px 12px; font-size: 0.95rem;">
+                </div>
+                
+                <!-- Category and Subcategory row (for expenses only) -->
+                <div class="form-row" id="editExpenseCategoryRow" style="gap: 0.8rem; margin-bottom: 0.8rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="editCategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Category</label>
+                        <select id="editCategory" required style="padding: 10px 12px; font-size: 0.95rem;">
+                            <option value="">Select category</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="editSubcategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Subcategory</label>
+                        <select id="editSubcategory" style="padding: 10px 12px; font-size: 0.95rem;">
+                            <option value="">Optional</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- NEW: Income Reimbursement Section (appears after description for income) -->
+                <div id="editIncomeReimbursementSection" style="display: none; margin-bottom: 1rem;">
+                    <div class="reimbursement-toggle">
+                        <label>
+                            <input type="checkbox" id="editIncomeIsReimbursement">
+                            <span>🔗 This is a reimbursement</span>
+                        </label>
+                        <div class="toggle-hint">
+                            Check this if you're being reimbursed for expenses you've already paid
+                        </div>
                     </div>
                     
-                    <div class="form-group" style="margin-bottom: 0.8rem;">
+                    <div id="editIncomeExpenseSelector" class="hidden" style="margin-top: 1rem;">
+                        <button type="button" class="btn btn-secondary" id="editSelectExpensesBtn" style="width: 100%;">
+                            <i class="fas fa-list"></i>
+                            <span id="editSelectedExpensesText">Select Expenses to Reimburse</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row" style="gap: 0.8rem; margin-bottom: 0.8rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label for="editAmount" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Amount</label>
                         <div class="currency-input">
                             <span class="currency-symbol">Rp</span>
                             <input type="text" id="editAmount" placeholder="0" style="padding: 10px 12px 10px 38px; font-size: 0.95rem;">
                         </div>
                     </div>
-                    
-                    <div class="form-row" style="gap: 0.8rem; margin-bottom: 0.8rem;">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="editCategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Category</label>
-                            <select id="editCategory" required style="padding: 10px 12px; font-size: 0.95rem;">
-                                <option value="">Select category</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="editSubcategory" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Subcategory</label>
-                            <select id="editSubcategory" style="padding: 10px 12px; font-size: 0.95rem;">
-                                <option value="">Optional</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 1rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label for="editDate" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Date</label>
                         <input type="date" id="editDate" required style="padding: 10px 12px; font-size: 0.95rem;">
                     </div>
-                    
-                    <!-- v5.2 -->
-                    <div class="form-group" style="margin-bottom: 1rem;">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="editIsReimbursable">
-                            <span>💰 This expense will be reimbursed</span>
-                        </label>
-                    </div>                    
-                    
+                </div>
+
+                <!-- Expense Reimbursable Checkbox (MOVED HERE - after amount and date) -->
+                <div class="form-group" id="editExpenseReimbursableSection" style="margin-bottom: 1rem; display: none;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editIsReimbursable">
+                        <span>💰 This expense will be reimbursed</span>
+                    </label>
+                </div>
+
+                <!-- Category/Type field (shows as "Type" for income) -->
+                <div class="form-group" id="editIncomeTypeGroup" style="margin-bottom: 1rem; display: none;">
+                    <label for="editIncomeType" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Type</label>
+                    <select id="editIncomeType" style="padding: 10px 12px; font-size: 0.95rem;">
+                        <option value="">Select type</option>
+                    </select>
+                </div>
+
                     <div class="form-row" style="gap: 0.8rem; margin-top: 1rem;">
                         <button type="button" class="btn btn-outline" onclick="document.getElementById('editTransactionModal').classList.remove('active')" style="padding: 10px; font-size: 0.9rem; flex: 1;">
                             <i class="fas fa-times"></i> Cancel
@@ -712,6 +817,26 @@
                         <label for="fabIncomeDescription">Source</label>
                         <input type="text" id="fabIncomeDescription" placeholder="e.g., Salary, Freelance" required>
                     </div>
+                    
+                    <!-- NEW: Reimbursement Toggle -->
+                    <div class="reimbursement-toggle">
+                        <label>
+                            <input type="checkbox" id="fabIncomeIsReimbursement">
+                            <span>🔗 This is a reimbursement</span>
+                        </label>
+                        <div class="toggle-hint">
+                            Check this if you're being reimbursed for expenses you've already paid
+                        </div>
+                    </div>
+                    
+                    <!-- Expense selector section (shown when reimbursement is checked) -->
+                    <div id="fabIncomeExpenseSelector" class="hidden" style="margin-bottom: 1rem;">
+                        <button type="button" class="btn btn-outline" id="fabSelectExpensesBtn" style="width: 100%;">
+                            <i class="fas fa-list-check"></i>
+                            <span id="fabSelectedExpensesText">Select Expenses to Reimburse</span>
+                        </button>
+                    </div>
+                    
                     <div class="form-row">
                         <div class="form-group">
                             <label for="fabIncomeAmount">Amount</label>
@@ -1004,17 +1129,105 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="expenseSelectorModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);">
+                <button class="modal-close" id="closeExpenseSelectorModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Select Expenses to Reimburse</h2>
+                <p class="modal-subtitle">Choose which expenses this income covers</p>
+            </div>
+            <div class="modal-body">
+                <!-- Expense selector list -->
+                <div class="expense-selector-list" id="expenseSelectorList">
+                    <!-- Will be populated dynamically -->
+                </div>
+                
+                <!-- Summary -->
+                <div class="expense-selector-summary" id="expenseSelectorSummary" style="display: none;">
+                    <div class="summary-row">
+                        <span class="summary-label">Selected Expenses:</span>
+                        <span class="summary-value" id="selectedExpenseCount">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Total Amount:</span>
+                        <span class="summary-value" id="selectedExpenseTotal">Rp 0</span>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                    <button class="btn btn-outline" id="cancelExpenseSelector" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button class="btn btn-primary" id="confirmExpenseSelector" style="flex: 1;">
+                        <i class="fas fa-check"></i> Link Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>    
+
+    <!-- Reimbursement Details Modal -->
+    <div class="modal-overlay" id="reimbursementDetailsModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                <button class="modal-close" id="closeReimbursementDetails">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Reimbursement Details</h2>
+                <p class="modal-subtitle">Payment information</p>
+            </div>
+            <div class="modal-body">
+                <div id="reimbursementDetailsContent">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unlink Reimbursement Confirmation Modal -->
+    <div class="modal-overlay" id="unlinkReimbursementModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
+                <button class="modal-close" id="closeUnlinkReimbursement">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Unlink Reimbursement?</h2>
+                <p class="modal-subtitle">This will return expenses to pending</p>
+            </div>
+            <div class="modal-body">
+                <p id="unlinkReimbursementMessage" style="margin-bottom: 1.5rem; font-size: 0.95rem;">
+                    Are you sure you want to unlink this reimbursement? The linked expenses will return to pending status.
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-outline" id="cancelUnlinkReimbursement" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button class="btn" id="confirmUnlinkReimbursement" style="flex: 1; background: #EF4444; color: white;">
+                        <i class="fas fa-unlink"></i> Unlink
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>    
 
     <script type="module">
 
         async function initApp() {
             try {
+                // console.log('Fetching config...');
                 const response = await fetch('/api/config');
                 if (!response.ok) {
                     throw new Error('Failed to fetch config');
                 }
                 
                 const config = await response.json();
+                // console.log('Config loaded:', { 
+                //     hasUrl: !!config.supabaseUrl, 
+                //     hasKey: !!config.supabaseAnonKey 
+                // });
                 
                 // Create Supabase client AFTER config is loaded
                 const supabase = window.supabase.createClient(
@@ -1142,7 +1355,28 @@
                     container.style.display = 'none';
                     chevron.style.transform = 'rotate(0deg)';
                 }
-            };            
+            };
+            
+            document.getElementById('closeReimbursementDetails')?.addEventListener('click', () => {
+                document.getElementById('reimbursementDetailsModal').classList.remove('active');
+            });
+
+            // Unlink Reimbursement Modal
+            document.getElementById('closeUnlinkReimbursement')?.addEventListener('click', () => {
+                document.getElementById('unlinkReimbursementModal').classList.remove('active');
+                window.finTrack.pendingUnlinkIncomeId = null;
+            });
+
+            document.getElementById('cancelUnlinkReimbursement')?.addEventListener('click', () => {
+                document.getElementById('unlinkReimbursementModal').classList.remove('active');
+                window.finTrack.pendingUnlinkIncomeId = null;
+            });
+
+            document.getElementById('confirmUnlinkReimbursement')?.addEventListener('click', () => {
+                if (window.finTrack && window.finTrack.app) {
+                    window.finTrack.app.confirmUnlinkReimbursement();
+                }
+            });            
 
         });  
     </script>

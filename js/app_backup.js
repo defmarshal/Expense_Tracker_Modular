@@ -85,7 +85,6 @@ class FinTrackApp {
             
             this.setupReimbursementListeners();
             this.selectedExpensesForReimbursement = [];
-            this.selectedExpensesForEditReimbursement = [];
             
             // Initialize FAB
             initFAB();
@@ -224,7 +223,7 @@ class FinTrackApp {
             if (e.target.classList.contains('modal-overlay')) {
                 e.target.classList.remove('active');
             }
-        });        
+        });
     }
     
     setupAuthListeners() {
@@ -307,20 +306,6 @@ class FinTrackApp {
                 
                 const type = document.getElementById('editItemType').value;
                 const id = document.getElementById('editItemId').value;
-
-                if (type === 'income') {
-                    const isReimbursement = document.getElementById('editIncomeIsReimbursement')?.checked || false;
-                    
-                    if (isReimbursement && this.selectedExpensesForEditReimbursement && this.selectedExpensesForEditReimbursement.length === 0) {
-                        // Check if this income already has linked expenses
-                        const existingLinked = this.state.getLinkedExpensesForIncome(id);
-                        if (existingLinked.length === 0) {
-                            this.showAlert('Please select expenses to reimburse', 'error');
-                            return;
-                        }
-                    }
-                }
-
                 const description = document.getElementById('editDescription').value;
                 const amountStr = document.getElementById('editAmount').value;
                 const amount = currencyUtils.parseCurrency(amountStr);
@@ -337,13 +322,12 @@ class FinTrackApp {
                     date: date
                 };
 
+                // Assign the category or source based on type
                 if (type === 'expense') {
                     updateData.category = categoryValue;
                     updateData.subcategory = subcategoryValue || null;
                     updateData.wallet_id = this.state.getState().currentWalletId;
                     updateData.is_reimbursable = isReimbursable;
-                    
-                    console.log('💾 Updating expense with isReimbursable:', isReimbursable);
                 } else {
                     updateData.source = categoryValue;
                     updateData.wallet_id = this.state.getState().currentWalletId;
@@ -388,27 +372,8 @@ class FinTrackApp {
                         const updated = await this.db.updateExpense(id, updateData);
                         this.state.updateExpense(updated);
                     } else {
-                        // Handle income with reimbursement
-                        const isReimbursement = document.getElementById('editIncomeIsReimbursement')?.checked || false;
-                        updateData.isReimbursement = isReimbursement;
-                        
                         const updated = await this.db.updateIncome(id, updateData);
-                        
-                        // Handle reimbursement linking changes
-                        if (isReimbursement && this.selectedExpensesForEditReimbursement && this.selectedExpensesForEditReimbursement.length > 0) {
-                            // Unlink old expenses first
-                            await this.db.unlinkReimbursement(id);
-                            // Link new expenses
-                            await this.db.linkReimbursement(id, this.selectedExpensesForEditReimbursement);
-                            this.state.linkReimbursement(id, this.selectedExpensesForEditReimbursement);
-                        } else if (!isReimbursement) {
-                            // If unchecked, unlink all expenses
-                            await this.db.unlinkReimbursement(id);
-                            this.state.unlinkReimbursement(id);
-                        } else {
-                            // Keep existing links
-                            this.state.updateIncome(updated);
-                        }
+                        this.state.updateIncome(updated);
                     }
                     
                     // Refresh and close
@@ -423,33 +388,6 @@ class FinTrackApp {
                         this.ui.showLoading(false);
                     }
                 }
-            });
-        }
-
-        // Edit Income Reimbursement Toggle
-        const editReimbursementToggle = document.getElementById('editIncomeIsReimbursement');
-        const editExpenseSelector = document.getElementById('editIncomeExpenseSelector');
-
-        if (editReimbursementToggle && editExpenseSelector) {
-            editReimbursementToggle.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    editExpenseSelector.classList.remove('hidden');
-                } else {
-                    editExpenseSelector.classList.add('hidden');
-                    this.selectedExpensesForEditReimbursement = [];
-                    const textElement = document.getElementById('editSelectedExpensesText');
-                    if (textElement) {
-                        textElement.innerHTML = 'Select Expenses to Reimburse';
-                    }
-                }
-            });
-        }
-
-        // Edit Income Expense Selection Button
-        const editSelectExpensesBtn = document.getElementById('editSelectExpensesBtn');
-        if (editSelectExpensesBtn) {
-            editSelectExpensesBtn.addEventListener('click', () => {
-                this.openEditExpenseSelectorModal();
             });
         }
 
@@ -794,8 +732,6 @@ class FinTrackApp {
             
             this.state.addExpense(savedExpense);
             this.showAlert('Expense added', 'success');
-
-            this.ui.updateAllUI();
             
             document.getElementById('fabQuickAddModal').classList.remove('active');
             document.getElementById('fabExpenseForm').reset();
@@ -853,8 +789,6 @@ class FinTrackApp {
             }
             
             this.showAlert('Income added successfully', 'success');
-
-            this.ui.updateAllUI();
             
             document.getElementById('fabQuickAddModal').classList.remove('active');
             document.getElementById('fabIncomeForm').reset();
@@ -877,8 +811,6 @@ class FinTrackApp {
             
             this.state.addWallet(savedWallet);
             this.showAlert('Wallet added', 'success');
-
-            this.ui.updateAllUI();
             
             // Close modal and reset form
             document.getElementById('fabQuickAddModal').classList.remove('active');
@@ -907,8 +839,6 @@ class FinTrackApp {
             
             this.state.addCategory(savedCategory);
             this.showAlert('Category added', 'success');
-
-            this.ui.updateAllUI();
             
             // Close modal and reset form
             document.getElementById('fabQuickAddModal').classList.remove('active');
@@ -1028,104 +958,6 @@ class FinTrackApp {
         modal.classList.add('active');
     }
 
-    openEditExpenseSelectorModal() {
-        const modal = document.getElementById('expenseSelectorModal');
-        const listContainer = document.getElementById('expenseSelectorList');
-        
-        const pendingExpenses = this.state.getPendingReimbursableExpenses();
-        
-        // Get currently linked expenses for this income
-        const editItemId = document.getElementById('editItemId').value;
-        const currentlyLinked = this.state.getLinkedExpensesForIncome(editItemId);
-        
-        // Initialize with currently linked expenses
-        this.selectedExpensesForEditReimbursement = currentlyLinked.map(e => e.id);
-        
-        if (pendingExpenses.length === 0 && currentlyLinked.length === 0) {
-            listContainer.innerHTML = `
-                <div class="expense-selector-empty">
-                    <i class="fas fa-inbox"></i>
-                    <p>No pending reimbursable expenses</p>
-                </div>
-            `;
-            modal.classList.add('active');
-            return;
-        }
-        
-        // Combine pending and currently linked expenses
-        const allExpenses = [...pendingExpenses];
-        currentlyLinked.forEach(linked => {
-            if (!allExpenses.find(e => e.id === linked.id)) {
-                allExpenses.push(linked);
-            }
-        });
-        
-        listContainer.innerHTML = '';
-        allExpenses.forEach(expense => {
-            const isSelected = this.selectedExpensesForEditReimbursement.includes(expense.id);
-            
-            const item = document.createElement('div');
-            item.className = `expense-selector-item ${isSelected ? 'selected' : ''}`;
-            item.innerHTML = `
-                <input type="checkbox" 
-                    ${isSelected ? 'checked' : ''} 
-                    data-expense-id="${expense.id}"
-                    data-expense-amount="${expense.amount}">
-                <div class="expense-selector-details">
-                    <div class="expense-description">${expense.description}</div>
-                    <div class="expense-meta">
-                        <span>${expense.category}</span>
-                        ${expense.subcategory ? `<span>› ${expense.subcategory}</span>` : ''}
-                        <span>${new Date(expense.date).toLocaleDateString()}</span>
-                    </div>
-                    <div class="expense-amount">${currencyUtils.formatDisplayCurrency(expense.amount)}</div>
-                </div>
-            `;
-            
-            const checkbox = item.querySelector('input[type="checkbox"]');
-            checkbox.addEventListener('change', (e) => {
-                const expenseId = e.target.dataset.expenseId;
-                if (e.target.checked) {
-                    if (!this.selectedExpensesForEditReimbursement.includes(expenseId)) {
-                        this.selectedExpensesForEditReimbursement.push(expenseId);
-                    }
-                    item.classList.add('selected');
-                } else {
-                    this.selectedExpensesForEditReimbursement = this.selectedExpensesForEditReimbursement.filter(id => id !== expenseId);
-                    item.classList.remove('selected');
-                }
-                this.updateEditExpenseSelectorSummary();
-            });
-            
-            listContainer.appendChild(item);
-        });
-        
-        this.updateEditExpenseSelectorSummary();
-        modal.classList.add('active');
-    }    
-
-    updateEditExpenseSelectorSummary() {
-        const summary = document.getElementById('expenseSelectorSummary');
-        const countElement = document.getElementById('selectedExpenseCount');
-        const totalElement = document.getElementById('selectedExpenseTotal');
-        
-        if (this.selectedExpensesForEditReimbursement.length === 0) {
-            summary.style.display = 'none';
-            return;
-        }
-        
-        const expenses = this.state.getExpenses();
-        const selectedExpenses = expenses.filter(e => 
-            this.selectedExpensesForEditReimbursement.includes(e.id)
-        );
-        
-        const total = selectedExpenses.reduce((sum, e) => sum + e.amount, 0);
-        
-        countElement.textContent = selectedExpenses.length;
-        totalElement.textContent = currencyUtils.formatDisplayCurrency(total);
-        summary.style.display = 'block';
-    }    
-
     updateExpenseSelectorSummary() {
         const summary = document.getElementById('expenseSelectorSummary');
         const countElement = document.getElementById('selectedExpenseCount');
@@ -1149,38 +981,22 @@ class FinTrackApp {
     }
 
     confirmExpenseSelection() {
-        const isEditMode = document.getElementById('editItemId').value !== '';
-        const selectedArray = isEditMode ? this.selectedExpensesForEditReimbursement : this.selectedExpensesForReimbursement;
-        
-        if (selectedArray.length === 0) {
+        if (this.selectedExpensesForReimbursement.length === 0) {
             this.showAlert('Please select at least one expense', 'warning');
             return;
         }
         
+        this.updateSelectedExpensesDisplay();
+        
         const expenses = this.state.getExpenses();
-        const selectedExpenses = expenses.filter(e => selectedArray.includes(e.id));
+        const selectedExpenses = expenses.filter(e => 
+            this.selectedExpensesForReimbursement.includes(e.id)
+        );
         const total = selectedExpenses.reduce((sum, e) => sum + e.amount, 0);
         
-        if (isEditMode) {
-            // Update edit mode display
-            const textElement = document.getElementById('editSelectedExpensesText');
-            if (textElement) {
-                textElement.innerHTML = `${selectedArray.length} expense${selectedArray.length > 1 ? 's' : ''} selected (${currencyUtils.formatDisplayCurrency(total)})`;
-            }
-            
-            // Update amount in edit form
-            const amountInput = document.getElementById('editAmount');
-            if (amountInput) {
-                amountInput.value = currencyUtils.formatCurrency(total.toString());
-            }
-        } else {
-            // Update add mode display
-            this.updateSelectedExpensesDisplay();
-            
-            const amountInput = document.getElementById('fabIncomeAmount');
-            if (amountInput) {
-                amountInput.value = currencyUtils.formatCurrency(total.toString());
-            }
+        const amountInput = document.getElementById('fabIncomeAmount');
+        if (amountInput) {
+            amountInput.value = currencyUtils.formatCurrency(total.toString());
         }
         
         document.getElementById('expenseSelectorModal').classList.remove('active');
@@ -1205,33 +1021,13 @@ class FinTrackApp {
     }
 
     async handleUnlinkReimbursement(incomeId) {
-        const modal = document.getElementById('unlinkReimbursementModal');
-        
-        // Store the income ID for the confirm button
-        window.finTrack.pendingUnlinkIncomeId = incomeId;
-        
-        modal.classList.add('active');
-    }
-
-    async confirmUnlinkReimbursement() {
-        const incomeId = window.finTrack.pendingUnlinkIncomeId;
-        if (!incomeId) return;
+        const confirmed = confirm('Unlink this reimbursement? The expenses will return to pending status.');
+        if (!confirmed) return;
         
         try {
             await this.db.unlinkReimbursement(incomeId);
             this.state.unlinkReimbursement(incomeId);
             this.showAlert('Reimbursement unlinked', 'success');
-
-            this.ui.updateAllUI();
-            
-            // Force update reimbursement view if it's currently active
-            if (this.ui) {
-                this.ui.updateReimbursementView();
-            }
-            
-            // Close modal
-            document.getElementById('unlinkReimbursementModal').classList.remove('active');
-            window.finTrack.pendingUnlinkIncomeId = null;
         } catch (error) {
             console.error('Error unlinking reimbursement:', error);
             this.showAlert('Error unlinking reimbursement', 'error');
@@ -1242,34 +1038,7 @@ class FinTrackApp {
         const linkedIncome = this.state.getLinkedIncomeForExpense(expenseId);
         if (!linkedIncome) return;
         
-        const modal = document.getElementById('reimbursementDetailsModal');
-        const content = document.getElementById('reimbursementDetailsContent');
-        
-        content.innerHTML = `
-            <div style="background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid #10B981;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="color: #065F46; font-weight: 600;">Description:</span>
-                    <span style="color: #047857; font-weight: 700;">${linkedIncome.description}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="color: #065F46; font-weight: 600;">Amount:</span>
-                    <span style="color: #047857; font-weight: 700; font-size: 1.1rem;">${currencyUtils.formatDisplayCurrency(linkedIncome.amount)}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="color: #065F46; font-weight: 600;">Source:</span>
-                    <span style="color: #047857; font-weight: 700;">${linkedIncome.source}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: #065F46; font-weight: 600;">Date:</span>
-                    <span style="color: #047857; font-weight: 700;">${new Date(linkedIncome.date).toLocaleDateString()}</span>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="document.getElementById('reimbursementDetailsModal').classList.remove('active')" style="width: 100%;">
-                <i class="fas fa-check"></i> Got it
-            </button>
-        `;
-        
-        modal.classList.add('active');
+        alert(`Reimbursed on ${new Date(linkedIncome.date).toLocaleDateString()}\nAmount: ${currencyUtils.formatDisplayCurrency(linkedIncome.amount)}\nSource: ${linkedIncome.source}`);
     }    
     
 async checkInitialAuthState() {
@@ -1748,7 +1517,6 @@ class UIController {
         // Initialize dropdowns
         this.updateGlobalWalletSelector();
         this.updateMonthYearFilters();
-        this.setupExpenseSubTabs();
 
         initializeSidebar(this.state);
     }
@@ -1915,7 +1683,6 @@ class UIController {
                 const monthSelect = document.getElementById('expenseMonthSelect');
                 const yearSelect = document.getElementById('expenseYearSelect');
                 this.updateExpensesTabUI();
-                this.switchExpenseSubTab('all');
                 break;
             case 'income':
                 this.updateIncomesTabUI();
@@ -3575,43 +3342,13 @@ openEditModal(type, item) {
     const categorySelect = document.getElementById('editCategory');
     const subcategorySelect = document.getElementById('editSubcategory');
 
-    // CRITICAL: Reset all sections first to prevent cross-contamination
-    const expenseCategoryRow = document.getElementById('editExpenseCategoryRow');
-    const expenseReimbursableSection = document.getElementById('editExpenseReimbursableSection');
-    const incomeReimbursementSection = document.getElementById('editIncomeReimbursementSection');
-    const incomeTypeGroup = document.getElementById('editIncomeTypeGroup');
-    const editIncomeExpenseSelector = document.getElementById('editIncomeExpenseSelector');
-
-    // Hide all sections by default
-    if (expenseCategoryRow) expenseCategoryRow.style.display = 'none';
-    if (expenseReimbursableSection) expenseReimbursableSection.style.display = 'none';
-    if (incomeReimbursementSection) incomeReimbursementSection.style.display = 'none';
-    if (incomeTypeGroup) incomeTypeGroup.style.display = 'none';
-    if (editIncomeExpenseSelector) editIncomeExpenseSelector.classList.add('hidden');
-
-    // Reset checkboxes
-    const expenseReimbursableCheckbox = document.getElementById('editIsReimbursable');
-    const incomeReimbursementCheckbox = document.getElementById('editIncomeIsReimbursement');
-    if (expenseReimbursableCheckbox) expenseReimbursableCheckbox.checked = false;
-    if (incomeReimbursementCheckbox) incomeReimbursementCheckbox.checked = false;
-
     // Set modal identity
     if (type === 'expense') {
         title.innerHTML = 'Edit Expense';
         subtitle.textContent = 'Update expense details';
-        
-        if (expenseCategoryRow) expenseCategoryRow.style.display = 'flex';
-        if (expenseReimbursableSection) {
-            expenseReimbursableSection.style.display = 'block';
-            console.log('✅ Expense reimbursable section shown');
-        }
     } else {
         title.innerHTML = 'Edit Income';
         subtitle.textContent = 'Update income details';
-        
-        // Show income-specific fields
-        if (incomeReimbursementSection) incomeReimbursementSection.style.display = 'block';
-        if (incomeTypeGroup) incomeTypeGroup.style.display = 'block';
     }
     
     document.getElementById('editItemType').value = type;
@@ -3622,6 +3359,8 @@ openEditModal(type, item) {
     
     // Setup subcategory if it's an expense
     if (type === 'expense') {
+        subcategorySelect.style.display = 'block';
+        subcategorySelect.previousElementSibling.style.display = 'block';
         
         // Load subcategories based on selected category
         const mainCategories = this.state.getMainCategories();
@@ -3660,53 +3399,9 @@ openEditModal(type, item) {
             });
         }
     } else {
-        
-        // Show income type dropdown
-        const incomeTypeGroup = document.getElementById('editIncomeTypeGroup');
-        const incomeTypeSelect = document.getElementById('editIncomeType');
-        if (incomeTypeGroup && incomeTypeSelect) {
-            incomeTypeGroup.style.display = 'block';
-            
-            // Populate income type options
-            incomeTypeSelect.innerHTML = `
-                <option value="">Select type</option>
-                <option value="Salary">Salary</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Investment">Investment</option>
-                <option value="Gift">Gift</option>
-                <option value="Bonus">Bonus</option>
-                <option value="Reimbursement">Reimbursement</option>
-                <option value="Other">Other</option>
-            `;
-            incomeTypeSelect.value = item.source;
-        }
-        
-        // Show reimbursement section for income
-        const reimbursementSection = document.getElementById('editIncomeReimbursementSection');
-        if (reimbursementSection) {
-            reimbursementSection.style.display = 'block';
-            
-            // Set checkbox state
-            const isReimbursementCheckbox = document.getElementById('editIncomeIsReimbursement');
-            if (isReimbursementCheckbox) {
-                isReimbursementCheckbox.checked = item.isReimbursement || false;
-                
-                // Show/hide expense selector based on checkbox state
-                const expenseSelector = document.getElementById('editIncomeExpenseSelector');
-                if (item.isReimbursement) {
-                    expenseSelector.classList.remove('hidden');
-                    // Update display with linked expenses
-                    const linkedExpenses = this.state.getLinkedExpensesForIncome(item.id);
-                    const textElement = document.getElementById('editSelectedExpensesText');
-                    if (textElement && linkedExpenses.length > 0) {
-                        const total = linkedExpenses.reduce((sum, e) => sum + e.amount, 0);
-                        textElement.innerHTML = `${linkedExpenses.length} expense${linkedExpenses.length > 1 ? 's' : ''} selected (${currencyUtils.formatDisplayCurrency(total)})`;
-                    }
-                } else {
-                    expenseSelector.classList.add('hidden');
-                }
-            }
-        }
+        // Hide subcategory for income
+        subcategorySelect.style.display = 'none';
+        subcategorySelect.previousElementSibling.style.display = 'none';
     }
 
     // Fill values from the transaction
@@ -3723,10 +3418,9 @@ openEditModal(type, item) {
         const checkbox = document.getElementById('editIsReimbursable');
         
         if (checkbox) {
-            checkbox.checked = item.isReimbursable || false;
-            console.log('🔧 Setting expense reimbursable checkbox to:', item.isReimbursable);
+            checkbox.checked = item.isReimbursable || item.isReimbursable || false;
         }
-    }
+    }  
     
     // ✅ Add live formatting for edit amount input
     const editAmountInput = document.getElementById('editAmount');
@@ -3962,276 +3656,6 @@ openEditModal(type, item) {
         });
         
         modal.classList.add('active');
-    }
-    
-    setupExpenseSubTabs() {
-        const subTabs = document.querySelectorAll('.expense-sub-tab');
-        
-        subTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const subtab = tab.getAttribute('data-subtab');
-                this.switchExpenseSubTab(subtab);
-            });
-        });
-    }
-
-    switchExpenseSubTab(subtab) {
-        // Update active tab
-        document.querySelectorAll('.expense-sub-tab').forEach(tab => {
-            if (tab.getAttribute('data-subtab') === subtab) {
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-            }
-        });
-        
-        // Show/hide views
-        const allExpensesView = document.getElementById('allExpensesView');
-        const reimbursementView = document.getElementById('reimbursementView');
-        
-        if (subtab === 'all') {
-            allExpensesView.style.display = 'block';
-            reimbursementView.style.display = 'none';
-        } else if (subtab === 'reimbursement') {
-            allExpensesView.style.display = 'none';
-            reimbursementView.style.display = 'block';
-            this.updateReimbursementView();
-        }
-    }
-
-    updateReimbursementView() {
-        const currentWalletId = this.state.getState().currentWalletId;
-        
-        if (!currentWalletId) {
-            this.showEmptyReimbursementState('Please select a wallet first');
-            return;
-        }
-        
-        const stats = this.state.getReimbursementStats();
-        
-        // Update dashboard stats
-        document.getElementById('reimbPendingTotal').textContent = 
-            currencyUtils.formatDisplayCurrency(stats.pendingAmount);
-        document.getElementById('reimbPendingCount').textContent = 
-            `${stats.pending} expense${stats.pending !== 1 ? 's' : ''}`;
-        
-        document.getElementById('reimbReimbursedTotal').textContent = 
-            currencyUtils.formatDisplayCurrency(stats.reimbursedAmount);
-        document.getElementById('reimbReimbursedCount').textContent = 
-            `${stats.reimbursed} expense${stats.reimbursed !== 1 ? 's' : ''}`;
-        
-        // Update pending list
-        this.renderPendingReimbursements();
-        
-        // Update reimbursed list
-        this.renderReimbursedExpenses();
-    }
-
-    renderPendingReimbursements() {
-        const container = document.getElementById('pendingReimbursementList');
-        const countElement = document.getElementById('pendingReimbursementCount');
-        const pending = this.state.getPendingReimbursableExpenses();
-        
-        countElement.textContent = pending.length;
-        
-        if (pending.length === 0) {
-            container.innerHTML = `
-                <div class="reimbursement-empty">
-                    <i class="fas fa-inbox"></i>
-                    <h3>No Pending Reimbursements</h3>
-                    <p>Check "💰 Reimbursable" when adding expenses that will be reimbursed</p>
-                </div>
-            `;
-            return;
-        }
-        
-        container.innerHTML = '';
-        
-        pending.forEach(expense => {
-            const item = document.createElement('div');
-            item.className = 'expense-item';
-            
-            let categoryText = expense.category;
-            if (expense.subcategory) {
-                categoryText += ` › ${expense.subcategory}`;
-            }
-            
-            item.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                    <div style="flex: 1; min-width: 0; margin-right: 12px;">
-                        <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
-                            ${expense.description}
-                            <span class="reimbursement-badge pending">
-                                <i class="fas fa-clock"></i> Pending
-                            </span>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                        <span class="expense-category" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
-                            ${categoryText}
-                        </span>
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
-                            ${currencyUtils.formatDisplayCurrency(expense.amount)}
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--gray);">
-                            ${new Date(expense.date).toLocaleDateString()}
-                        </div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            container.appendChild(item);
-        });
-    }
-
-    renderReimbursedExpenses() {
-        const container = document.getElementById('reimbursedList');
-        const countElement = document.getElementById('reimbursedCount');
-        
-        const currentWalletId = this.state.getState().currentWalletId;
-        const expenses = this.state.getExpenses().filter(e => 
-            e.walletId === currentWalletId &&
-            e.isReimbursable === true &&
-            e.reimbursementStatus === 'reimbursed'
-        );
-        
-        // Get all reimbursement incomes
-        const reimbursementIncomes = this.state.getIncomes().filter(i =>
-            i.walletId === currentWalletId &&
-            i.isReimbursement === true
-        );
-        
-        countElement.textContent = reimbursementIncomes.length;
-        
-        if (reimbursementIncomes.length === 0) {
-            container.innerHTML = `
-                <div class="reimbursement-empty">
-                    <i class="fas fa-check-circle"></i>
-                    <h3>No Reimbursements Yet</h3>
-                    <p>Add income and mark as reimbursement to link expenses</p>
-                </div>
-            `;
-            return;
-        }
-        
-        container.innerHTML = '';
-        
-        // Group by income (reimbursement)
-        reimbursementIncomes.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        reimbursementIncomes.forEach(income => {
-            const linkedExpenses = this.state.getLinkedExpensesForIncome(income.id);
-            
-            const groupDiv = document.createElement('div');
-            groupDiv.style.marginBottom = '1.5rem';
-            
-            // Income header
-            const incomeHeader = document.createElement('div');
-            incomeHeader.className = 'income-item';
-            incomeHeader.style.background = 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)';
-            incomeHeader.style.border = '2px solid #10B981';
-            incomeHeader.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                    <div style="flex: 1; min-width: 0; margin-right: 12px;">
-                        <div style="font-weight: 600; word-break: break-word; font-size: 0.9rem; color: #065F46;">
-                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
-                            ${income.description}
-                            <span class="linked-income-badge">
-                                <i class="fas fa-link"></i>
-                                ${linkedExpenses.length} expense${linkedExpenses.length !== 1 ? 's' : ''}
-                            </span>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                        <span style="font-size: 0.7rem; background: white; padding: 2px 8px; border-radius: 12px; color: #065F46; font-weight: 600;">
-                            ${new Date(income.date).toLocaleDateString()}
-                        </span>
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
-                    <div class="income-amount" style="font-weight: 700; color: #10B981; font-size: 1.1rem;">
-                        ${currencyUtils.formatDisplayCurrency(income.amount)}
-                    </div>
-                    <div class="action-buttons">
-                        <button class="unlink-reimbursement-btn" onclick="window.finTrack.app.handleUnlinkReimbursement('${income.id}')">
-                            <i class="fas fa-unlink"></i> Unlink
-                        </button>
-                        <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            groupDiv.appendChild(incomeHeader);
-            
-            // Linked expenses
-            if (linkedExpenses.length > 0) {
-                const expensesContainer = document.createElement('div');
-                expensesContainer.style.marginLeft = '20px';
-                expensesContainer.style.marginTop = '8px';
-                expensesContainer.style.paddingLeft = '12px';
-                expensesContainer.style.borderLeft = '3px solid #10B981';
-                
-                linkedExpenses.forEach(expense => {
-                    let categoryText = expense.category;
-                    if (expense.subcategory) {
-                        categoryText += ` › ${expense.subcategory}`;
-                    }
-                    
-                    const expenseItem = document.createElement('div');
-                    expenseItem.className = 'expense-item';
-                    // expenseItem.style.background = '#F9FAFB';
-                    // expenseItem.style.marginBottom = '8px';
-                    expenseItem.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; font-weight: 500;">${expense.description}</div>
-                                <div style="font-size: 0.75rem; color: var(--gray); margin-top: 2px;">
-                                    ${categoryText} • ${new Date(expense.date).toLocaleDateString()}
-                                </div>
-                            </div>
-                            <div style="font-weight: 600; color: var(--primary);">
-                                ${currencyUtils.formatDisplayCurrency(expense.amount)}
-                            </div>
-                        </div>
-                    `;
-                    
-                    expensesContainer.appendChild(expenseItem);
-                });
-                
-                groupDiv.appendChild(expensesContainer);
-            }
-            
-            container.appendChild(groupDiv);
-        });
-    }
-
-    showEmptyReimbursementState(message) {
-        const container = document.getElementById('pendingReimbursementList');
-        container.innerHTML = `
-            <div class="reimbursement-empty">
-                <i class="fas fa-wallet"></i>
-                <h3>${message}</h3>
-            </div>
-        `;
-        
-        document.getElementById('reimbursedList').innerHTML = container.innerHTML;
     }    
 }
 
