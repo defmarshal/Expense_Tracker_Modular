@@ -2334,11 +2334,9 @@ class UIController {
                     let reimbursementBadge = '';
                     if (transaction.isReimbursable) {
                         if (transaction.reimbursementStatus === 'pending') {
-                            reimbursementBadge = '<span class="reimbursement-badge pending"><i class="fas fa-clock"></i> Pending</span>';
+                            reimbursementBadge = '<span class="reimbursement-badge pending" title="Pending reimbursement"><i class="fas fa-clock"></i></span>';
                         } else if (transaction.reimbursementStatus === 'reimbursed') {
-                            const linkedIncome = this.state.getLinkedIncomeForExpense(transaction.id);
-                            const date = linkedIncome ? new Date(linkedIncome.date).toLocaleDateString() : '';
-                            reimbursementBadge = `<span class="reimbursement-badge reimbursed clickable" onclick="window.finTrack.app.showReimbursementDetails('${transaction.id}')" title="Click for details"><i class="fas fa-check-circle"></i> Reimbursed ${date}</span>`;
+                            reimbursementBadge = `<span class="reimbursement-badge reimbursed clickable" onclick="window.finTrack.app.showReimbursementDetails('${transaction.id}')" title="Reimbursed - Click for details"><i class="fas fa-check-circle"></i></span>`;
                         }
                     }
                     
@@ -2376,7 +2374,7 @@ class UIController {
                     if (transaction.isReimbursement) {
                         const linkedExpenses = this.state.getLinkedExpensesForIncome(transaction.id);
                         const count = linkedExpenses.length;
-                        reimbursementBadge = `<span class="reimbursement-badge is-reimbursement"><i class="fas fa-link"></i> ${count} expense${count !== 1 ? 's' : ''}</span>`;
+                        reimbursementBadge = `<span class="reimbursement-badge is-reimbursement" title="${count} linked expense${count !== 1 ? 's' : ''}"><i class="fas fa-link"></i></span>`;
                     }
                     
                     item.innerHTML = `
@@ -2400,7 +2398,7 @@ class UIController {
                             <div class="action-buttons">
                                 ${transaction.isReimbursement ? `
                                     <button class="unlink-reimbursement-btn" onclick="window.finTrack.app.handleUnlinkReimbursement('${transaction.id}')">
-                                        <i class="fas fa-unlink"></i> Unlink
+                                        <i class="fas fa-unlink"></i>
                                     </button>
                                 ` : ''}
                                 <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${transaction.id}')">
@@ -2634,11 +2632,9 @@ class UIController {
                 let reimbursementBadge = '';
                 if (expense.isReimbursable) {
                     if (expense.reimbursementStatus === 'pending') {
-                        reimbursementBadge = '<span class="reimbursement-badge pending"><i class="fas fa-clock"></i> Pending</span>';
+                        reimbursementBadge = '<span class="reimbursement-badge pending" title="Pending reimbursement"><i class="fas fa-clock"></i></span>';
                     } else if (expense.reimbursementStatus === 'reimbursed') {
-                        const linkedIncome = this.state.getLinkedIncomeForExpense(expense.id);
-                        const date = linkedIncome ? new Date(linkedIncome.date).toLocaleDateString() : '';
-                        reimbursementBadge = `<span class="reimbursement-badge reimbursed clickable" onclick="window.finTrack.app.showReimbursementDetails('${expense.id}')" title="Click for details"><i class="fas fa-check-circle"></i> Reimbursed ${date}</span>`;
+                        reimbursementBadge = `<span class="reimbursement-badge reimbursed clickable" onclick="window.finTrack.app.showReimbursementDetails('${expense.id}')" title="Reimbursed - Click for details"><i class="fas fa-check-circle"></i></span>`;
                     }
                 }
                 
@@ -3075,7 +3071,7 @@ class UIController {
                 if (income.isReimbursement) {
                     const linkedExpenses = this.state.getLinkedExpensesForIncome(income.id);
                     const count = linkedExpenses.length;
-                    reimbursementBadge = `<span class="reimbursement-badge is-reimbursement"><i class="fas fa-link"></i> ${count} expense${count !== 1 ? 's' : ''}</span>`;
+                    reimbursementBadge = `<span class="reimbursement-badge is-reimbursement" title="${count} linked expense${count !== 1 ? 's' : ''}"><i class="fas fa-link"></i></span>`;
                 }
                 
                 const item = document.createElement('div');
@@ -3101,7 +3097,7 @@ class UIController {
                         <div class="action-buttons">
                             ${income.isReimbursement ? `
                                 <button class="unlink-reimbursement-btn" onclick="window.finTrack.app.handleUnlinkReimbursement('${income.id}')">
-                                    <i class="fas fa-unlink"></i> Unlink
+                                    <i class="fas fa-unlink"></i>
                                 </button>
                             ` : ''}
                             <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
@@ -3169,7 +3165,7 @@ class UIController {
                     <div class="action-buttons">
                         ${income.isReimbursement ? `
                             <button class="unlink-reimbursement-btn" onclick="window.finTrack.app.handleUnlinkReimbursement('${income.id}')">
-                                <i class="fas fa-unlink"></i> Unlink
+                                <i class="fas fa-unlink"></i>
                             </button>
                         ` : ''}
                         <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
@@ -3645,6 +3641,9 @@ openEditModal(type, item) {
                 const selectedCategory = e.target.value;
                 const selectedMainCategory = mainCategories.find(c => c.name === selectedCategory);
                 
+                // Disable select temporarily to prevent iOS glitch
+                subcategorySelect.disabled = true;
+                
                 if (selectedMainCategory) {
                     const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
                     subcategorySelect.innerHTML = '<option value="">Optional</option>';
@@ -3657,6 +3656,11 @@ openEditModal(type, item) {
                 } else {
                     subcategorySelect.innerHTML = '<option value="">Optional</option>';
                 }
+                
+                // Re-enable after a brief delay (iOS Safari fix)
+                setTimeout(() => {
+                    subcategorySelect.disabled = false;
+                }, 50);
             });
         }
     } else {

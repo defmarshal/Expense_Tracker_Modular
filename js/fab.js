@@ -163,11 +163,13 @@ export function initFAB() {
             newCategorySelect.appendChild(option);
         });
 
-        // Add change listener once
         newCategorySelect.addEventListener('change', function() {
             const subcategorySelect = document.getElementById('fabExpenseSubcategory');
             if (!subcategorySelect) return;
 
+            // iOS Safari fix
+            subcategorySelect.disabled = true;
+            
             subcategorySelect.innerHTML = '<option value="">Optional</option>';
             
             if (this.value) {
@@ -182,6 +184,11 @@ export function initFAB() {
                     });
                 }
             }
+            
+            // Re-enable after brief delay
+            setTimeout(() => {
+                subcategorySelect.disabled = false;
+            }, 50);
         });
     }
 
