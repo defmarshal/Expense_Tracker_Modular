@@ -2343,6 +2343,8 @@ class UIController {
         this.updateExpensesTabUI();
         this.updateIncomesTabUI();
         this.updateStats();
+        this.updateCompactBudgetView();
+        this.updateBudgetTabUI();
     }
 
     syncWalletSelector() {
@@ -4605,4 +4607,5 @@ class UIController {
 // Export app factory function
 export const createApp = (supabase) => {
     return new FinTrackApp(supabase);
+
 };
