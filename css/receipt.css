@@ -1,0 +1,79 @@
+/* Receipt viewer styles */
+.receipt-icon-btn {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    border: 1px solid #3B82F6;
+    padding: 2px 8px;
+    cursor: pointer;
+    color: #1E40AF;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    gap: 4px;
+    line-height: 1;
+    min-height: 0;
+    vertical-align: middle;    
+}
+
+.receipt-icon-btn i {
+    font-size: 0.7rem;  /* or 0.65rem for even smaller */
+}
+
+.receipt-icon-btn:hover {
+    background: rgba(59, 130, 246, 0.2);  /* Darker blue fill on hover (20% opacity) */
+    border-color: rgba(59, 130, 246, 0.5);  /* Stronger border on hover (50% opacity) */    
+    transform: scale(1.1);
+}
+
+.receipt-icon-btn:active {
+    transform: scale(0.95);
+}
+
+#receiptViewerContent img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+#receiptViewerContent iframe {
+    width: 100%;
+    height: 70vh;
+    border: none;
+    border-radius: 8px;
+}
+
+.receipt-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 40px;
+    color: var(--gray);
+}
+
+.receipt-loading i {
+    font-size: 3rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.receipt-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 40px;
+    color: var(--danger);
+}
+
+.receipt-error i {
+    font-size: 3rem;
+}

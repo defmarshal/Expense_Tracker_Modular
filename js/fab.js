@@ -163,32 +163,56 @@ export function initFAB() {
             newCategorySelect.appendChild(option);
         });
 
+        // Debounced update handler for rapid switching
+        let updateTimeout = null;  // ✅ Timer instead of boolean flag
+        let lastValue = '';
+
         newCategorySelect.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            
+            // Cancel any pending update (KEY CHANGE!)
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);  // ✅ Cancel previous timer
+            }
+            
+            // Store the latest selection
+            lastValue = selectedCategory;
+            
             const subcategorySelect = document.getElementById('fabExpenseSubcategory');
             if (!subcategorySelect) return;
 
-            // iOS Safari fix
+            // Immediate visual feedback - disable subcategory
             subcategorySelect.disabled = true;
             
-            subcategorySelect.innerHTML = '<option value="">Optional</option>';
-            
-            if (this.value) {
-                const mainCategory = categories.find(c => c.name === this.value);
-                if (mainCategory) {
-                    const subcategories = window.finTrack.state.getSubcategories(mainCategory.id);
-                    subcategories.forEach(subcat => {
-                        const option = document.createElement('option');
-                        option.value = subcat.name;
-                        option.textContent = subcat.name;
-                        subcategorySelect.appendChild(option);
-                    });
+            // Debounce the actual update
+            updateTimeout = setTimeout(() => {  // ✅ Set new timer
+                // Close the category dropdown
+                newCategorySelect.blur();
+                
+                // Update subcategory options
+                subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                
+                if (lastValue) {
+                    const mainCategory = categories.find(c => c.name === lastValue);
+                    if (mainCategory) {
+                        const subcategories = window.finTrack.state.getSubcategories(mainCategory.id);
+                        subcategories.forEach(subcat => {
+                            const option = document.createElement('option');
+                            option.value = subcat.name;
+                            option.textContent = subcat.name;
+                            subcategorySelect.appendChild(option);
+                        });
+                    }
                 }
-            }
-            
-            // Re-enable after brief delay
-            setTimeout(() => {
-                subcategorySelect.disabled = false;
-            }, 50);
+                
+                // Re-enable after a short delay for iOS to settle
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        subcategorySelect.disabled = false;
+                        updateTimeout = null;
+                    }, 50);
+                });
+            }, 200); // ✅ 200ms debounce - waits for user to stop switching
         });
     }
 

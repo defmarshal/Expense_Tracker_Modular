@@ -299,7 +299,6 @@ class FinTrackApp {
             this.handleAddSubcategory(e);
         });
 
-        // Edit Transaction form
         const editForm = document.getElementById('editTransactionForm');
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
@@ -312,7 +311,6 @@ class FinTrackApp {
                     const isReimbursement = document.getElementById('editIncomeIsReimbursement')?.checked || false;
                     
                     if (isReimbursement && this.selectedExpensesForEditReimbursement && this.selectedExpensesForEditReimbursement.length === 0) {
-                        // Check if this income already has linked expenses
                         const existingLinked = this.state.getLinkedExpensesForIncome(id);
                         if (existingLinked.length === 0) {
                             this.showAlert('Please select expenses to reimburse', 'error');
@@ -328,7 +326,6 @@ class FinTrackApp {
                 const categoryValue = document.getElementById('editCategory').value;
                 const subcategoryValue = document.getElementById('editSubcategory').value || '';
                 
-                // Get reimbursable status
                 const isReimbursable = document.getElementById('editIsReimbursable')?.checked || false;
 
                 const updateData = {
@@ -344,23 +341,40 @@ class FinTrackApp {
                     updateData.is_reimbursable = isReimbursable;
                     
                     console.log('💾 Updating expense with isReimbursable:', isReimbursable);
+                    const receiptUpload = document.getElementById('editReceiptUpload');
+                    const newReceiptFile = receiptUpload?.files[0];
+                    const deleteExisting = receiptUpload?.dataset.deleteExisting === 'true';
+                    
+                    if (deleteExisting) {
+                        const oldExpense = this.state.getExpenses().find(e => e.id === id);
+                        if (oldExpense?.receiptUrl) {
+                            await this.db.deleteReceipt(oldExpense.receiptUrl);
+                        }
+                        updateData.receipt_url = null;
+                    } else if (newReceiptFile) {
+                        if (this.ui && typeof this.ui.showLoading === 'function') {
+                            this.ui.showLoading(true);
+                        }
+                        
+                        const oldExpense = this.state.getExpenses().find(e => e.id === id);
+                        if (oldExpense?.receiptUrl) {
+                            await this.db.deleteReceipt(oldExpense.receiptUrl);
+                        }
+                        
+                        const receiptUrl = await this.db.uploadReceipt(newReceiptFile, id);
+                        updateData.receipt_url = receiptUrl;
+                    }
                 } else {
                     updateData.source = categoryValue;
                     updateData.wallet_id = this.state.getState().currentWalletId;
                 }
 
-                // 👇 ADD BUDGET CHECK HERE FOR EXPENSES
                 if (type === 'expense') {
-                    // Get the original expense to check if reimbursable status changed
                     const originalExpense = this.state.getExpenses().find(e => e.id === id);
-                    
-                    // Check if we're changing FROM reimbursable TO non-reimbursable
                     const wasReimbursable = originalExpense?.isReimbursable || false;
                     const isNowReimbursable = isReimbursable;
                     
-                    // If changing from reimbursable to non-reimbursable, check budget
                     if (wasReimbursable && !isNowReimbursable) {
-                        
                         const budgetStatus = this.checkBudgetBeforeExpense(categoryValue, amount);
                         
                         if (budgetStatus && budgetStatus.willExceed) {
@@ -376,10 +390,8 @@ class FinTrackApp {
                         }
                     }
                 }
-                // 👆 END OF BUDGET CHECK
 
                 try {
-                    // Show loading
                     if (this.ui && typeof this.ui.showLoading === 'function') {
                         this.ui.showLoading(true);
                     }
@@ -388,30 +400,23 @@ class FinTrackApp {
                         const updated = await this.db.updateExpense(id, updateData);
                         this.state.updateExpense(updated);
                     } else {
-                        // Handle income with reimbursement
                         const isReimbursement = document.getElementById('editIncomeIsReimbursement')?.checked || false;
                         updateData.isReimbursement = isReimbursement;
                         
                         const updated = await this.db.updateIncome(id, updateData);
                         
-                        // Handle reimbursement linking changes
                         if (isReimbursement && this.selectedExpensesForEditReimbursement && this.selectedExpensesForEditReimbursement.length > 0) {
-                            // Unlink old expenses first
                             await this.db.unlinkReimbursement(id);
-                            // Link new expenses
                             await this.db.linkReimbursement(id, this.selectedExpensesForEditReimbursement);
                             this.state.linkReimbursement(id, this.selectedExpensesForEditReimbursement);
                         } else if (!isReimbursement) {
-                            // If unchecked, unlink all expenses
                             await this.db.unlinkReimbursement(id);
                             this.state.unlinkReimbursement(id);
                         } else {
-                            // Keep existing links
                             this.state.updateIncome(updated);
                         }
                     }
                     
-                    // Refresh and close
                     this.ui.updateAllUI();
                     document.getElementById('editTransactionModal').classList.remove('active');
                     this.showAlert('Changes saved successfully', 'success');
@@ -659,6 +664,16 @@ class FinTrackApp {
             if (window.finTrack.budgetWarningCallback) {
                 window.finTrack.budgetWarningCallback(true);
             }
+        });       
+        
+        document.getElementById('closeReceiptViewer')?.addEventListener('click', () => {
+            document.getElementById('receiptViewerModal').classList.remove('active');
+        });
+        
+        document.getElementById('receiptViewerModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'receiptViewerModal') {
+                e.target.classList.remove('active');
+            }
         });        
     }
 
@@ -790,9 +805,27 @@ class FinTrackApp {
                 walletId, isReimbursable 
             };
             
-            const savedExpense = await this.db.createExpense(expenseData);
+            // Handle receipt upload
+            const receiptFile = document.getElementById('fabReceiptUpload')?.files[0];
+            if (receiptFile) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading receipt...';
+                
+                // Create expense first to get ID
+                const savedExpense = await this.db.createExpense(expenseData);
+                
+                // Upload receipt
+                const receiptUrl = await this.db.uploadReceipt(receiptFile, savedExpense.id);
+                
+                // Update expense with receipt URL
+                await this.db.updateExpense(savedExpense.id, { receipt_url: receiptUrl });
+                savedExpense.receiptUrl = receiptUrl;
+                
+                this.state.addExpense(savedExpense);
+            } else {
+                const savedExpense = await this.db.createExpense(expenseData);
+                this.state.addExpense(savedExpense);
+            }
             
-            this.state.addExpense(savedExpense);
             this.showAlert('Expense added', 'success');
 
             this.ui.updateAllUI();
@@ -1236,6 +1269,117 @@ class FinTrackApp {
             console.error('Error unlinking reimbursement:', error);
             this.showAlert('Error unlinking reimbursement', 'error');
         }
+    }
+
+    viewReceipt(expenseId, expenseName, receiptUrl) {
+        const modal = document.getElementById('receiptViewerModal');
+        const content = document.getElementById('receiptViewerContent');
+        const nameElement = document.getElementById('receiptExpenseName');
+        const downloadBtn = document.getElementById('receiptDownloadBtn');
+        
+        if (!modal || !content) {
+            console.error('Receipt viewer modal not found');
+            return;
+        }
+        
+        // ✅ Use expenseId to get full expense details from state
+        const expense = this.state.getExpenses().find(e => e.id === expenseId);
+        
+        if (!expense) {
+            console.error('Expense not found:', expenseId);
+            this.showAlert('Expense not found', 'error');
+            return;
+        }
+        
+        // ✅ Use the actual receiptUrl from the expense object if available
+        const actualReceiptUrl = receiptUrl || expense.receiptUrl;
+        
+        if (!actualReceiptUrl) {
+            this.showAlert('No receipt available for this expense', 'warning');
+            return;
+        }
+        
+        // Set expense name with more details
+        if (nameElement) {
+            const expenseDate = new Date(expense.date).toLocaleDateString();
+            nameElement.textContent = `${expenseName} - ${expenseDate}`;
+        }
+        
+        // Set download link with proper filename
+        if (downloadBtn) {
+            downloadBtn.href = actualReceiptUrl;
+            const fileExt = actualReceiptUrl.split('.').pop().split('?')[0]; // Handle query params
+            const sanitizedName = expenseName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const fileName = `receipt_${sanitizedName}_${expenseId.substring(0, 8)}.${fileExt}`;
+            downloadBtn.download = fileName;
+        }
+        
+        // Show loading state
+        content.innerHTML = `
+            <div class="receipt-loading">
+                <i class="fas fa-spinner"></i>
+                <p>Loading receipt...</p>
+            </div>
+        `;
+        
+        // Open modal
+        modal.classList.add('active');
+        
+        // Load receipt content
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(actualReceiptUrl);
+        const isPDF = /\.pdf$/i.test(actualReceiptUrl);
+        
+        setTimeout(() => {
+            if (isImage) {
+                const img = new Image();
+                img.onload = () => {
+                    content.innerHTML = `
+                        <div style="padding: 1rem; max-width: 100%;">
+                            <img src="${actualReceiptUrl}" 
+                                alt="Receipt for ${expenseName}" 
+                                style="max-width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        </div>
+                    `;
+                };
+                img.onerror = () => {
+                    content.innerHTML = `
+                        <div class="receipt-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Failed to load receipt image</p>
+                            <p style="font-size: 0.85rem; color: var(--gray);">The image may have been deleted or is no longer available.</p>
+                            <a href="${actualReceiptUrl}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt"></i> Try opening in new tab
+                            </a>
+                        </div>
+                    `;
+                };
+                img.src = actualReceiptUrl;
+            } else if (isPDF) {
+                content.innerHTML = `
+                    <div style="width: 100%; height: 100%;">
+                        <iframe src="${actualReceiptUrl}" 
+                                style="width: 100%; height: 70vh; border: none; border-radius: 8px;"
+                                title="Receipt PDF for ${expenseName}">
+                        </iframe>
+                        <div style="text-align: center; padding: 1rem; color: var(--gray); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> If the PDF doesn't display, 
+                            <a href="${actualReceiptUrl}" target="_blank" style="color: var(--primary);">open it in a new tab</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="receipt-error">
+                        <i class="fas fa-file"></i>
+                        <p>Preview not available for this file type</p>
+                        <p style="font-size: 0.85rem; color: var(--gray);">File extension: ${actualReceiptUrl.split('.').pop()}</p>
+                        <a href="${actualReceiptUrl}" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download Receipt
+                        </a>
+                    </div>
+                `;
+            }
+        }, 300);
     }
 
     showReimbursementDetails(expenseId) {
@@ -2329,6 +2473,13 @@ class UIController {
                     if (transaction.subcategory) {
                         categoryText += ` › ${transaction.subcategory}`;
                     }
+
+                    let receiptIcon = '';
+                    if (transaction.receiptUrl) {
+                        receiptIcon = `<button class="receipt-icon-btn" onclick="window.finTrack.app.viewReceipt('${transaction.id}', '${transaction.description.replace(/'/g, "\\'")}', '${transaction.receiptUrl}')" title="View receipt">
+                            <i class="fas fa-paperclip"></i>
+                        </button>`;
+                    }                    
                     
                     // Generate reimbursement badge
                     let reimbursementBadge = '';
@@ -2346,6 +2497,7 @@ class UIController {
                                 <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
                                     ${transaction.description}
                                     ${reimbursementBadge}
+                                    ${receiptIcon}                                    
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
@@ -2627,6 +2779,13 @@ class UIController {
                 if (expense.subcategory) {
                     categoryText += ` > ${expense.subcategory}`;
                 }
+
+                let receiptIcon = '';
+                if (expense.receiptUrl) {
+                    receiptIcon = `<button class="receipt-icon-btn" onclick="window.finTrack.app.viewReceipt('${expense.id}', '${expense.description.replace(/'/g, "\\'")}', '${expense.receiptUrl}')" title="View receipt">
+                        <i class="fas fa-paperclip"></i>
+                    </button>`;
+                }                
                 
                 // Generate reimbursement badge
                 let reimbursementBadge = '';
@@ -2645,6 +2804,7 @@ class UIController {
                         <div style="flex: 1; min-width: 0; margin-right: 12px;">
                             <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
                                 ${expense.description}
+                                ${receiptIcon}
                                 ${reimbursementBadge}
                             </div>
                         </div>
@@ -3564,194 +3724,303 @@ class UIController {
         this.openEditModal('income', income);
     }
 
-openEditModal(type, item) {   
-    const modal = document.getElementById('editTransactionModal');
-    const title = document.getElementById('editModalTitle');
-    const subtitle = document.getElementById('editModalSubtitle');
-    const categorySelect = document.getElementById('editCategory');
-    const subcategorySelect = document.getElementById('editSubcategory');
+    openEditModal(type, item) {   
+        const modal = document.getElementById('editTransactionModal');
+        const title = document.getElementById('editModalTitle');
+        const subtitle = document.getElementById('editModalSubtitle');
+        const categorySelect = document.getElementById('editCategory');
+        const subcategorySelect = document.getElementById('editSubcategory');
 
-    // CRITICAL: Reset all sections first to prevent cross-contamination
-    const expenseCategoryRow = document.getElementById('editExpenseCategoryRow');
-    const expenseReimbursableSection = document.getElementById('editExpenseReimbursableSection');
-    const incomeReimbursementSection = document.getElementById('editIncomeReimbursementSection');
-    const incomeTypeGroup = document.getElementById('editIncomeTypeGroup');
-    const editIncomeExpenseSelector = document.getElementById('editIncomeExpenseSelector');
-
-    // Hide all sections by default
-    if (expenseCategoryRow) expenseCategoryRow.style.display = 'none';
-    if (expenseReimbursableSection) expenseReimbursableSection.style.display = 'none';
-    if (incomeReimbursementSection) incomeReimbursementSection.style.display = 'none';
-    if (incomeTypeGroup) incomeTypeGroup.style.display = 'none';
-    if (editIncomeExpenseSelector) editIncomeExpenseSelector.classList.add('hidden');
-
-    // Reset checkboxes
-    const expenseReimbursableCheckbox = document.getElementById('editIsReimbursable');
-    const incomeReimbursementCheckbox = document.getElementById('editIncomeIsReimbursement');
-    if (expenseReimbursableCheckbox) expenseReimbursableCheckbox.checked = false;
-    if (incomeReimbursementCheckbox) incomeReimbursementCheckbox.checked = false;
-
-    // Set modal identity
-    if (type === 'expense') {
-        title.innerHTML = 'Edit Expense';
-        subtitle.textContent = 'Update expense details';
-        
-        if (expenseCategoryRow) expenseCategoryRow.style.display = 'flex';
-        if (expenseReimbursableSection) {
-            expenseReimbursableSection.style.display = 'block';
-            console.log('✅ Expense reimbursable section shown');
-        }
-    } else {
-        title.innerHTML = 'Edit Income';
-        subtitle.textContent = 'Update income details';
-        
-        // Show income-specific fields
-        if (incomeReimbursementSection) incomeReimbursementSection.style.display = 'block';
-        if (incomeTypeGroup) incomeTypeGroup.style.display = 'block';
-    }
-    
-    document.getElementById('editItemType').value = type;
-    document.getElementById('editItemId').value = item.id;
-    
-    // Populate dropdowns - FIX: Pass only 2 arguments, not 3
-    this.populateCategorySelect(categorySelect, type);
-    
-    // Setup subcategory if it's an expense
-    if (type === 'expense') {
-        
-        // Load subcategories based on selected category
-        const mainCategories = this.state.getMainCategories();
-        const mainCategory = mainCategories.find(c => c.name === item.category);
-        
-        if (mainCategory) {
-            const subcategories = this.state.getSubcategories(mainCategory.id);
-            subcategorySelect.innerHTML = '<option value="">Optional</option>';
-            subcategories.forEach(subcat => {
-                const option = document.createElement('option');
-                option.value = subcat.name;
-                option.textContent = subcat.name;
-                if (subcat.name === item.subcategory) {
-                    option.selected = true;
-                }
-                subcategorySelect.appendChild(option);
-            });
-            
-            // Update subcategories when category changes
-            categorySelect.addEventListener('change', (e) => {
-                const selectedCategory = e.target.value;
-                const selectedMainCategory = mainCategories.find(c => c.name === selectedCategory);
-                
-                // Disable select temporarily to prevent iOS glitch
-                subcategorySelect.disabled = true;
-                
-                if (selectedMainCategory) {
-                    const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
-                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
-                    newSubcategories.forEach(subcat => {
-                        const option = document.createElement('option');
-                        option.value = subcat.name;
-                        option.textContent = subcat.name;
-                        subcategorySelect.appendChild(option);
-                    });
-                } else {
-                    subcategorySelect.innerHTML = '<option value="">Optional</option>';
-                }
-                
-                // Re-enable after a brief delay (iOS Safari fix)
-                setTimeout(() => {
-                    subcategorySelect.disabled = false;
-                }, 50);
-            });
-        }
-    } else {
-        
-        // Show income type dropdown
+        const expenseCategoryRow = document.getElementById('editExpenseCategoryRow');
+        const expenseReimbursableSection = document.getElementById('editExpenseReimbursableSection');
+        const expenseReceiptSection = document.getElementById('editExpenseReceiptSection'); // ✅ ADD THIS
+        const incomeReimbursementSection = document.getElementById('editIncomeReimbursementSection');
         const incomeTypeGroup = document.getElementById('editIncomeTypeGroup');
-        const incomeTypeSelect = document.getElementById('editIncomeType');
-        if (incomeTypeGroup && incomeTypeSelect) {
-            incomeTypeGroup.style.display = 'block';
+        const editIncomeExpenseSelector = document.getElementById('editIncomeExpenseSelector');
+
+        if (expenseCategoryRow) expenseCategoryRow.style.display = 'none';
+        if (expenseReimbursableSection) expenseReimbursableSection.style.display = 'none';
+        if (expenseReceiptSection) expenseReceiptSection.style.display = 'none'; // ✅ ADD THIS
+        if (incomeReimbursementSection) incomeReimbursementSection.style.display = 'none';
+        if (incomeTypeGroup) incomeTypeGroup.style.display = 'none';
+        if (editIncomeExpenseSelector) editIncomeExpenseSelector.classList.add('hidden');
+
+        const expenseReimbursableCheckbox = document.getElementById('editIsReimbursable');
+        const incomeReimbursementCheckbox = document.getElementById('editIncomeIsReimbursement');
+        if (expenseReimbursableCheckbox) expenseReimbursableCheckbox.checked = false;
+        if (incomeReimbursementCheckbox) incomeReimbursementCheckbox.checked = false;
+
+        if (type === 'expense') {
+            title.innerHTML = 'Edit Expense';
+            subtitle.textContent = 'Update expense details';
             
-            // Populate income type options
-            incomeTypeSelect.innerHTML = `
-                <option value="">Select type</option>
-                <option value="Salary">Salary</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Investment">Investment</option>
-                <option value="Gift">Gift</option>
-                <option value="Bonus">Bonus</option>
-                <option value="Reimbursement">Reimbursement</option>
-                <option value="Other">Other</option>
-            `;
-            incomeTypeSelect.value = item.source;
+            if (expenseCategoryRow) expenseCategoryRow.style.display = 'flex';
+            if (expenseReimbursableSection) {
+                expenseReimbursableSection.style.display = 'block';
+                console.log('✅ Expense reimbursable section shown');
+            }
+            if (expenseReceiptSection) expenseReceiptSection.style.display = 'block';
+            
+            if (item.receiptUrl) {
+                this.displayReceiptPreview(item.receiptUrl);
+            } else {
+                const previewContainer = document.getElementById('editReceiptPreview');
+                if (previewContainer) {
+                    previewContainer.innerHTML = '';
+                    previewContainer.style.display = 'none';
+                }
+            }
+        } else {
+            title.innerHTML = 'Edit Income';
+            subtitle.textContent = 'Update income details';
+            
+            if (incomeReimbursementSection) incomeReimbursementSection.style.display = 'block';
+            if (incomeTypeGroup) incomeTypeGroup.style.display = 'block';
         }
         
-        // Show reimbursement section for income
-        const reimbursementSection = document.getElementById('editIncomeReimbursementSection');
-        if (reimbursementSection) {
-            reimbursementSection.style.display = 'block';
+        document.getElementById('editItemType').value = type;
+        document.getElementById('editItemId').value = item.id;
+        
+        this.populateCategorySelect(categorySelect, type);
+        
+        // Setup subcategory if it's an expense
+        if (type === 'expense') {
             
-            // Set checkbox state
-            const isReimbursementCheckbox = document.getElementById('editIncomeIsReimbursement');
-            if (isReimbursementCheckbox) {
-                isReimbursementCheckbox.checked = item.isReimbursement || false;
-                
-                // Show/hide expense selector based on checkbox state
-                const expenseSelector = document.getElementById('editIncomeExpenseSelector');
-                if (item.isReimbursement) {
-                    expenseSelector.classList.remove('hidden');
-                    // Update display with linked expenses
-                    const linkedExpenses = this.state.getLinkedExpensesForIncome(item.id);
-                    const textElement = document.getElementById('editSelectedExpensesText');
-                    if (textElement && linkedExpenses.length > 0) {
-                        const total = linkedExpenses.reduce((sum, e) => sum + e.amount, 0);
-                        textElement.innerHTML = `${linkedExpenses.length} expense${linkedExpenses.length > 1 ? 's' : ''} selected (${currencyUtils.formatDisplayCurrency(total)})`;
+            // Load subcategories based on selected category
+            const mainCategories = this.state.getMainCategories();
+            const mainCategory = mainCategories.find(c => c.name === item.category);
+            
+            if (mainCategory) {
+                const subcategories = this.state.getSubcategories(mainCategory.id);
+                subcategorySelect.innerHTML = '<option value="">Optional</option>';
+                subcategories.forEach(subcat => {
+                    const option = document.createElement('option');
+                    option.value = subcat.name;
+                    option.textContent = subcat.name;
+                    if (subcat.name === item.subcategory) {
+                        option.selected = true;
                     }
-                } else {
-                    expenseSelector.classList.add('hidden');
+                    subcategorySelect.appendChild(option);
+                });
+                
+                // iOS Safari fix: Remove old listeners by cloning
+                const newCategorySelect = categorySelect.cloneNode(true);
+                categorySelect.parentNode.replaceChild(newCategorySelect, categorySelect);
+                
+                // Re-set the value after cloning
+                newCategorySelect.value = item.category;
+                
+                // Debounced update handler for rapid switching
+                let updateTimeout = null;  // ✅ Timer instead of boolean flag
+                let lastValue = newCategorySelect.value;
+
+                newCategorySelect.addEventListener('change', (e) => {
+                    const selectedCategory = e.target.value;
+                    
+                    // Cancel any pending update (KEY CHANGE!)
+                    if (updateTimeout) {
+                        clearTimeout(updateTimeout);  // ✅ Cancel previous timer
+                    }
+                    
+                    // Store the latest selection
+                    lastValue = selectedCategory;
+                    
+                    const newSubcategorySelect = document.getElementById('editSubcategory');
+                    
+                    // Immediate visual feedback - disable subcategory
+                    newSubcategorySelect.disabled = true;
+                    
+                    // Debounce the actual update
+                    updateTimeout = setTimeout(() => {  // ✅ Set new timer
+                        const selectedMainCategory = mainCategories.find(c => c.name === lastValue);
+                        
+                        // Close the category dropdown
+                        newCategorySelect.blur();
+                        
+                        // Update subcategory options
+                        if (selectedMainCategory) {
+                            const newSubcategories = this.state.getSubcategories(selectedMainCategory.id);
+                            newSubcategorySelect.innerHTML = '<option value="">Optional</option>';
+                            newSubcategories.forEach(subcat => {
+                                const option = document.createElement('option');
+                                option.value = subcat.name;
+                                option.textContent = subcat.name;
+                                newSubcategorySelect.appendChild(option);
+                            });
+                        } else {
+                            newSubcategorySelect.innerHTML = '<option value="">Optional</option>';
+                        }
+                        
+                        // Re-enable after a short delay for iOS to settle
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                newSubcategorySelect.disabled = false;
+                                updateTimeout = null;
+                            }, 50);
+                        });
+                    }, 200); // ✅ 200ms debounce - waits for user to stop switching
+                });
+            }
+        } else {
+            
+            // Show income type dropdown
+            const incomeTypeGroup = document.getElementById('editIncomeTypeGroup');
+            const incomeTypeSelect = document.getElementById('editIncomeType');
+            if (incomeTypeGroup && incomeTypeSelect) {
+                incomeTypeGroup.style.display = 'block';
+                
+                // Populate income type options
+                incomeTypeSelect.innerHTML = `
+                    <option value="">Select type</option>
+                    <option value="Salary">Salary</option>
+                    <option value="Freelance">Freelance</option>
+                    <option value="Investment">Investment</option>
+                    <option value="Gift">Gift</option>
+                    <option value="Bonus">Bonus</option>
+                    <option value="Reimbursement">Reimbursement</option>
+                    <option value="Other">Other</option>
+                `;
+                incomeTypeSelect.value = item.source;
+            }
+            
+            // Show reimbursement section for income
+            const reimbursementSection = document.getElementById('editIncomeReimbursementSection');
+            if (reimbursementSection) {
+                reimbursementSection.style.display = 'block';
+                
+                // Set checkbox state
+                const isReimbursementCheckbox = document.getElementById('editIncomeIsReimbursement');
+                if (isReimbursementCheckbox) {
+                    isReimbursementCheckbox.checked = item.isReimbursement || false;
+                    
+                    // Show/hide expense selector based on checkbox state
+                    const expenseSelector = document.getElementById('editIncomeExpenseSelector');
+                    if (item.isReimbursement) {
+                        expenseSelector.classList.remove('hidden');
+                        // Update display with linked expenses
+                        const linkedExpenses = this.state.getLinkedExpensesForIncome(item.id);
+                        const textElement = document.getElementById('editSelectedExpensesText');
+                        if (textElement && linkedExpenses.length > 0) {
+                            const total = linkedExpenses.reduce((sum, e) => sum + e.amount, 0);
+                            textElement.innerHTML = `${linkedExpenses.length} expense${linkedExpenses.length > 1 ? 's' : ''} selected (${currencyUtils.formatDisplayCurrency(total)})`;
+                        }
+                    } else {
+                        expenseSelector.classList.add('hidden');
+                    }
                 }
             }
         }
-    }
 
-    // Fill values from the transaction
-    document.getElementById('editDescription').value = item.description;
-    
-    // ✅ Format amount with thousand separators (remove "Rp " prefix)
-    document.getElementById('editAmount').value = currencyUtils.formatDisplayCurrency(item.amount).replace('Rp ', '');
-    
-    document.getElementById('editDate').value = item.date;
-    document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
-
-    //v5.2
-    if (type === 'expense') {
-        const checkbox = document.getElementById('editIsReimbursable');
+        // Fill values from the transaction
+        document.getElementById('editDescription').value = item.description;
         
-        if (checkbox) {
-            checkbox.checked = item.isReimbursable || false;
-            console.log('🔧 Setting expense reimbursable checkbox to:', item.isReimbursable);
-        }
-    }
-    
-    // ✅ Add live formatting for edit amount input
-    const editAmountInput = document.getElementById('editAmount');
-    // Remove any existing listeners by cloning
-    const newEditAmountInput = editAmountInput.cloneNode(true);
-    editAmountInput.parentNode.replaceChild(newEditAmountInput, editAmountInput);
-    
-    // Add new event listener
-    newEditAmountInput.addEventListener('input', function() {
-        this.value = currencyUtils.formatCurrency(this.value);
-    });
+        // ✅ Format amount with thousand separators (remove "Rp " prefix)
+        document.getElementById('editAmount').value = currencyUtils.formatDisplayCurrency(item.amount).replace('Rp ', '');
+        
+        document.getElementById('editDate').value = item.date;
+        document.getElementById('editCategory').value = type === 'expense' ? item.category : item.source;
 
-    modal.classList.add('active');
-}
+        //v5.2
+        if (type === 'expense') {
+            const checkbox = document.getElementById('editIsReimbursable');
+            
+            if (checkbox) {
+                checkbox.checked = item.isReimbursable || false;
+                console.log('🔧 Setting expense reimbursable checkbox to:', item.isReimbursable);
+            }
+        }
+        
+        // ✅ Add live formatting for edit amount input
+        const editAmountInput = document.getElementById('editAmount');
+        // Remove any existing listeners by cloning
+        const newEditAmountInput = editAmountInput.cloneNode(true);
+        editAmountInput.parentNode.replaceChild(newEditAmountInput, editAmountInput);
+        
+        // Add new event listener
+        newEditAmountInput.addEventListener('input', function() {
+            this.value = currencyUtils.formatCurrency(this.value);
+        });
+
+        modal.classList.add('active');
+    }
+
+    displayReceiptPreview(receiptUrl) {
+        const previewContainer = document.getElementById('editReceiptPreview');
+        if (!previewContainer) return;
+        
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(receiptUrl);
+        const isPDF = /\.pdf$/i.test(receiptUrl);
+        
+        let previewHTML = '';
+        
+        if (isImage) {
+            previewHTML = `
+                <div style="position: relative; border: 2px solid var(--light-gray); border-radius: 8px; overflow: hidden; max-width: 300px;">
+                    <img src="${receiptUrl}" 
+                        alt="Receipt" 
+                        style="width: 100%; height: auto; display: block; cursor: pointer;"
+                        onclick="window.open('${receiptUrl}', '_blank')">
+                    <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); border-radius: 6px; padding: 6px 10px; display: flex; gap: 8px;">
+                        <a href="${receiptUrl}" 
+                        target="_blank" 
+                        style="color: white; text-decoration: none;"
+                        title="View full size">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        <button onclick="window.finTrack.ui.removeReceipt()" 
+                                style="background: none; border: none; color: white; cursor: pointer; padding: 0;"
+                                title="Remove receipt">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if (isPDF) {
+            previewHTML = `
+                <div style="border: 2px solid var(--light-gray); border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; max-width: 300px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-file-pdf" style="font-size: 2rem; color: #DC2626;"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">Receipt PDF</div>
+                            <a href="${receiptUrl}" 
+                            target="_blank" 
+                            style="color: var(--primary); text-decoration: none; font-size: 0.8rem;">
+                                <i class="fas fa-external-link-alt"></i> View PDF
+                            </a>
+                        </div>
+                    </div>
+                    <button onclick="window.finTrack.ui.removeReceipt()" 
+                            class="delete-btn"
+                            title="Remove receipt">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        previewContainer.innerHTML = previewHTML;
+        previewContainer.style.display = previewHTML ? 'block' : 'none';
+    }
+
+    removeReceipt() {
+        const previewContainer = document.getElementById('editReceiptPreview');
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'none';
+        }
+        
+        // Mark for deletion
+        const uploadInput = document.getElementById('editReceiptUpload');
+        if (uploadInput) {
+            uploadInput.dataset.deleteExisting = 'true';
+        }
+    }    
 
     populateCategorySelect(selectElement, type) {
-        // Clear existing options
+        selectElement.disabled = true;
         selectElement.innerHTML = '';
         
         if (type === 'expense') {
-            // Get categories from state
             const categories = this.state.getCategories();
             
             categories.forEach(cat => {
@@ -3761,7 +4030,6 @@ openEditModal(type, item) {
                 selectElement.appendChild(option);
             });
         } else {
-            // For Income, use standard sources
             const sources = ['Salary', 'Freelance', 'Investment', 'Gift', 'Bonus', 'Other'];
             sources.forEach(source => {
                 const option = document.createElement('option');
@@ -3770,6 +4038,10 @@ openEditModal(type, item) {
                 selectElement.appendChild(option);
             });
         }
+
+        setTimeout(() => {
+            selectElement.disabled = false;
+        }, 50);        
     }    
 
     // Add this inside the UIController class in app.js
@@ -4059,12 +4331,20 @@ openEditModal(type, item) {
             if (expense.subcategory) {
                 categoryText += ` › ${expense.subcategory}`;
             }
+
+            let receiptIcon = '';
+            if (expense.receiptUrl) {
+                receiptIcon = `<button class="receipt-icon-btn" onclick="window.finTrack.app.viewReceipt('${expense.id}', '${expense.description.replace(/'/g, "\\'")}', '${expense.receiptUrl}')" title="View receipt">
+                    <i class="fas fa-paperclip"></i>
+                </button>`;
+            }            
             
             item.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
                     <div style="flex: 1; min-width: 0; margin-right: 12px;">
-                        <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
-                            ${expense.description}
+                        <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                            <span>${expense.description}</span>
+                            ${receiptIcon}
                             <span class="reimbursement-badge pending">
                                 <i class="fas fa-clock"></i> Pending
                             </span>
@@ -4197,6 +4477,13 @@ openEditModal(type, item) {
                     if (expense.subcategory) {
                         categoryText += ` › ${expense.subcategory}`;
                     }
+
+                    let receiptIcon = '';
+                    if (expense.receiptUrl) {
+                        receiptIcon = `<button class="receipt-icon-btn" onclick="window.finTrack.app.viewReceipt('${expense.id}', '${expense.description.replace(/'/g, "\\'")}', '${expense.receiptUrl}')" title="View receipt">
+                            <i class="fas fa-paperclip"></i>
+                        </button>`;
+                    }                    
                     
                     const expenseItem = document.createElement('div');
                     expenseItem.className = 'expense-item';
@@ -4205,7 +4492,10 @@ openEditModal(type, item) {
                     expenseItem.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; font-weight: 500;">${expense.description}</div>
+                                <div style="font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+                                    <span>${expense.description}</span>
+                                    ${receiptIcon}
+                                </div>
                                 <div style="font-size: 0.75rem; color: var(--gray); margin-top: 2px;">
                                     ${categoryText} • ${new Date(expense.date).toLocaleDateString()}
                                 </div>
@@ -4236,6 +4526,79 @@ openEditModal(type, item) {
         `;
         
         document.getElementById('reimbursedList').innerHTML = container.innerHTML;
+    }    
+
+    displayReceiptPreview(receiptUrl) {
+        const previewContainer = document.getElementById('editReceiptPreview');
+        if (!previewContainer) return;
+        
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(receiptUrl);
+        const isPDF = /\.pdf$/i.test(receiptUrl);
+        
+        let previewHTML = '';
+        
+        if (isImage) {
+            previewHTML = `
+                <div style="position: relative; border: 2px solid var(--light-gray); border-radius: 8px; overflow: hidden; max-width: 300px;">
+                    <img src="${receiptUrl}" 
+                        alt="Receipt" 
+                        style="width: 100%; height: auto; display: block; cursor: pointer;"
+                        onclick="window.open('${receiptUrl}', '_blank')">
+                    <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); border-radius: 6px; padding: 6px 10px; display: flex; gap: 8px;">
+                        <a href="${receiptUrl}" 
+                        target="_blank" 
+                        style="color: white; text-decoration: none;"
+                        title="View full size">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        <button onclick="window.finTrack.ui.removeReceipt()" 
+                                style="background: none; border: none; color: white; cursor: pointer; padding: 0;"
+                                title="Remove receipt">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if (isPDF) {
+            previewHTML = `
+                <div style="border: 2px solid var(--light-gray); border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; max-width: 300px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-file-pdf" style="font-size: 2rem; color: #DC2626;"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">Receipt PDF</div>
+                            <a href="${receiptUrl}" 
+                            target="_blank" 
+                            style="color: var(--primary); text-decoration: none; font-size: 0.8rem;">
+                                <i class="fas fa-external-link-alt"></i> View PDF
+                            </a>
+                        </div>
+                    </div>
+                    <button onclick="window.finTrack.ui.removeReceipt()" 
+                            class="delete-btn"
+                            title="Remove receipt">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        previewContainer.innerHTML = previewHTML;
+        previewContainer.style.display = previewHTML ? 'block' : 'none';
+    }
+
+    // Add method to remove receipt
+    removeReceipt() {
+        const previewContainer = document.getElementById('editReceiptPreview');
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'none';
+        }
+        
+        // Mark for deletion
+        const uploadInput = document.getElementById('editReceiptUpload');
+        if (uploadInput) {
+            uploadInput.dataset.deleteExisting = 'true';
+        }
     }    
 }
 

@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="css/fab.css">
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/reimbursement.css">
+    <link rel="stylesheet" href="css/receipt.css">
 </head>
 
 <body>
@@ -692,6 +693,19 @@
                     </div>
                 </div>
 
+                <div class="form-group" id="editExpenseReceiptSection" style="margin-bottom: 1rem; display: none;">
+                    <label for="editReceiptUpload" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Receipt (optional)</label>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <input type="file" 
+                            id="editReceiptUpload" 
+                            accept="image/*,.pdf" 
+                            style="padding: 10px 12px; font-size: 0.95rem; border: 2px dashed var(--light-gray); border-radius: 8px; cursor: pointer;">
+                        <div id="editReceiptPreview" style="display: none;">
+                            <!-- Receipt preview will be inserted here -->
+                        </div>
+                    </div>
+                </div>                
+
                 <!-- Expense Reimbursable Checkbox (MOVED HERE - after amount and date) -->
                 <div class="form-group" id="editExpenseReimbursableSection" style="margin-bottom: 1rem; display: none;">
                     <label class="checkbox-label">
@@ -799,6 +813,16 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="fabReceiptUpload">Receipt (optional)</label>
+                        <input type="file" 
+                            id="fabReceiptUpload" 
+                            accept="image/*,.pdf" 
+                            style="padding: 10px 12px; font-size: 0.95rem; border: 2px dashed var(--light-gray); border-radius: 8px; cursor: pointer;">
+                        <div class="form-hint" style="font-size: 0.75rem; color: var(--gray); margin-top: 4px;">
+                            <i class="fas fa-info-circle"></i> Upload a photo of your receipt
+                        </div>
+                    </div>                    
                     <!-- v5.2 -->
                     <div class="form-group">
                         <label class="checkbox-label">
@@ -1213,22 +1237,44 @@
         </div>
     </div>    
 
+    <!-- Receipt Viewer Modal -->
+    <div class="modal-overlay" id="receiptViewerModal">
+        <div class="modal" style="max-width: 90vw; max-height: 90vh;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);">
+                <button class="modal-close" id="closeReceiptViewer">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">Receipt</h2>
+                <p class="modal-subtitle" id="receiptExpenseName">Expense details</p>
+            </div>
+            <div class="modal-body" style="padding: 0; overflow: auto; max-height: calc(90vh - 100px);">
+                <div id="receiptViewerContent" style="display: flex; align-items: center; justify-content: center; min-height: 400px;">
+                    <!-- Receipt content will be loaded here -->
+                </div>
+            </div>
+            <div style="padding: 1rem; border-top: 1px solid var(--light-gray); display: flex; gap: 10px; justify-content: flex-end;">
+                <a id="receiptDownloadBtn" href="#" download class="btn btn-outline" target="_blank">
+                    <i class="fas fa-download"></i> Download
+                </a>
+                <button class="btn btn-primary" onclick="document.getElementById('receiptViewerModal').classList.remove('active')">
+                    <i class="fas fa-check"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>    
+
     <script type="module">
+
 
         async function initApp() {
             try {
-                // console.log('Fetching config...');
                 const response = await fetch('/api/config');
                 if (!response.ok) {
                     throw new Error('Failed to fetch config');
                 }
                 
                 const config = await response.json();
-                // console.log('Config loaded:', { 
-                //     hasUrl: !!config.supabaseUrl, 
-                //     hasKey: !!config.supabaseAnonKey 
-                // });
-                
+
                 // Create Supabase client AFTER config is loaded
                 const supabase = window.supabase.createClient(
                     config.supabaseUrl,

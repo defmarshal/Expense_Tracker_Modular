@@ -155,12 +155,33 @@ class DatabaseService {
               category: expenseData.category,
               subcategory: expenseData.subcategory || null,
               is_reimbursable: expenseData.isReimbursable || false,
-              // NEW: Set reimbursement_status based on is_reimbursable
-              reimbursement_status: expenseData.isReimbursable ? 'pending' : 'not_applicable'
+              reimbursement_status: expenseData.isReimbursable ? 'pending' : 'not_applicable',
+              receipt_url: expenseData.receiptUrl || null
           };
           
           if (expenseData.id) {
-              // Update existing expense
+              const { data: existingExpense, error: checkError } = await this.supabase
+                  .from('expenses')
+                  .select('*')
+                  .eq('id', expenseData.id)
+                  .eq('user_id', this.user.id)
+                  .maybeSingle();
+              
+              if (checkError) throw checkError;
+              
+              if (!existingExpense) {
+                  const notFoundError = new Error(`Expense with ID ${expenseData.id} not found`);
+                  notFoundError.code = 'EXPENSE_NOT_FOUND';
+                  throw notFoundError;
+              }
+              
+              if (existingExpense.reimbursement_status === 'reimbursed' && 
+                  !expenseData.isReimbursable && 
+                  existingExpense.linked_income_id) {
+                  expenseRecord.linked_income_id = null;
+                  expenseRecord.reimbursement_status = 'not_applicable';
+              }
+              
               const { data, error } = await this.supabase
                   .from('expenses')
                   .update({
@@ -171,20 +192,30 @@ class DatabaseService {
                       subcategory: expenseRecord.subcategory,
                       is_reimbursable: expenseRecord.is_reimbursable,
                       reimbursement_status: expenseRecord.reimbursement_status,
-                      wallet_id: expenseRecord.wallet_id
+                      wallet_id: expenseRecord.wallet_id,
+                      receipt_url: expenseRecord.receipt_url,
+                      ...(expenseRecord.linked_income_id !== undefined && { 
+                          linked_income_id: expenseRecord.linked_income_id 
+                      })
                   })
                   .eq('id', expenseData.id)
                   .eq('user_id', this.user.id)
                   .select()
-                  .single();
+                  .maybeSingle();
               
               if (error) {
                   console.error('createExpense - Update error:', error);
                   throw error;
               }
+              
+              if (!data) {
+                  const notFoundError = new Error('Expense update failed - record not found');
+                  notFoundError.code = 'EXPENSE_NOT_FOUND';
+                  throw notFoundError;
+              }
+              
               return this.toCamelCase(data);
           } else {
-              // Insert new expense
               const { data, error } = await this.supabase
                   .from('expenses')
                   .insert(expenseRecord)
@@ -203,6 +234,60 @@ class DatabaseService {
       }
   }
 
+  async uploadReceipt(file, expenseId) {
+      try {
+          if (!this.user) throw new Error('Not authenticated');
+          
+          // Create unique filename
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${this.user.id}/${expenseId}_${Date.now()}.${fileExt}`;
+          
+          // Upload to Supabase Storage
+          const { data, error } = await this.supabase.storage
+              .from('receipts')
+              .upload(fileName, file, {
+                  cacheControl: '3600',
+                  upsert: false
+              });
+          
+          if (error) throw error;
+          
+          // Get public URL
+          const { data: { publicUrl } } = this.supabase.storage
+              .from('receipts')
+              .getPublicUrl(fileName);
+          
+          return publicUrl;
+      } catch (error) {
+          console.error('Error uploading receipt:', error);
+          throw error;
+      }
+  }
+
+  // Add method to delete receipt from storage
+  async deleteReceipt(receiptUrl) {
+      try {
+          if (!receiptUrl) return true;
+          
+          // Extract file path from URL
+          const urlParts = receiptUrl.split('/receipts/');
+          if (urlParts.length < 2) return true;
+          
+          const filePath = urlParts[1];
+          
+          const { error } = await this.supabase.storage
+              .from('receipts')
+              .remove([filePath]);
+          
+          if (error) throw error;
+          return true;
+      } catch (error) {
+          console.error('Error deleting receipt:', error);
+          // Don't throw - deletion failure shouldn't block expense deletion
+          return false;
+      }
+  }  
+
   async getExpenses(filters = {}) {
     return await this.read('expenses', filters, { column: 'date', ascending: false });
   }
@@ -211,7 +296,21 @@ class DatabaseService {
       try {
           if (!this.user) throw new Error('Not authenticated');
           
-          // Build the update object with proper snake_case conversion
+          const { data: existingExpense, error: checkError } = await this.supabase
+              .from('expenses')
+              .select('*')
+              .eq('id', id)
+              .eq('user_id', this.user.id)
+              .maybeSingle();
+          
+          if (checkError) throw checkError;
+          
+          if (!existingExpense) {
+              const notFoundError = new Error(`Expense with ID ${id} not found or does not belong to user`);
+              notFoundError.code = 'EXPENSE_NOT_FOUND';
+              throw notFoundError;
+          }
+          
           const updateData = {};
           
           if (updates.description !== undefined) updateData.description = updates.description;
@@ -220,13 +319,25 @@ class DatabaseService {
           if (updates.category !== undefined) updateData.category = updates.category;
           if (updates.subcategory !== undefined) updateData.subcategory = updates.subcategory;
           if (updates.wallet_id !== undefined) updateData.wallet_id = updates.wallet_id;
+          if (updates.receipt_url !== undefined) updateData.receipt_url = updates.receipt_url;
           
-          // ⭐ CRITICAL: Handle is_reimbursable field
           if (updates.is_reimbursable !== undefined) {
               updateData.is_reimbursable = updates.is_reimbursable;
-              // Update reimbursement_status based on is_reimbursable
-              updateData.reimbursement_status = updates.is_reimbursable ? 'pending' : 'not_applicable';
-              console.log('🔧 DATABASE: Updating is_reimbursable to:', updates.is_reimbursable);
+              
+              if (!updates.is_reimbursable && existingExpense.reimbursement_status === 'reimbursed') {
+                  updateData.reimbursement_status = 'not_applicable';
+                  updateData.linked_income_id = null;
+              } 
+              else if (updates.is_reimbursable && existingExpense.reimbursement_status === 'not_applicable') {
+                  updateData.reimbursement_status = 'pending';
+              }
+              else if (!updates.is_reimbursable && existingExpense.reimbursement_status === 'pending') {
+                  updateData.reimbursement_status = 'not_applicable';
+              }
+          }
+          
+          if (updates.linked_income_id !== undefined) {
+              updateData.linked_income_id = updates.linked_income_id;
           }
           
           const { data, error } = await this.supabase
@@ -235,14 +346,19 @@ class DatabaseService {
               .eq('id', id)
               .eq('user_id', this.user.id)
               .select()
-              .single();
+              .maybeSingle();
           
           if (error) {
               console.error('updateExpense - Error:', error);
               throw error;
           }
           
-          console.log('✅ DATABASE: Expense updated successfully:', data);
+          if (!data) {
+              const notFoundError = new Error('Expense update failed - record not found');
+              notFoundError.code = 'EXPENSE_NOT_FOUND';
+              throw notFoundError;
+          }
+          
           return this.toCamelCase(data);
       } catch (error) {
           console.error('updateExpense - Fatal error:', error);
