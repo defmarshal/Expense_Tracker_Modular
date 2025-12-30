@@ -2477,7 +2477,8 @@ class UIController {
                     }
 
                     let receiptIcon = '';
-                    if (transaction.receiptUrl) {
+                    const receiptUrl = transaction.receiptUrl || transaction.receipt_url;
+                    if (receiptUrl) {
                         receiptIcon = `<button class="receipt-icon-btn" onclick="window.finTrack.app.viewReceipt('${transaction.id}', '${transaction.description.replace(/'/g, "\\'")}', '${transaction.receiptUrl}')" title="View receipt">
                             <i class="fas fa-paperclip"></i>
                         </button>`;
@@ -2783,7 +2784,8 @@ class UIController {
                 }
 
                 let receiptIcon = '';
-                if (expense.receiptUrl) {
+                const receiptUrl = expense.receiptUrl || expense.receipt_url;
+                if (receiptUrl) {
                     receiptIcon = `<button class="receipt-icon-btn" onclick="window.finTrack.app.viewReceipt('${expense.id}', '${expense.description.replace(/'/g, "\\'")}', '${expense.receiptUrl}')" title="View receipt">
                         <i class="fas fa-paperclip"></i>
                     </button>`;
@@ -4613,4 +4615,5 @@ export const createApp = (supabase) => {
     return new FinTrackApp(supabase);
 
 };
+
 
