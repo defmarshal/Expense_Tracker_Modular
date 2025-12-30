@@ -4050,18 +4050,22 @@ class UIController {
     showLoading(isLoading) {
         const submitBtn = document.querySelector('#editTransactionForm button[type="submit"]');
         if (!submitBtn) return;
-
+    
         if (isLoading) {
+            // Save the original text ONLY if not already set
+            if (!submitBtn.dataset.originalText) {
+                submitBtn.dataset.originalText = submitBtn.innerHTML;
+            }
             submitBtn.disabled = true;
-            // Save the original text to restore it later
-            submitBtn.dataset.originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
         } else {
             submitBtn.disabled = false;
             // Restore the original text (e.g., "Save Changes")
-            submitBtn.innerHTML = submitBtn.dataset.originalText || 'Save Changes';
+            submitBtn.innerHTML = submitBtn.dataset.originalText || '<i class="fas fa-save"></i> Save Changes';
+            // Clear the stored text so next modal open works correctly
+            delete submitBtn.dataset.originalText;
         }
-    }    
+    }   
     
     editWallet(id) {
         const wallet = this.state.getWallets().find(w => w.id === id);
@@ -4609,3 +4613,4 @@ export const createApp = (supabase) => {
     return new FinTrackApp(supabase);
 
 };
+
