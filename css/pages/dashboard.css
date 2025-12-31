@@ -193,7 +193,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-md) 0;
+    padding: var(--space-xs) 0;
     border-bottom: 1px solid var(--gray-light);
     min-height: 60px;
 }
@@ -353,6 +353,7 @@
     border-bottom: 1px solid var(--gray-light);
     min-height: 60px;
     gap: var(--space-sm);
+    font-size:0.9rem;
 }
 
 .category-item:last-child {
@@ -372,6 +373,7 @@
     color: var(--gray);
     border-left: 2px solid var(--gray-light);
     margin-left: var(--space-md);
+    font-size:0.8rem;
 }
 
 /* Category button container - keep everything on the right */
@@ -801,7 +803,7 @@
     }
     
     .subcategory-item {
-        padding-left: var(--space-lg);
+        padding-left: var(--space-md);
         margin-left: var(--space-sm);
     }
     

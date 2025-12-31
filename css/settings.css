@@ -1,0 +1,139 @@
+/* Settings Tab Styles */
+
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-section-title i {
+    font-size: 0.9rem;
+}
+
+.settings-card {
+    background: white;
+    border: 1px solid var(--light-gray);
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.settings-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.settings-card:not(.expandable) {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    gap: 12px;
+}
+
+.settings-card-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.settings-card-header:hover {
+    background: var(--light-gray);
+}
+
+.settings-card-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--light-gray);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.settings-card-icon i {
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.settings-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--dark);
+    margin-bottom: 2px;
+}
+
+.settings-card-description {
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+.settings-card-arrow {
+    flex-shrink: 0;
+    color: var(--gray);
+    transition: transform 0.3s ease;
+}
+
+.settings-card-arrow i {
+    font-size: 0.9rem;
+}
+
+.settings-card-body {
+    border-top: 1px solid var(--light-gray);
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.settings-card-body[style*="display: block"] {
+    max-height: 2000px;
+    padding: 1rem;
+}
+
+.settings-card.expanded .settings-card-arrow {
+    transform: rotate(180deg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .settings-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .settings-card-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .settings-card-icon i {
+        font-size: 1rem;
+    }
+    
+    .settings-card-title {
+        font-size: 0.9rem;
+    }
+    
+    .settings-card-description {
+        font-size: 0.75rem;
+    }
+}

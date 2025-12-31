@@ -8,7 +8,8 @@
 import { initializeAuth } from './modules/auth.js';
 import { getState } from './modules/state.js';
 import { getDatabase } from './modules/database.js';
-import { 
+import { getExportService } from './modules/export.js';
+import {    
     currencyUtils, 
     validationUtils, 
     dateUtils, 
@@ -35,6 +36,7 @@ class FinTrackApp {
         this.db = null;
         this.ui = null;
         this.walletPersistence = null;
+        this.export = null;
 
         // Store DOM references
         this.domElements = {};
@@ -58,6 +60,7 @@ class FinTrackApp {
             
             // Initialize UI Controller (defined inline below)  
             this.ui = new UIController(this);
+            this.export = getExportService();
             
             // Get DOM references
             this.cacheDomElements();
@@ -431,6 +434,40 @@ class FinTrackApp {
             });
         }
 
+        // Export form
+        document.getElementById('exportForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleExport(e);
+        });
+
+        // Export date range toggle
+        const exportDateRange = document.getElementById('exportDateRange');
+        const customDateRangeGroup = document.getElementById('customDateRangeGroup');
+        const dateRangeGroup = document.getElementById('dateRangeGroup');
+        const exportType = document.getElementById('exportType');
+
+        if (exportDateRange && customDateRangeGroup) {
+            exportDateRange.addEventListener('change', (e) => {
+                if (e.target.value === 'custom') {
+                    customDateRangeGroup.style.display = 'block';
+                } else {
+                    customDateRangeGroup.style.display = 'none';
+                }
+            });
+        }
+
+        // Hide date range for budgets
+        if (exportType && dateRangeGroup) {
+            exportType.addEventListener('change', (e) => {
+                if (e.target.value === 'budgets') {
+                    dateRangeGroup.style.display = 'none';
+                    customDateRangeGroup.style.display = 'none';
+                } else {
+                    dateRangeGroup.style.display = 'block';
+                }
+            });
+        }        
+
         // Edit Income Reimbursement Toggle
         const editReimbursementToggle = document.getElementById('editIncomeIsReimbursement');
         const editExpenseSelector = document.getElementById('editIncomeExpenseSelector');
@@ -579,6 +616,50 @@ class FinTrackApp {
         }
     }
 
+    async handleExport(e) {
+        const exportType = document.getElementById('exportType').value;
+        const dateRange = document.getElementById('exportDateRange').value;
+        const startDate = document.getElementById('exportStartDate').value;
+        const endDate = document.getElementById('exportEndDate').value;
+        const format = document.getElementById('exportFormat').value;
+
+        const filters = {
+            dateRange: dateRange,
+            startDate: startDate || null,
+            endDate: endDate || null,
+            walletId: this.state.getState().currentWalletId
+        };
+
+        try {
+            let count = 0;
+
+            switch (exportType) {
+                case 'expenses':
+                    count = this.export.exportExpensesToCSV(filters);
+                    break;
+                case 'income':
+                    count = this.export.exportIncomesToCSV(filters);
+                    break;
+                case 'all':
+                    count = this.export.exportAllTransactionsToCSV(filters);
+                    break;
+                case 'summary':
+                    count = this.export.exportSummaryToCSV(filters);
+                    break;
+                case 'budgets':
+                    count = this.export.exportBudgetsToCSV();
+                    break;
+            }
+
+            this.showAlert(`✓ Exported ${count} record${count !== 1 ? 's' : ''}`, 'success');
+            document.getElementById('exportModal').classList.remove('active');
+            document.getElementById('exportForm').reset();
+        } catch (error) {
+            console.error('Export error:', error);
+            this.showAlert(error.message || 'Export failed', 'error');
+        }
+    }    
+
     //v5.2
     showBudgetWarning(category, budgetData) {
         return new Promise((resolve) => {
@@ -674,6 +755,10 @@ class FinTrackApp {
             if (e.target.id === 'receiptViewerModal') {
                 e.target.classList.remove('active');
             }
+        });     
+        
+        document.getElementById('closeExportModal')?.addEventListener('click', () => {
+            document.getElementById('exportModal').classList.remove('active');
         });        
     }
 
@@ -2068,8 +2153,7 @@ class UIController {
                 this.updateBudgetTabUI(); // NEW: Full budget management view
                 break;
             case 'more':
-                this.updateWalletsUI();
-                this.updateCategoriesUI();
+                this.updateSettingsTab();
                 break;
         }
     }
@@ -4223,6 +4307,35 @@ class UIController {
         return { expenses, incomes };
     }    
 
+    updateSettingsTab() {
+        // Update wallets count
+        const wallets = this.state.getWallets();
+        const walletsCount = document.getElementById('walletsCount');
+        if (walletsCount) {
+            walletsCount.textContent = `${wallets.length} wallet${wallets.length !== 1 ? 's' : ''}`;
+        }
+        
+        // Update categories count
+        const categories = this.state.getCategories();
+        const categoriesCount = document.getElementById('categoriesCount');
+        if (categoriesCount) {
+            const mainCount = categories.filter(c => c.type === 'main').length;
+            const subCount = categories.filter(c => c.type === 'sub').length;
+            categoriesCount.textContent = `${mainCount} main, ${subCount} sub`;
+        }
+        
+        // Update email
+        const userEmail = this.state.getUser()?.email;
+        const userEmailSettings = document.getElementById('userEmailSettings');
+        if (userEmailSettings && userEmail) {
+            userEmailSettings.textContent = userEmail;
+        }
+        
+        // Update the lists
+        this.updateWalletsUI();
+        this.updateCategoriesUI();
+    }    
+
     //v5.2
     openBudgetModal() {
         const modal = document.getElementById('budgetModal');
@@ -4247,6 +4360,25 @@ class UIController {
         
         modal.classList.add('active');
     }
+
+    openExportModal() {
+        const modal = document.getElementById('exportModal');
+        const dateRangeGroup = document.getElementById('dateRangeGroup');
+        const customDateRangeGroup = document.getElementById('customDateRangeGroup');
+        
+        // Reset form
+        document.getElementById('exportForm').reset();
+        
+        // Show date range by default
+        if (dateRangeGroup) dateRangeGroup.style.display = 'block';
+        if (customDateRangeGroup) customDateRangeGroup.style.display = 'none';
+        
+        // Set default to "This Month"
+        const exportDateRange = document.getElementById('exportDateRange');
+        if (exportDateRange) exportDateRange.value = 'this-month';
+        
+        modal.classList.add('active');
+    }    
     
     setupExpenseSubTabs() {
         const subTabs = document.querySelectorAll('.expense-sub-tab');

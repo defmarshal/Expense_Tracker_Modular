@@ -6,6 +6,7 @@
     <title>FinTrack - Smart Expense Tracking</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- <script src="./js/config.js"></script> -->
     
     <!-- Modular CSS Files - IMPORTANT: Order matters! -->
@@ -20,6 +21,7 @@
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/reimbursement.css">
     <link rel="stylesheet" href="css/receipt.css">
+    <link rel="stylesheet" href="css/settings.css">
 </head>
 
 <body>
@@ -204,8 +206,8 @@
                     <span>Budget</span>
                 </a>
                 <a href="#" class="sidebar-nav-item" data-tab="more">
-                    <i class="fas fa-ellipsis-h"></i>
-                    <span>More</span>
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
                 </a>
             </nav>
         </aside>
@@ -399,24 +401,101 @@
                     </div>
                 </div>
 
-                <!-- v5.2 -->
+                <!-- REPLACE THIS ENTIRE SECTION -->
                 <div id="moreTab" class="tab-content">
-                    <!-- Existing Wallets section -->
-                    <div class="wallet-list">
-                        <h2 class="form-title">My Wallets</h2>
-                        <div id="walletsList">
-                            <div class="wallet-item">
-                                <div class="wallet-details">No wallets yet</div>
+                    <!-- Data Management Section -->
+                    <div class="settings-section">
+                        <h2 class="settings-section-title">
+                            <i class="fas fa-database"></i>
+                            Data Management
+                        </h2>
+                        
+                        <div class="settings-card" onclick="window.finTrack.ui.openExportModal()" style="cursor: pointer;">
+                            <div class="settings-card-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="settings-card-content">
+                                <div class="settings-card-title">Export Data</div>
+                                <div class="settings-card-description">Download transactions, budgets, and reports</div>
+                            </div>
+                            <div class="settings-card-arrow">
+                                <i class="fas fa-chevron-right"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Existing Categories section -->
-                    <div class="category-list">
-                        <h2 class="form-title">Categories</h2>
-                        <div id="categoriesList">
-                            <div class="category-item">
-                                <div class="category-details">No categories yet</div>
+                    <!-- Account Setup Section -->
+                    <div class="settings-section">
+                        <h2 class="settings-section-title">
+                            <i class="fas fa-wallet"></i>
+                            Account Setup
+                        </h2>
+                        
+                        <!-- Wallets Card -->
+                        <div class="settings-card expandable">
+                            <div class="settings-card-header" onclick="toggleSettingsSection('wallets')">
+                                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                    <div class="settings-card-icon">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                    <div class="settings-card-content">
+                                        <div class="settings-card-title">My Wallets</div>
+                                        <div class="settings-card-description" id="walletsCount">Loading...</div>
+                                    </div>
+                                </div>
+                                <div class="settings-card-arrow">
+                                    <i class="fas fa-chevron-down" id="walletsChevron"></i>
+                                </div>
+                            </div>
+                            <div class="settings-card-body" id="walletsBody" style="display: none;">
+                                <div id="walletsList">
+                                    <div class="wallet-item">
+                                        <div class="wallet-details">No wallets yet</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Categories Card -->
+                        <div class="settings-card expandable">
+                            <div class="settings-card-header" onclick="toggleSettingsSection('categories')">
+                                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                    <div class="settings-card-icon">
+                                        <i class="fas fa-tags"></i>
+                                    </div>
+                                    <div class="settings-card-content">
+                                        <div class="settings-card-title">Categories</div>
+                                        <div class="settings-card-description" id="categoriesCount">Loading...</div>
+                                    </div>
+                                </div>
+                                <div class="settings-card-arrow">
+                                    <i class="fas fa-chevron-down" id="categoriesChevron"></i>
+                                </div>
+                            </div>
+                            <div class="settings-card-body" id="categoriesBody" style="display: none;">
+                                <div id="categoriesList">
+                                    <div class="category-item">
+                                        <div class="category-details">No categories yet</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Section (Future) -->
+                    <div class="settings-section">
+                        <h2 class="settings-section-title">
+                            <i class="fas fa-user"></i>
+                            Profile
+                        </h2>
+                        
+                        <div class="settings-card">
+                            <div class="settings-card-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="settings-card-content">
+                                <div class="settings-card-title">Email</div>
+                                <div class="settings-card-description" id="userEmailSettings">Loading...</div>
                             </div>
                         </div>
                     </div>
@@ -444,8 +523,8 @@
                     <span>Budget</span>
                 </a>
                 <a href="#" class="bottom-nav-item" data-tab="more">
-                    <i class="fas fa-ellipsis-h"></i>
-                    <span>More</span>
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
                 </a>
             </div>
         </nav>
@@ -1237,6 +1316,83 @@
         </div>
     </div>    
 
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);">
+                <button class="modal-close" id="closeExportModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="modal-title">
+                    <i class="fas fa-download"></i> Export Data
+                </h2>
+                <p class="modal-subtitle">Download your financial data</p>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm">
+                    <!-- Export Type -->
+                    <div class="form-group">
+                        <label for="exportType">What to export</label>
+                        <select id="exportType" required>
+                            <option value="all">All Transactions</option>
+                            <option value="expenses">Expenses Only</option>
+                            <option value="income">Income Only</option>
+                            <option value="summary">Summary Report</option>
+                            <option value="budgets">Budgets</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div class="form-group" id="dateRangeGroup">
+                        <label for="exportDateRange">Time period</label>
+                        <select id="exportDateRange" required>
+                            <option value="this-month">This Month</option>
+                            <option value="last-month">Last Month</option>
+                            <option value="last-3-months">Last 3 Months</option>
+                            <option value="last-6-months">Last 6 Months</option>
+                            <option value="this-year">This Year</option>
+                            <option value="last-year">Last Year</option>
+                            <option value="all-time">All Time</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+
+                    <!-- Custom Date Range -->
+                    <div id="customDateRangeGroup" style="display: none;">
+                        <div class="form-row" style="gap: 0.8rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="exportStartDate">From</label>
+                                <input type="date" id="exportStartDate">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="exportEndDate">To</label>
+                                <input type="date" id="exportEndDate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Format (future-proof for PDF/Excel) -->
+                    <div class="form-group">
+                        <label for="exportFormat">Format</label>
+                        <select id="exportFormat" required>
+                            <option value="csv">CSV (Excel, Sheets)</option>
+                        </select>
+                    </div>
+
+                    <!-- Export Button -->
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 1rem;">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </form>
+
+                <!-- Export Info -->
+                <div style="margin-top: 1rem; padding: 1rem; background: var(--light-gray); border-radius: 8px; font-size: 0.85rem; color: var(--gray);">
+                    <i class="fas fa-info-circle"></i> 
+                    CSV files open in Excel, Google Sheets, and Numbers. Your data stays private—everything is processed in your browser.
+                </div>
+            </div>
+        </div>
+    </div>    
+
     <!-- Receipt Viewer Modal -->
     <div class="modal-overlay" id="receiptViewerModal">
         <div class="modal" style="max-width: 90vw; max-height: 90vh;">
@@ -1264,7 +1420,6 @@
     </div>    
 
     <script type="module">
-
 
         async function initApp() {
             try {
@@ -1425,6 +1580,23 @@
             });            
 
         });  
+
+        window.toggleSettingsSection = function(section) {
+            const body = document.getElementById(`${section}Body`);
+            const chevron = document.getElementById(`${section}Chevron`);
+            
+            if (!body || !chevron) return;
+            
+            const isExpanded = body.style.display === 'block';
+            
+            if (isExpanded) {
+                body.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                body.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        };        
     </script>
 
 </body>
