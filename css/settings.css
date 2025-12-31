@@ -110,7 +110,7 @@
 }
 
 .settings-card-body[style*="display: block"] {
-    max-height: 2000px;
+    max-height: 3000px;
     padding: 1rem;
 }
 
@@ -142,3 +142,4 @@
     }
 
 }
+
