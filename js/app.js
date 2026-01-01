@@ -1916,7 +1916,6 @@ async checkInitialAuthState() {
         if (this.domElements.logoutBtn) {
             this.domElements.logoutBtn.classList.remove('hidden');
         }
-
         if (this.domElements.navLinks) {
             this.domElements.navLinks.style.display = 'flex';
         }          
@@ -1970,6 +1969,8 @@ class UIController {
     constructor(app) {
         this.app = app;
         this.state = app.state;
+        this.expenseSearchTerm = '';
+        this.incomeSearchTerm = '';
         this.initializeUI();
         this.setupStateListeners();
     }
@@ -1992,8 +1993,51 @@ class UIController {
         this.updateMonthYearFilters();
         this.setupExpenseSubTabs();
 
+        this.setupExpenseSearch();
+        this.setupIncomeSearch();        
+
         initializeSidebar(this.state);
     }
+
+    setupExpenseSearch() {
+        const searchInput = document.getElementById('expenseSearchInput');
+        const clearButton = document.getElementById('expenseSearchClear');
+        
+        if (!searchInput || !clearButton) return;
+        
+        searchInput.addEventListener('input', (e) => {
+            this.expenseSearchTerm = e.target.value.trim();
+            clearButton.style.display = this.expenseSearchTerm ? 'block' : 'none';
+            this.updateExpensesByDay();
+        });
+        
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            this.expenseSearchTerm = '';
+            clearButton.style.display = 'none';
+            this.updateExpensesByDay();
+        });
+    }
+
+    setupIncomeSearch() {
+        const searchInput = document.getElementById('incomeSearchInput');
+        const clearButton = document.getElementById('incomeSearchClear');
+        
+        if (!searchInput || !clearButton) return;
+        
+        searchInput.addEventListener('input', (e) => {
+            this.incomeSearchTerm = e.target.value.trim();
+            clearButton.style.display = this.incomeSearchTerm ? 'block' : 'none';
+            this.updateIncomesByDay();
+        });
+        
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            this.incomeSearchTerm = '';
+            clearButton.style.display = 'none';
+            this.updateIncomesByDay();
+        });
+    }    
     
     setupStateListeners() {
         // Listen for state changes and update UI
@@ -2696,68 +2740,56 @@ class UIController {
     }
 
     initializeExpenseFilters() {
-        const monthSelect = document.getElementById('expenseMonthSelect');
-        const yearSelect = document.getElementById('expenseYearSelect');
-        
-        if (!monthSelect || !yearSelect) {
-            console.error('Month or year select not found');
-            return;
-        }
-        
-        // Check if already initialized
-        const isInitialized = monthSelect.options.length > 0 && yearSelect.options.length > 0;
-        
-        if (isInitialized) {
-            this.updateExpensesByDay();
-            return;
-        }
-        
-        // Get unique years from expenses
-        const expenses = this.state.getExpenses();
-        const years = [...new Set(expenses.map(e => new Date(e.date).getFullYear()))];
-        
-        if (years.length === 0) {
-            years.push(new Date().getFullYear());
-        }
-        
-        years.sort((a, b) => b - a);
-        
-        // Clear existing options
-        monthSelect.innerHTML = '';
-        yearSelect.innerHTML = '';
-        
-        // Populate month dropdown
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-        
+    const monthSelect = document.getElementById('expenseMonthSelect');
+    const yearSelect = document.getElementById('expenseYearSelect');
+
+    if (!monthSelect || !yearSelect) return;
+
+    // Preserve current selection
+    const selectedMonth = monthSelect.value;
+    const selectedYear = yearSelect.value;
+
+    // Get years from EXPENSE data
+    const expenses = this.state.getExpenses();
+    const years = this.getYearsFromData(expenses);
+
+    // ---- Populate YEAR dropdown (no forced current year) ----
+    this.populateYearDropdown(yearSelect, years, selectedYear);
+
+    // ---- Populate MONTH dropdown (once) ----
+    if (monthSelect.options.length === 0) {
+        const monthNames = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+        ];
+
         monthNames.forEach((month, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = month;
-            monthSelect.appendChild(option);
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = month;
+        monthSelect.appendChild(option);
         });
-        
-        // Populate year dropdown
-        years.forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            yearSelect.appendChild(option);
-        });
-        
-        // Set current month/year
-        const now = new Date();
-        monthSelect.value = now.getMonth();
-        yearSelect.value = now.getFullYear();
+
+        // Default month only on first load
+        monthSelect.value = selectedMonth || new Date().getMonth();
+
         monthSelect.addEventListener('change', () => {
-            this.updateExpensesByDay();
-        });
-        yearSelect.addEventListener('change', () => {
-            this.updateExpensesByDay();
-        });
-        
         this.updateExpensesByDay();
+        });
+
+        yearSelect.addEventListener('change', () => {
+        this.updateExpensesByDay();
+        });
     }
+
+    // Fallback defaults
+    if (!yearSelect.value) {
+        yearSelect.value = years[0];
+    }
+
+    this.updateExpensesByDay();
+    }
+
 
     updateExpensesByDay() {
         const monthSelect = document.getElementById('expenseMonthSelect');
@@ -2821,12 +2853,35 @@ class UIController {
 
     renderExpensesByDay(expenses, container) {
         const wallets = this.state.getWallets();
-        const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Filter by search term if provided
+        let filteredExpenses = expenses;
+        if (this.expenseSearchTerm) {
+            const lowerSearchTerm = this.expenseSearchTerm.toLowerCase();
+            filteredExpenses = expenses.filter(exp => 
+                exp.description.toLowerCase().includes(lowerSearchTerm)
+            );
+        }
+        
+        const sortedExpenses = [...filteredExpenses].sort((a, b) => new Date(b.date) - new Date(a.date));
         
         // Group by day
         const groupedByDay = this.groupTransactionsByDay(sortedExpenses);
         
         container.innerHTML = '';
+        
+        // Show "no results" message if search returns nothing
+        if (this.expenseSearchTerm && groupedByDay.length === 0) {
+            container.innerHTML = `<div class="empty-day-message"><i class="fas fa-search"></i> No expenses found matching "${this.expenseSearchTerm}"</div>`;
+            return;
+        }
+        
+        // Helper function to highlight matching text
+        const highlightText = (text, term) => {
+            if (!term) return text;
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        };
         
         groupedByDay.forEach((dayGroup, index) => {
             const dayGroupDiv = document.createElement('div');
@@ -2898,13 +2953,16 @@ class UIController {
                     }
                 }
                 
+                // Apply highlighting to description
+                const highlightedDescription = highlightText(expense.description, this.expenseSearchTerm);
+                
                 const item = document.createElement('div');
                 item.className = 'expense-item';
                 item.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
                         <div style="flex: 1; min-width: 0; margin-right: 12px;">
                             <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
-                                ${expense.description}
+                                ${highlightedDescription}
                                 ${receiptIcon}
                                 ${reimbursementBadge}
                             </div>
@@ -2923,7 +2981,7 @@ class UIController {
                             <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}')">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description}')">
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description.replace(/'/g, "\\'")}')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -2942,6 +3000,35 @@ class UIController {
             container.appendChild(dayGroupDiv);
         });
     }
+
+    //Collect years from data
+    getYearsFromData(items) {
+    const years = [...new Set(
+        items.map(i => new Date(i.date).getFullYear())
+    )];
+
+    return years.length
+        ? years.sort((a, b) => b - a)
+        : [new Date().getFullYear()];
+    }
+
+    populateYearDropdown(yearSelect, years, selectedYear) {
+        yearSelect.innerHTML = '';
+
+        years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+        });
+
+        // preserve selection
+        if (years.includes(Number(selectedYear))) {
+        yearSelect.value = selectedYear;
+        } else {
+        yearSelect.value = years[0];
+        }
+    }    
 
     // Helper method to group transactions by day
     groupTransactionsByDay(transactions) {
@@ -3161,57 +3248,56 @@ class UIController {
     }
 
     initializeIncomeFilters() {
-        const monthSelect = document.getElementById('incomeMonthSelect');
-        const yearSelect = document.getElementById('incomeYearSelect');
-        
-        if (!monthSelect || !yearSelect) return;
-        
-        // Only initialize once
-        if (monthSelect.options.length > 0) {
-            this.updateIncomesByDay();
-            return;
-        }
-        
-        // Get unique years from incomes
-        const incomes = this.state.getIncomes();
-        const years = [...new Set(incomes.map(i => new Date(i.date).getFullYear()))];
-        
-        if (years.length === 0) {
-            years.push(new Date().getFullYear());
-        }
-        
-        years.sort((a, b) => b - a);
-        
-        // Populate year dropdown
-        years.forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            yearSelect.appendChild(option);
-        });
-        
-        // Populate month dropdown
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-        
+    const monthSelect = document.getElementById('incomeMonthSelect');
+    const yearSelect = document.getElementById('incomeYearSelect');
+
+    if (!monthSelect || !yearSelect) return;
+
+    // Preserve current selection
+    const selectedMonth = monthSelect.value;
+    const selectedYear = yearSelect.value;
+
+    // Get years from INCOME data
+    const incomes = this.state.getIncomes();
+    const years = this.getYearsFromData(incomes);
+
+    // ---- Populate YEAR dropdown (no forced current year) ----
+    this.populateYearDropdown(yearSelect, years, selectedYear);
+
+    // ---- Populate MONTH dropdown (once) ----
+    if (monthSelect.options.length === 0) {
+        const monthNames = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+        ];
+
         monthNames.forEach((month, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = month;
-            monthSelect.appendChild(option);
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = month;
+        monthSelect.appendChild(option);
         });
-        
-        // Set current month/year
-        const now = new Date();
-        monthSelect.value = now.getMonth();
-        yearSelect.value = now.getFullYear();
-        
-        // Add change listeners
-        monthSelect.addEventListener('change', () => this.updateIncomesByDay());
-        yearSelect.addEventListener('change', () => this.updateIncomesByDay());
-        
+
+        // Default month only on first load
+        monthSelect.value = selectedMonth || new Date().getMonth();
+
+        monthSelect.addEventListener('change', () => {
         this.updateIncomesByDay();
+        });
+
+        yearSelect.addEventListener('change', () => {
+        this.updateIncomesByDay();
+        });
     }
+
+    // Fallback default year
+    if (!yearSelect.value) {
+        yearSelect.value = years[0];
+    }
+
+    this.updateIncomesByDay();
+    }
+
 
     updateIncomesByDay() {
         const monthSelect = document.getElementById('incomeMonthSelect');
@@ -3273,12 +3359,35 @@ class UIController {
 
     renderIncomesByDay(incomes, container) {
         const wallets = this.state.getWallets();
-        const sortedIncomes = [...incomes].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Filter by search term if provided
+        let filteredIncomes = incomes;
+        if (this.incomeSearchTerm) {
+            const lowerSearchTerm = this.incomeSearchTerm.toLowerCase();
+            filteredIncomes = incomes.filter(inc => 
+                inc.description.toLowerCase().includes(lowerSearchTerm)
+            );
+        }
+        
+        const sortedIncomes = [...filteredIncomes].sort((a, b) => new Date(b.date) - new Date(a.date));
         
         // Group by day
         const groupedByDay = this.groupTransactionsByDay(sortedIncomes);
         
         container.innerHTML = '';
+        
+        // Show "no results" message if search returns nothing
+        if (this.incomeSearchTerm && groupedByDay.length === 0) {
+            container.innerHTML = `<div class="empty-day-message"><i class="fas fa-search"></i> No income found matching "${this.incomeSearchTerm}"</div>`;
+            return;
+        }
+        
+        // Helper function to highlight matching text
+        const highlightText = (text, term) => {
+            if (!term) return text;
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        };
         
         groupedByDay.forEach((dayGroup, index) => {
             const dayGroupDiv = document.createElement('div');
@@ -3335,13 +3444,16 @@ class UIController {
                     reimbursementBadge = `<span class="reimbursement-badge is-reimbursement" title="${count} linked expense${count !== 1 ? 's' : ''}"><i class="fas fa-link"></i></span>`;
                 }
                 
+                // Apply highlighting to description
+                const highlightedDescription = highlightText(income.description, this.incomeSearchTerm);
+                
                 const item = document.createElement('div');
                 item.className = 'income-item';
                 item.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
                         <div style="flex: 1; min-width: 0; margin-right: 12px;">
                             <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
-                                ${income.description}
+                                ${highlightedDescription}
                                 ${reimbursementBadge}
                             </div>
                         </div>
@@ -3364,7 +3476,7 @@ class UIController {
                             <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}')">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description}')">
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description.replace(/'/g, "\\'")}')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>

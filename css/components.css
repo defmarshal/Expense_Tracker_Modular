@@ -1274,3 +1274,58 @@ input:focus, select:focus, textarea:focus {
         font-size: 0.9rem;
     }
 }
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* margin: 15px 0; */
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-bar i.fa-search {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+.search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    padding: 8px;
+    background: transparent;
+}
+
+.search-bar input::placeholder {
+    color: var(--text-secondary);
+}
+
+.search-clear {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.search-clear:hover {
+    color: var(--danger);
+}
+
+.search-clear i {
+    font-size: 16px;
+}
+
+.search-highlight {
+    background-color: #ffeb3b;
+    font-weight: 600;
+    padding: 1px 2px;
+    border-radius: 2px;
+}

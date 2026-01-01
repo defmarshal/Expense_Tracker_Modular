@@ -313,7 +313,7 @@
 .expense-sub-tabs {
     display: flex;
     gap: 8px;
-    margin-bottom: 1.5rem;
+    /* margin-bottom: 1.5rem; */
     border-bottom: 2px solid var(--light-gray);
     padding: 0 0 0.5rem 0;
 }

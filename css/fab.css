@@ -1,20 +1,21 @@
 /* Floating Action Button (FAB) Styles */
 
+/* Show FAB by default */
 .fab-container {
     position: fixed;
     bottom: 24px;
     right: 24px;
     z-index: 1000;
-    display: none; /* Hidden on landing page */
+    display: block; /* Changed from none */
 }
 
 /* Show FAB only when dashboard is visible */
-body:has(.dashboard-container:not(.hidden)) .fab-container {
+body:has(#dashboardContainer:not([style*="display: none"])) .fab-container {
     display: block;
 }
 
 /* Explicitly hide FAB when landing page is visible */
-body:has(.landing-page:not(.hidden)) .fab-container {
+body:has(#landingPage:not([style*="display: none"])) .fab-container {
     display: none !important;
 }
 

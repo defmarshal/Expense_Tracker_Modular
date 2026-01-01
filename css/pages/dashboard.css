@@ -500,7 +500,7 @@
     background: white;
     border-radius: var(--radius-md);
     padding: var(--space-lg);
-    margin-top: 0px;
+    margin-top: 1rem;
     margin-bottom: 1rem;
     box-shadow: var(--shadow);
     text-align: center;
@@ -556,6 +556,10 @@
     gap: var(--space-xs);
 }
 
+#incomeTab.active {
+    gap: 0;
+}
+
 #expensesTab.active,
 #historicalTab.active,
 #incomeTab.active,
@@ -563,7 +567,7 @@
 #categoriesTab.active {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    /* gap: var(--space-lg); */
 }
 
 .expense-list, .income-list, .wallet-list, .category-list {
@@ -809,15 +813,15 @@
     }
     
     .month-filter {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-md);
-        margin-bottom:1rem;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-xs);
+        /* margin-bottom:1rem; */
     }
     
-    .month-filter label {
+    /* .month-filter label {
         margin-bottom: var(--space-xs);
-    }
+    } */
     
     .month-filter select {
         min-width: auto;

@@ -67,7 +67,7 @@
         </div>
     </header>
 
-<div id="landingPage" class="landing-page">
+    <div id="landingPage" class="landing-page" style="display: none;">
         <section class="hero">
             <div class="hero-content">
                 <h1>
@@ -124,7 +124,7 @@
         </footer>
     </div>
 
-    <div id="dashboardContainer" class="dashboard-container">
+    <div id="dashboardContainer" class="dashboard-container" style="display: none;">
         
         <!-- Desktop Sidebar Navigation -->
         <aside class="sidebar">
@@ -249,6 +249,14 @@
                             <label for="expenseYearSelect">Year:</label>
                             <select id="expenseYearSelect"></select>
                         </div>
+
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="expenseSearchInput" placeholder="Search expenses by description...">
+                            <button id="expenseSearchClear" class="search-clear" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>                        
                         
                         <div class="expense-summary">
                             <h3>Total for <span id="expenseSelectedMonthYear">this month</span></h3>
@@ -326,6 +334,14 @@
                         <label for="incomeYearSelect">Year:</label>
                         <select id="incomeYearSelect"></select>
                     </div>
+
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="incomeSearchInput" placeholder="Search income by description...">
+                        <button id="incomeSearchClear" class="search-clear" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>                    
                     
                     <div class="expense-summary">
                         <h3>Total for <span id="incomeSelectedMonthYear">this month</span></h3>
@@ -1360,6 +1376,9 @@
     </div>    
 
     <script type="module">
+
+        // const SUPABASE_URL = 'https://slgzgaojmgzjhtuaptod.supabase.co';
+        // const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZ3pnYW9qbWd6amh0dWFwdG9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyNzQyMzMsImV4cCI6MjA3ODg1MDIzM30.aD9cjbekiufRaatuNaAEP2uD2uU7ggpPor6jtSGM-F4';
 
         async function initApp() {
             try {
