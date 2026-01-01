@@ -1,27 +1,120 @@
 /* Landing Page Specific Styles */
 
+/* Landing Page Container */
+.landing-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Hero Section */
+.hero {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    width: 100%;
+}
+
 .hero h1 {
-    font-size: 3rem;
+    font-size: clamp(1.5rem, 6vw, 3rem);
     font-weight: 700;
-    margin-bottom: var(--space-md);
+    margin-bottom: 0.75rem;
     background: var(--gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    line-height: 1.1;
+    line-height: 1.2;
+    padding: 0 1rem;
 }
 
 .hero p {
-    font-size: 1.2rem;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     color: var(--gray);
-    margin-bottom: var(--space-xl);
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+    padding: 0 1rem;
     line-height: 1.6;
 }
 
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 1rem;
+    margin-bottom: 3rem;
+}
+
+.hero-buttons .btn {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+}
+
+/* Quick Features Grid */
+.hero-content > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.875rem;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.hero-content > div:last-child > div {
+    text-align: center;
+    padding: 0.375rem;
+}
+
+.hero-content > div:last-child > div > div:first-child {
+    width: 52px;
+    height: 52px;
+    background: var(--gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+}
+
+.hero-content > div:last-child > div > div:first-child i {
+    font-size: 1.4rem;
+    color: white;
+}
+
+.hero-content > div:last-child h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.hero-content > div:last-child p {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin: 0;
+}
+
+/* Footer */
+.landing-page > footer {
+    padding: 1rem;
+    border-top: 1px solid var(--light-gray);
+    text-align: center;
+}
+
+.landing-page > footer p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+/* Old styles kept for backwards compatibility */
 .hero-image {
     max-width: 800px;
     width: 100%;
@@ -154,173 +247,120 @@
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
+    .hero {
+        padding: 1.5rem 1rem;
+    }
+    
     .hero h1 {
-        font-size: 2.2rem;
+        font-size: clamp(1.4rem, 5.5vw, 2.2rem);
+        margin-bottom: 0.75rem;
     }
     
     .hero p {
-        font-size: 1rem;
-        margin-bottom: var(--space-lg);
+        font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+        margin-bottom: 1.5rem;
     }
     
     .hero-buttons {
-        flex-direction: column;
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto var(--space-lg);
+        margin-bottom: 2.5rem;
     }
     
     .hero-buttons .btn {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .hero-image {
-        margin-top: var(--space-md);
-        border-radius: var(--radius-md);
-    }
-    
-    .hero-image > div {
-        height: 220px;
+        padding: 0.875rem 1.75rem;
         font-size: 1rem;
-        padding: var(--space-md);
     }
     
-    .feature-card {
-        padding: var(--space-lg);
+    .hero-content > div:last-child {
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 1rem;
     }
     
-    .feature-icon {
-        width: 50px;
-        height: 50px;
+    .hero-content > div:last-child > div {
+        padding: 0.5rem;
+    }
+    
+    .hero-content > div:last-child > div > div:first-child {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .hero-content > div:last-child > div > div:first-child i {
         font-size: 1.3rem;
     }
     
-    .feature-title {
-        font-size: 1.1rem;
+    .hero-content > div:last-child h3 {
+        font-size: 0.85rem;
     }
     
-    .feature-description {
-        font-size: 0.9rem;
+    .hero-content > div:last-child p {
+        font-size: 0.72rem;
     }
     
-    .cta {
-        padding: var(--space-2xl) var(--space-lg);
+    .landing-page > footer {
+        padding: 1rem;
     }
     
-    .cta h2 {
-        font-size: 1.8rem;
-    }
-    
-    .cta p {
-        font-size: 1rem;
-    }
-    
-    .cta-buttons {
-        flex-direction: column;
-        width: 100%;
-        max-width: 280px;
-        margin: 0 auto;
-    }
-    
-    .cta-buttons .btn {
-        width: 100%;
-        justify-content: center;
+    .landing-page > footer p {
+        font-size: 0.8rem;
     }
 }
 
 @media (max-width: 480px) {
-    .hero h1 {
-        font-size: 1.8rem;
-        margin-bottom: var(--space-md);
-    }
-    
-    .hero p {
-        font-size: 0.95rem;
-        margin-bottom: var(--space-lg);
-    }
-    
-    .hero-image > div {
-        height: 180px;
-        font-size: 0.9rem;
-    }
-    
-    .feature-card {
-        padding: var(--space-lg);
-    }
-    
-    .feature-icon {
-        width: 45px;
-        height: 45px;
-        font-size: 1.2rem;
-        margin-bottom: var(--space-md);
-    }
-    
-    .feature-title {
-        font-size: 1rem;
-        margin-bottom: var(--space-xs);
-    }
-    
-    .feature-description {
-        font-size: 0.85rem;
-    }
-    
-    .cta {
-        padding: var(--space-2xl) var(--space-md);
-    }
-    
-    .cta h2 {
-        font-size: 1.5rem;
-        margin-bottom: var(--space-md);
-    }
-    
-    .cta p {
-        font-size: 0.9rem;
-        margin-bottom: var(--space-lg);
-    }
-    
-    .footer-column h3 {
-        font-size: 0.95rem;
-    }
-    
-    .footer-links a {
-        font-size: 0.85rem;
-    }
-}
-
-/* Landscape mode for mobile */
-@media (max-width: 896px) and (orientation: landscape) {
     .hero {
-        padding: var(--space-xl) var(--space-md);
+        padding: 1.25rem 0.875rem;
     }
     
     .hero h1 {
-        font-size: 1.8rem;
+        font-size: clamp(1.3rem, 5vw, 1.9rem);
+        margin-bottom: 0.625rem;
     }
     
     .hero p {
-        font-size: 0.9rem;
-        margin-bottom: var(--space-md);
+        font-size: clamp(0.85rem, 2vw, 1rem);
+        margin-bottom: 1.25rem;
     }
     
     .hero-buttons {
-        flex-direction: row;
-        margin-bottom: var(--space-md);
+        margin-bottom: 2rem;
     }
     
-    .hero-image {
-        max-width: 600px;
+    .hero-buttons .btn {
+        padding: 0.8rem 1.6rem;
+        font-size: 0.95rem;
     }
     
-    .hero-image > div {
-        height: 200px;
+    .hero-content > div:last-child {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.875rem;
+        max-width: 400px;
     }
     
-    .cta {
-        padding: var(--space-xl) var(--space-lg);
+    .hero-content > div:last-child > div {
+        padding: 0.5rem 0.25rem;
     }
     
-    .cta h2 {
-        font-size: 1.6rem;
+    .hero-content > div:last-child > div > div:first-child {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .hero-content > div:last-child > div > div:first-child i {
+        font-size: 1.2rem;
+    }
+    
+    .hero-content > div:last-child h3 {
+        font-size: 0.8rem;
+    }
+    
+    .hero-content > div:last-child p {
+        font-size: 0.68rem;
+    }
+    
+    .landing-page > footer {
+        padding: 0.875rem;
+    }
+    
+    .landing-page > footer p {
+        font-size: 0.75rem;
     }
 }

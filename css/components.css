@@ -1,3 +1,7 @@
+#navLinks {
+    display: none;
+}
+
 /* Buttons */
 .btn {
     padding: var(--space-sm) var(--space-md);
@@ -1167,6 +1171,7 @@ input:focus, select:focus, textarea:focus {
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom:1rem;
 }
 
 .budget-category-item {

@@ -1,25 +1,25 @@
 /* CSS Custom Properties - Theme Variables */
 :root {
-    /* Purple-based casual theme */
-    --primary: #9333EA;
-    --primary-dark: #7E22CE;
-    --primary-light: #C084FC;
-    --secondary: #A78BFA;
+    /* Penny - Vibrant yet professional */
+    --primary: #3B82F6;
+    --primary-dark: #2563EB;
+    --primary-light: #60A5FA;
+    --secondary: #F97316;
     --success: #10B981;
     --success-dark: #059669;
     --danger: #EF4444;
     --warning: #F59E0B;
-    --light: #F9F5FF;
-    --light-gray: #F3F0FF;
-    --dark: #2D1B4E;
-    --text: #4B3B5C;
-    --gray: #9B8BA8;
-    --gray-light: #E9E0F5;
+    --light: #FAFBFC;
+    --light-gray: #F1F5F9;
+    --dark: #1E293B;
+    --text: #334155;
+    --gray: #64748B;
+    --gray-light: #E2E8F0;
     
     /* Effects */
-    --shadow: 0 2px 8px rgba(147, 51, 234, 0.08);
-    --gradient: linear-gradient(135deg, #9333EA 0%, #A78BFA 100%);
-    --income-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    --shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    --gradient: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+    --income-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
     
     /* Unified Spacing System */
     --space-xs: 0.5rem;     /* 8px */

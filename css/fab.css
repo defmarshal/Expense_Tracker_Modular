@@ -9,9 +9,13 @@
 }
 
 /* Show FAB only when dashboard is visible */
-.dashboard-container:not(.hidden) ~ .fab-container,
 body:has(.dashboard-container:not(.hidden)) .fab-container {
     display: block;
+}
+
+/* Explicitly hide FAB when landing page is visible */
+body:has(.landing-page:not(.hidden)) .fab-container {
+    display: none !important;
 }
 
 .fab-button {

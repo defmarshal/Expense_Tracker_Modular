@@ -18,19 +18,19 @@
 .reimbursement-badge.pending {
     background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
     color: #92400E;
-    border: 1px solid #F59E0B;
+    border: 1px solid var(--warning);
 }
 
 .reimbursement-badge.reimbursed {
     background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
     color: #065F46;
-    border: 1px solid #10B981;
+    border: 1px solid var(--success);
 }
 
 .reimbursement-badge.is-reimbursement {
     background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
     color: #1E40AF;
-    border: 1px solid #3B82F6;
+    border: 1px solid var(--primary);
 }
 
 .reimbursement-badge i {
@@ -53,7 +53,7 @@
 
 .stat-card.reimbursement {
     background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    border: 2px solid #F59E0B;
+    border: 2px solid var(--warning);
 }
 
 .stat-card.reimbursement .stat-label {
@@ -93,7 +93,7 @@
 }
 
 .expense-selector-item.selected {
-    background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
     border-color: var(--primary);
 }
 
@@ -102,12 +102,10 @@
     cursor: pointer;
     width: 18px;
     height: 18px;
-    /* Remove default appearance to ensure custom styling works */
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     
-    /* Add visible border and background */
     border: 2px solid var(--primary);
     border-radius: 4px;
     background-color: white;
@@ -116,8 +114,8 @@
 }
 
 .expense-selector-item input[type="checkbox"]:hover {
-    border-color: var(--primary);
-    background-color: #F3F4F6;
+    border-color: var(--primary-dark);
+    background-color: var(--light);
 }
 
 .expense-selector-item input[type="checkbox"]:checked {
@@ -125,7 +123,6 @@
     border-color: var(--primary);
 }
 
-/* Add checkmark icon when checked */
 .expense-selector-item input[type="checkbox"]:checked::after {
     content: "✓";
     position: absolute;
@@ -165,7 +162,7 @@
 }
 
 .expense-selector-summary {
-    background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 1rem;
@@ -187,12 +184,12 @@
 
 .expense-selector-summary .summary-label {
     font-weight: 600;
-    color: #5B21B6;
+    color: var(--primary-dark);
 }
 
 .expense-selector-summary .summary-value {
     font-weight: 700;
-    color: #6D28D9;
+    color: var(--primary);
     font-size: 1.1rem;
 }
 
@@ -205,7 +202,7 @@
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 1rem;
-    border: 2px solid #EAB308;
+    border: 2px solid var(--warning);
 }
 
 .reimbursement-toggle label {
@@ -221,13 +218,11 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
-    /* Remove default appearance to ensure custom styling works */
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     
-    /* Add visible border and background */
-    border: 2px solid #D97706;
+    border: 2px solid var(--warning);
     border-radius: 4px;
     background-color: white;
     position: relative;
@@ -240,11 +235,10 @@
 }
 
 .reimbursement-toggle input[type="checkbox"]:checked {
-    background-color: #F59E0B;
-    border-color: #F59E0B;
+    background-color: var(--warning);
+    border-color: var(--warning);
 }
 
-/* Add checkmark icon when checked */
 .reimbursement-toggle input[type="checkbox"]:checked::after {
     content: "✓";
     position: absolute;
@@ -295,7 +289,7 @@
     padding: 6px 12px;
     background: #FEE2E2;
     color: #991B1B;
-    border: 1px solid #DC2626;
+    border: 1px solid var(--danger);
     border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
@@ -366,15 +360,15 @@
     background: white;
     border-radius: 12px;
     padding: 1.25rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow);
 }
 
 .reimbursement-stat-card.pending {
-    border-left: 4px solid #F59E0B;
+    border-left: 4px solid var(--warning);
 }
 
 .reimbursement-stat-card.reimbursed {
-    border-left: 4px solid #10B981;
+    border-left: 4px solid var(--success);
 }
 
 .reimbursement-stat-label {
@@ -436,12 +430,12 @@
 
 .reimbursement-section-title.pending i {
     background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    color: #F59E0B;
+    color: var(--warning);
 }
 
 .reimbursement-section-title.reimbursed i {
     background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
-    color: #10B981;
+    color: var(--success);
 }
 
 .reimbursement-section-count {
@@ -467,7 +461,7 @@
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
-    border: 1px solid #10B981;
+    border: 1px solid var(--success);
 }
 
 /* ============================================
@@ -476,7 +470,7 @@
 
 #pendingReimbursementList .expense-item {
     background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%) !important;
-    border: 2px solid #F59E0B !important;
+    border: 2px solid var(--warning) !important;
     border-radius: 12px;
     padding: 1rem;
     margin-bottom: 8px;
@@ -486,20 +480,18 @@
     color: #D97706 !important;
 }
 
-/* Target expense items that are nested inside reimbursed list */
 #reimbursedList .expense-item {
-    background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%) !important;
-    border: 2px solid #9333EA !important;
+    background: linear-gradient(135deg, #FFF4ED 0%, #FFEDD5 100%) !important;
+    border: 2px solid var(--secondary) !important;
     border-radius: 12px;
     padding: 1rem;
     margin-bottom: 8px;
 }
 
 #reimbursedList .expense-item .expense-amount {
-    color: #7C3AED !important;
+    color: var(--secondary) !important;
 }
 
-/* Hide badges and unlink buttons in nested expense items */
 #reimbursedList .expense-item .reimbursement-badge {
     display: none !important;
 }
@@ -508,7 +500,6 @@
     display: none !important;
 }
 
-/* Rounded edges for income items in reimbursed section */
 #reimbursedList .income-item {
     border-radius: 12px;
 }

@@ -4,10 +4,6 @@
     margin-bottom: 2rem;
 }
 
-.settings-section:last-child {
-    padding-bottom: 80px;
-}
-
 .settings-section-title {
     font-size: 0.85rem;
     font-weight: 700;
@@ -110,7 +106,7 @@
 }
 
 .settings-card-body[style*="display: block"] {
-    max-height: 3000px;
+    max-height: 2000px;
     padding: 1rem;
 }
 
@@ -140,6 +136,4 @@
     .settings-card-description {
         font-size: 0.75rem;
     }
-
 }
-

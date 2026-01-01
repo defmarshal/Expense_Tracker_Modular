@@ -200,18 +200,25 @@ class AuthService {
         try {
             this.state.setLoading(true);
             
-            const { error } = await this.supabase.auth.signOut();
+            // Attempt to sign out from Supabase
+            const { error } = await this.supabase.auth.signOut({ scope: 'local' });
             
+            // Even if there's an error (like 403), we should clear local state
+            // This handles cases where the session is already invalid
             if (error) {
-                throw new Error(error.message);
+                console.warn('Supabase signOut error (proceeding with local cleanup):', error.message);
             }
             
+            // Always clear local state regardless of API success
             this.state.reset();
             this.emitAuthEvent('signOutSuccess', {});
             return { success: true };
         } catch (error) {
-            this.emitAuthEvent('error', { error: error.message });
-            throw error;
+            // Even on error, clear local state
+            console.warn('SignOut error (proceeding with local cleanup):', error.message);
+            this.state.reset();
+            this.emitAuthEvent('signOutSuccess', {});
+            return { success: true };
         } finally {
             this.state.setLoading(false);
         }

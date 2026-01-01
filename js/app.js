@@ -129,7 +129,9 @@ class FinTrackApp {
             // Auth buttons
             loginBtn: document.getElementById('loginBtn'),
             signupBtn: document.getElementById('signupBtn'),
+            herosignupBtn: document.getElementById('heroSignupBtn'),
             logoutBtn: document.getElementById('logoutBtn'),
+            navLinks: document.getElementById('navLinks'),
             
             // Modals
             signupModal: document.getElementById('signupModal'),
@@ -165,6 +167,12 @@ class FinTrackApp {
                 this.showModal('signup');
             });
         }
+
+        if (this.domElements.herosignupBtn) {
+            this.domElements.herosignupBtn.addEventListener('click', () => {
+                this.showModal('signup');
+            });
+        }        
         
         if (this.domElements.logoutBtn) {
             this.domElements.logoutBtn.addEventListener('click', async () => {
@@ -1908,6 +1916,10 @@ async checkInitialAuthState() {
         if (this.domElements.logoutBtn) {
             this.domElements.logoutBtn.classList.remove('hidden');
         }
+
+        if (this.domElements.navLinks) {
+            this.domElements.navLinks.style.display = 'flex';
+        }          
     }
     
     showLandingPage() {
@@ -1926,6 +1938,7 @@ async checkInitialAuthState() {
         if (this.domElements.logoutBtn) {
             this.domElements.logoutBtn.classList.add('hidden');
         }
+      
     }
     
     showAlert(message, type = 'info') {
