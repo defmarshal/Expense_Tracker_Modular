@@ -131,6 +131,7 @@ class FinTrackApp {
             signupBtn: document.getElementById('signupBtn'),
             herosignupBtn: document.getElementById('heroSignupBtn'),
             logoutBtn: document.getElementById('logoutBtn'),
+            searchBtn: document.getElementById('searchBtn'),
             navLinks: document.getElementById('navLinks'),
             
             // Modals
@@ -171,6 +172,12 @@ class FinTrackApp {
         if (this.domElements.herosignupBtn) {
             this.domElements.herosignupBtn.addEventListener('click', () => {
                 this.showModal('signup');
+            });
+        }        
+
+        if (this.domElements.searchBtn) {
+            this.domElements.searchBtn.addEventListener('click', () => {
+                this.showModal('search');
             });
         }        
         
@@ -723,7 +730,38 @@ class FinTrackApp {
         document.getElementById('closeSubcategoryModal')?.addEventListener('click', () => {
             document.getElementById('subcategoryModal').classList.remove('active');
         });
+
+        // ADD THIS - Close search modal
+        document.getElementById('closeSearchModal')?.addEventListener('click', () => {
+            document.getElementById('searchModal').classList.remove('active');
+        });
+
+        // ADD THIS - Search date range toggle
+        const searchDateRange = document.getElementById('searchDateRange');
+        const searchCustomDateRange = document.getElementById('searchCustomDateRange');
         
+        if (searchDateRange && searchCustomDateRange) {
+            searchDateRange.addEventListener('change', (e) => {
+                if (e.target.value === 'custom') {
+                    searchCustomDateRange.style.display = 'block';
+                } else {
+                    searchCustomDateRange.style.display = 'none';
+                }
+            });
+        }
+
+        // ADD THIS - Execute search button
+        document.getElementById('executeSearchBtn')?.addEventListener('click', () => {
+            this.executeSearch();
+        });
+
+        // ADD THIS - Search on Enter key
+        document.getElementById('searchInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.executeSearch();
+            }
+        });        
+            
         // Close insufficient balance modal
         document.getElementById('closeInsufficientBalanceModal')?.addEventListener('click', () => {
             document.getElementById('insufficientBalanceModal').classList.remove('active');
@@ -1339,6 +1377,271 @@ class FinTrackApp {
         modal.classList.add('active');
     }
 
+    executeSearch() {
+        const searchTerm = document.getElementById('searchInput').value.trim();
+        const searchType = document.getElementById('searchType').value;
+        const dateRange = document.getElementById('searchDateRange').value;
+        const startDate = document.getElementById('searchStartDate').value;
+        const endDate = document.getElementById('searchEndDate').value;
+        
+        const resultsContainer = document.getElementById('searchResults');
+        const resultsCount = document.getElementById('searchResultsCount');
+        const resultsText = document.getElementById('searchResultsText');
+        
+        if (!searchTerm) {
+            this.showAlert('Please enter a search term', 'warning');
+            return;
+        }
+        
+        // Get current wallet
+        const currentWalletId = this.state.getState().currentWalletId;
+        
+        if (!currentWalletId) {
+            this.showAlert('Please select a wallet first', 'error');
+            return;
+        }
+        
+        // Get all transactions
+        let expenses = this.state.getExpenses().filter(e => e.walletId === currentWalletId);
+        let incomes = this.state.getIncomes().filter(i => i.walletId === currentWalletId);
+        
+        // Filter by date range
+        const now = new Date();
+        let filterStartDate, filterEndDate;
+        
+        switch(dateRange) {
+            case 'this-month':
+                filterStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                filterEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                break;
+            case 'last-month':
+                filterStartDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                filterEndDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                break;
+            case 'this-year':
+                filterStartDate = new Date(now.getFullYear(), 0, 1);
+                filterEndDate = new Date(now.getFullYear(), 11, 31);
+                break;
+            case 'last-year':
+                filterStartDate = new Date(now.getFullYear() - 1, 0, 1);
+                filterEndDate = new Date(now.getFullYear() - 1, 11, 31);
+                break;
+            case 'custom':
+                if (!startDate || !endDate) {
+                    this.showAlert('Please select both start and end dates', 'warning');
+                    return;
+                }
+                filterStartDate = new Date(startDate);
+                filterEndDate = new Date(endDate);
+                break;
+            case 'all-time':
+            default:
+                filterStartDate = null;
+                filterEndDate = null;
+        }
+        
+        // Apply date filter
+        if (filterStartDate && filterEndDate) {
+            expenses = expenses.filter(e => {
+                const expDate = new Date(e.date);
+                return expDate >= filterStartDate && expDate <= filterEndDate;
+            });
+            incomes = incomes.filter(i => {
+                const incDate = new Date(i.date);
+                return incDate >= filterStartDate && incDate <= filterEndDate;
+            });
+        }
+        
+        // Search filter
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const matchedExpenses = expenses.filter(e => 
+            e.description.toLowerCase().includes(lowerSearchTerm)
+        );
+        const matchedIncomes = incomes.filter(i => 
+            i.description.toLowerCase().includes(lowerSearchTerm)
+        );
+        
+        // Filter by transaction type
+        let finalExpenses = searchType === 'income' ? [] : matchedExpenses;
+        let finalIncomes = searchType === 'expenses' ? [] : matchedIncomes;
+        
+        const totalResults = finalExpenses.length + finalIncomes.length;
+        
+        // Update results count
+        resultsText.textContent = `${totalResults} result${totalResults !== 1 ? 's' : ''} found`;
+        resultsCount.style.display = 'block';
+        
+        // Render results
+        if (totalResults === 0) {
+            resultsContainer.innerHTML = `
+                <div class="search-no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No Results Found</h3>
+                    <p>Try different search terms or adjust the filters</p>
+                </div>
+            `;
+            return;
+        }
+        
+        resultsContainer.innerHTML = '';
+        
+        // Helper function to highlight text
+        const highlightText = (text, term) => {
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        };
+        
+        // Render expenses
+        if (finalExpenses.length > 0) {
+            const expensesGroup = document.createElement('div');
+            expensesGroup.className = 'search-result-group';
+            
+            const header = document.createElement('div');
+            header.className = 'search-result-group-header';
+            header.innerHTML = `
+                <span><i class="fas fa-shopping-cart"></i> Expenses</span>
+                <span>${finalExpenses.length} result${finalExpenses.length !== 1 ? 's' : ''}</span>
+            `;
+            expensesGroup.appendChild(header);
+            
+            // Sort by date
+            finalExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            finalExpenses.forEach(expense => {
+                let categoryText = expense.category;
+                if (expense.subcategory) {
+                    categoryText += ` › ${expense.subcategory}`;
+                }
+
+                let receiptIcon = '';
+                if (expense.receiptUrl) {
+                    receiptIcon = `<button class="receipt-icon-btn" onclick="window.finTrack.app.viewReceipt('${expense.id}', '${expense.description.replace(/'/g, "\\'")}', '${expense.receiptUrl}')" title="View receipt">
+                        <i class="fas fa-paperclip"></i>
+                    </button>`;
+                }
+                
+                let reimbursementBadge = '';
+                if (expense.isReimbursable) {
+                    if (expense.reimbursementStatus === 'pending') {
+                        reimbursementBadge = '<span class="reimbursement-badge pending" title="Pending reimbursement"><i class="fas fa-clock"></i></span>';
+                    } else if (expense.reimbursementStatus === 'reimbursed') {
+                        reimbursementBadge = `<span class="reimbursement-badge reimbursed clickable" onclick="window.finTrack.app.showReimbursementDetails('${expense.id}')" title="Reimbursed - Click for details"><i class="fas fa-check-circle"></i></span>`;
+                    }
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'expense-item';
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                            <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                                ${highlightText(expense.description, searchTerm)}
+                                ${receiptIcon}
+                                ${reimbursementBadge}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <span class="expense-category" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                                ${categoryText}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="expense-amount" style="font-weight: 600; color: var(--primary);">
+                                ${currencyUtils.formatDisplayCurrency(expense.amount)}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">
+                                ${new Date(expense.date).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="window.finTrack.ui.editExpense('${expense.id}'); document.getElementById('searchModal').classList.remove('active');">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('expense', '${expense.id}', '${expense.description.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                expensesGroup.appendChild(item);
+            });
+            
+            resultsContainer.appendChild(expensesGroup);
+        }
+        
+        // Render incomes
+        if (finalIncomes.length > 0) {
+            const incomesGroup = document.createElement('div');
+            incomesGroup.className = 'search-result-group';
+            
+            const header = document.createElement('div');
+            header.className = 'search-result-group-header';
+            header.innerHTML = `
+                <span><i class="fas fa-coins"></i> Income</span>
+                <span>${finalIncomes.length} result${finalIncomes.length !== 1 ? 's' : ''}</span>
+            `;
+            incomesGroup.appendChild(header);
+            
+            // Sort by date
+            finalIncomes.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            finalIncomes.forEach(income => {
+                let reimbursementBadge = '';
+                if (income.isReimbursement) {
+                    const linkedExpenses = this.state.getLinkedExpensesForIncome(income.id);
+                    const count = linkedExpenses.length;
+                    reimbursementBadge = `<span class="reimbursement-badge is-reimbursement" title="${count} linked expense${count !== 1 ? 's' : ''}"><i class="fas fa-link"></i></span>`;
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'income-item';
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                            <div style="font-weight: 500; word-break: break-word; font-size: 0.8rem;">
+                                ${highlightText(income.description, searchTerm)}
+                                ${reimbursementBadge}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <span class="income-source" style="font-size: 0.6rem; background: var(--light-gray); padding: 2px 8px; border-radius: 12px; color: var(--gray); white-space: nowrap;">
+                                ${income.source}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="income-amount" style="font-weight: 600; color: var(--success);">
+                                ${currencyUtils.formatDisplayCurrency(income.amount)}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">
+                                ${new Date(income.date).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            ${income.isReimbursement ? `
+                                <button class="unlink-reimbursement-btn" onclick="window.finTrack.app.handleUnlinkReimbursement('${income.id}')">
+                                    <i class="fas fa-unlink"></i>
+                                </button>
+                            ` : ''}
+                            <button class="edit-btn" onclick="window.finTrack.ui.editIncome('${income.id}'); document.getElementById('searchModal').classList.remove('active');">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="window.finTrack.ui.confirmDelete('income', '${income.id}', '${income.description.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                incomesGroup.appendChild(item);
+            });
+            
+            resultsContainer.appendChild(incomesGroup);
+        }
+    }    
+
     async confirmUnlinkReimbursement() {
         const incomeId = window.finTrack.pendingUnlinkIncomeId;
         if (!incomeId) return;
@@ -1918,7 +2221,11 @@ async checkInitialAuthState() {
         }
         if (this.domElements.navLinks) {
             this.domElements.navLinks.style.display = 'flex';
-        }          
+        }    
+        if (this.domElements.searchBtn) {
+            this.domElements.searchBtn.style.display = 'flex';
+        }        
+        
     }
     
     showLandingPage() {
@@ -1937,6 +2244,9 @@ async checkInitialAuthState() {
         if (this.domElements.logoutBtn) {
             this.domElements.logoutBtn.classList.add('hidden');
         }
+        if (this.domElements.searchBtn) {
+            this.domElements.searchBtn.style.display = 'none';
+        }        
       
     }
     
@@ -2192,24 +2502,31 @@ class UIController {
     }
     
     loadTabData(tabId) {
+        const statCards = document.querySelector('.dashboard-stats');
+        
         switch (tabId) {
             case 'overview':
+                if (statCards) statCards.style.display = 'grid';
                 this.updateOverviewUI();
                 this.updateCompactBudgetView(); // NEW: Compact view for overview
                 break;
             case 'expenses':
+                if (statCards) statCards.style.display = 'none';
                 const monthSelect = document.getElementById('expenseMonthSelect');
                 const yearSelect = document.getElementById('expenseYearSelect');
                 this.updateExpensesTabUI();
                 this.switchExpenseSubTab('all');
                 break;
             case 'income':
+                if (statCards) statCards.style.display = 'none';
                 this.updateIncomesTabUI();
                 break;
             case 'budget':
+                if (statCards) statCards.style.display = 'none';
                 this.updateBudgetTabUI(); // NEW: Full budget management view
                 break;
             case 'more':
+                if (statCards) statCards.style.display = 'none';
                 this.updateSettingsTab();
                 break;
         }
@@ -3965,7 +4282,7 @@ class UIController {
 
         if (type === 'expense') {
             title.innerHTML = 'Edit Expense';
-            subtitle.textContent = 'Update expense details';
+            subtitle.textContent = '';
             
             if (expenseCategoryRow) expenseCategoryRow.style.display = 'flex';
             if (expenseReimbursableSection) {
@@ -3985,7 +4302,7 @@ class UIController {
             }
         } else {
             title.innerHTML = 'Edit Income';
-            subtitle.textContent = 'Update income details';
+            subtitle.textContent = '';
             
             if (incomeReimbursementSection) incomeReimbursementSection.style.display = 'block';
             if (incomeTypeGroup) incomeTypeGroup.style.display = 'block';
@@ -4327,25 +4644,25 @@ class UIController {
             
             switch(type) {
                 case 'budget':
-                    message = `Delete the budget limit for "${name}"? This will NOT delete the category itself, only the spending limit.`;
+                    message = `Delete the budget limit for <strong>${name}</strong>? This will NOT delete the category itself, only the spending limit.`;
                     break;
                 case 'category':
-                    message = `Delete category "${name}"? This will also delete all its subcategories. Expenses won't be deleted but will lose their category.`;
+                    message = `Delete category <strong>${name}</strong>? This will also delete all its subcategories. Expenses won't be deleted but will lose their category.`;
                     break;
                 case 'wallet':
-                    message = `Delete wallet "${name}"? All expenses and income in this wallet will also be deleted.`;
+                    message = `Delete wallet <strong>${name}</strong>? All expenses and income in this wallet will also be deleted.`;
                     break;
                 case 'expense':
-                    message = `Delete expense "${name}"? This can't be undone.`;
+                    message = `Delete expense <strong>${name}</strong>? This <strong>CANNOT</strong> be undone.`;
                     break;
                 case 'income':
-                    message = `Delete income "${name}"? This can't be undone.`;
+                    message = `Delete income <strong>${name}</strong>? This <strong>CANNOT</strong> be undone.`;
                     break;
                 default:
-                    message = `Delete "${name}"? This can't be undone.`;
+                    message = `Delete <strong>${name}</strong>? This <strong>CANNOT</strong> be undone.`;
             }
             
-            deleteMessage.textContent = message;
+            deleteMessage.innerHTML = message;
         }
         
         document.getElementById('deleteModal').classList.add('active');

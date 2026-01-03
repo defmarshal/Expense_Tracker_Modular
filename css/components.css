@@ -332,7 +332,7 @@ input:focus, select:focus, textarea:focus {
 .modal-header {
     background: var(--gradient);
     color: white;
-    padding: var(--space-lg);
+    padding: var(--space-md);
     text-align: center;
     position: relative;
     flex-shrink: 0;
@@ -655,7 +655,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Enhanced Edit Modal Animation */
 #editTransactionModal .modal-header {
-    background: linear-gradient(135deg, #9333EA 0%, #C084FC 100%);
+    /* background: linear-gradient(135deg, #9333EA 0%, #C084FC 100%); */
+    background: var(--primary);
     position: relative;
     overflow: hidden;
 }
@@ -1328,4 +1329,279 @@ input:focus, select:focus, textarea:focus {
     font-weight: 600;
     padding: 1px 2px;
     border-radius: 2px;
+}
+
+/* Search Icon Button in Header */
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--dark);
+    font-size: 1.2rem;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    background: var(--light-gray);
+    color: var(--primary);
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Search Modal Specific Styles */
+#searchResults {
+    /* max-height: 400px; */
+    /* overflow-y: auto; */
+    margin-top: 1.5rem;
+}
+
+#searchResults:empty::before {
+    content: 'Enter a search term and click Search';
+    display: block;
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray);
+    font-style: italic;
+}
+
+.search-result-group {
+    margin-bottom: 1rem;
+}
+
+.search-result-group-header {
+    background: var(--light-gray);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-no-results {
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray);
+}
+
+.search-no-results i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Highlight matched text */
+.search-highlight {
+    background-color: #ffeb3b;
+    font-weight: 600;
+    padding: 1px 2px;
+    border-radius: 2px;
+}
+
+/* Form Row for Custom Date Range */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Search Modal - Ensure it has background and styling like other modals */
+#searchModal {
+  max-width: 100%;       
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+#searchModal .modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 100%;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto; /* Scroll on modal itself */
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* If your other modals use a different class, match that pattern */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* padding: 1.5rem; */  
+    border-bottom: 1px solid var(--light-gray);
+}
+
+#searchModal .modal-header {
+    padding: 1rem;  
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dark);
+}
+
+.modal-subtitle {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin: 0.25rem 0 0 0;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--gray);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.close-modal:hover {
+    background: var(--light-gray);
+    color: var(--dark);
+}
+
+/* Modal Body */
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Search Modal Specific - Wider for results */
+#searchModal .modal-content {
+    max-width: 700px;
+}
+
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+    }
+    50% { 
+        transform: translateY(-20px) rotate(180deg); 
+    }
+}
+
+/* Modal opening animation */
+.modal-overlay {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-overlay .modal {
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* When modal is closing (remove active class) */
+.modal-overlay:not(.active) {
+    animation: modalFadeOut 0.2s ease-in;
+}
+
+.modal-overlay:not(.active) .modal {
+    animation: modalSlideDown 0.2s ease-in;
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes modalSlideDown {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
 }

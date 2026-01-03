@@ -5,6 +5,7 @@ export function initFAB() {
     const fabMenu = document.getElementById('fabMenu');
     const fabBackdrop = document.getElementById('fabBackdrop');
     const fabMenuItems = document.querySelectorAll('.fab-menu-item');
+    setupModalWatcher();
 
     if (!fabButton || !fabMenu || !fabBackdrop) {
         console.warn('FAB elements not found', {
@@ -73,7 +74,7 @@ export function initFAB() {
 
     // Handle FAB actions - Open modal instead
     function handleFABAction(action) {
-        
+        closeFAB();
         const modal = document.getElementById('fabQuickAddModal');
         const modalTitle = document.getElementById('fabModalTitle');
         const modalSubtitle = document.getElementById('fabModalSubtitle');
@@ -215,6 +216,30 @@ export function initFAB() {
             }, 200); // ✅ 200ms debounce - waits for user to stop switching
         });
     }
+
+    // Add this new function to close FAB when OTHER modals open
+    function setupModalWatcher() {
+        // Watch for any modal opening
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    const target = mutation.target;
+                    
+                    // If a modal (NOT the FAB modal) becomes active, close FAB
+                    if (target.classList.contains('modal-overlay') && 
+                        target.classList.contains('active') &&
+                        target.id !== 'fabQuickAddModal') {
+                        closeFAB();
+                    }
+                }
+            });
+        });
+        
+        // Observe all modals
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            observer.observe(modal, { attributes: true });
+        });
+    }    
 
     // Reset FAB forms
     function resetFabForms() {

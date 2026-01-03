@@ -5,8 +5,8 @@
     position: fixed;
     bottom: 24px;
     right: 24px;
-    z-index: 1000;
-    display: block; /* Changed from none */
+    z-index: 1001; /* Above backdrop, below modals */
+    display: block;
 }
 
 /* Show FAB only when dashboard is visible */
@@ -34,6 +34,7 @@ body:has(#landingPage:not([style*="display: none"])) .fab-container {
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    z-index: 1; /* Relative to container */
 }
 
 .fab-button:hover {
@@ -65,6 +66,7 @@ body:has(#landingPage:not([style*="display: none"])) .fab-container {
     visibility: hidden;
     transform: translateY(20px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 3; /* Above backdrop and button */
 }
 
 .fab-menu.active {
@@ -97,6 +99,7 @@ body:has(#landingPage:not([style*="display: none"])) .fab-container {
 .fab-menu.active .fab-menu-item:nth-child(2) { animation-delay: 0.1s; }
 .fab-menu.active .fab-menu-item:nth-child(3) { animation-delay: 0.15s; }
 .fab-menu.active .fab-menu-item:nth-child(4) { animation-delay: 0.2s; }
+.fab-menu.active .fab-menu-item:nth-child(5) { animation-delay: 0.25s; }
 
 @keyframes fabMenuItemAppear {
     to {
@@ -131,6 +134,7 @@ body:has(#landingPage:not([style*="display: none"])) .fab-container {
 .fab-menu-item.income i { color: var(--success); }
 .fab-menu-item.wallet i { color: var(--primary); }
 .fab-menu-item.category i { color: var(--warning); }
+.fab-menu-item.budget i { color: var(--purple); }
 
 /* Backdrop */
 .fab-backdrop {
@@ -140,22 +144,64 @@ body:has(#landingPage:not([style*="display: none"])) .fab-container {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.2);
-    z-index: 999;
+    z-index: 1000; /* Below FAB container */
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
     backdrop-filter: blur(2px);
+    pointer-events: none;
 }
 
 .fab-backdrop.active {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
+}
+
+/* When FAB's own backdrop is active, lower the button below it */
+.fab-backdrop.active ~ .fab-container .fab-button {
+    z-index: -1; /* Below backdrop */
+}
+
+body:has(.modal-overlay.active) .fab-backdrop {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: none !important;
+}
+
+body:has(.modal-overlay.active) .fab-menu {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: none !important;
+}
+
+/* Darken and disable FAB button when ANY modal is open */
+body:has(.modal-overlay.active) .fab-button {
+    pointer-events: none;
+}
+
+body:has(.modal-overlay.active) .fab-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    transition: opacity 0.2s ease;
+}
+
+/* Lower entire FAB container when ANY modal opens */
+body:has(.modal-overlay.active) .fab-container {
+    z-index: 998; /* Below all modals */
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .fab-container {
-        bottom: 20px;
+        bottom: 80px; /* Raised above bottom nav */
         right: 20px;
     }
     
@@ -184,21 +230,4 @@ body:has(#landingPage:not([style*="display: none"])) .fab-container {
 
 .fab-button.pulse {
     animation: fabPulse 2s infinite;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-    .fab-container {
-        bottom: 80px; /* Raised above bottom nav */
-        right: 20px;
-    }
-    
-    .fab-button {
-        width: 56px;
-        height: 56px;
-    }
-    
-    .fab-menu {
-        bottom: 70px;
-    }
 }
