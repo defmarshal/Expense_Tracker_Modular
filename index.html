@@ -1416,25 +1416,33 @@
 
         async function initApp() {
             try {
-                 const response = await fetch('/api/config');
-                 if (!response.ok) {
-                     throw new Error('Failed to fetch config');
-                 }
+                const response = await fetch('/api/config');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch config');
+                }
                 
-                 const config = await response.json();
+                const config = await response.json();
 
+                // Create Supabase client AFTER config is loaded
                 const supabase = window.supabase.createClient(
-                     config.supabaseUrl,
-                     config.supabaseAnonKey
+                    config.supabaseUrl,
+                    config.supabaseAnonKey
                     // SUPABASE_URL, 
                     // SUPABASE_ANON_KEY                    
                 );
                 
-                const { createApp } = await import('./js/app.js');            
+                console.log('Supabase client created');
                 
+                // Import and initialize the app
+                const { createApp } = await import('./js/app.js');
+                
+                console.log('Starting FinTrack application...');
+                
+                // Create and initialize the app
                 const app = createApp(supabase);
                 await app.init();
                 
+                // Make available globally for debugging
                 window.finTrack = {
                     app,
                     ui: app.ui,
@@ -1443,8 +1451,13 @@
                     db: app.db
                 };
                 
+                // Store pending delete reference
                 window.finTrack.pendingDelete = null;
 
+                // DEBUG: Add console access
+                console.log('FinTrack App initialized:', window.finTrack);
+
+                // DEBUG: Test state access
                 window.finTrack.debug = {
                     getState: () => window.finTrack.state.getState(),
                     getExpenses: () => window.finTrack.state.getExpenses(),
@@ -1453,9 +1466,11 @@
                     getCategories: () => window.finTrack.state.getCategories()
                 };                
                 
-                
+                console.log('Application started successfully');
             } catch (error) {
+                console.error('Failed to start application:', error);
                 
+                // Show error to user
                 const alertContainer = document.getElementById('alertContainer');
                 if (alertContainer) {
                     const alert = document.createElement('div');
@@ -1573,3 +1588,4 @@
 </body>
 
 </html>
+
